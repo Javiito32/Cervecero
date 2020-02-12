@@ -83,6 +83,25 @@
 /*
  * PINES Y VARIABLES
  */
+
+/***************************************
+ * Define Instances and Constants
+ ****************************************/
+
+const char* UBIDOTS_TOKEN = "BBFF-0zWwVurprtGmHpfjoFBLIKPLEGnEB4";  // Put here your Ubidots TOKEN
+
+const char* WIFI_SSID = "Kerjox";      // Put here your Wi-Fi SSID
+const char* WIFI_PASS = "";      // Put here your Wi-Fi password
+
+const char* DEVICE_LABEL_TO_RETRIEVE_VALUES_FROM = "840d8eb07c53";  // Replace with your device label
+const char* VARIABLE_LABEL_TO_RETRIEVE_VALUES_FROM = "ledstate";
+Ubidots ubidots(UBIDOTS_TOKEN, UBI_TCP);
+
+/****************************************
+
+//Librerias
+#include "Ubidots.h"
+
 //LAYOUT Pines
   const int pinSonda = A0;                    //Sonda de la temperatura
   const int resis = D0;                       //Resistencia para calentar
@@ -119,7 +138,7 @@
  */
 void setup(){
 //Inicializamos el puerto serie
-  Serial.begin(9600);
+  Serial.begin(115200);
   
 //Configuracion de pines
   pinMode(resis,OUTPUT);
@@ -147,14 +166,21 @@ void setup(){
  * Leemos datos en bucle hasta entrar en un proceso.
  */
 void loop(){
+//Enviar variables
+  //ubidots.add("Nombre variable", %variable%);
+
 //Mensaje inicial
   Serial.println("O0");
    
 //Lectura de datos para ejecutar un proceso
-  if (Serial.available()){
-    dato = Serial.read();
+  bool bufferSent = false;      
+  bufferSent = ubidots.send();           // Will send data to a device label that matches the device Id
+  if (bufferSent){
+    dato = ubidots.get();
     if(dato>'0' && dato<='9'){ 
       menu(dato);
+    }else{
+    Serial.println("Los datos no se mandarosn correctamente");
     }
   }
   
