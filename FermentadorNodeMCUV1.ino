@@ -83,6 +83,8 @@
 /*
  * PINES Y VARIABLES
  */
+//Librerias
+#include "Ubidots.h"
 
 /***************************************
  * Define Instances and Constants
@@ -98,9 +100,6 @@ const char* VARIABLE_LABEL_TO_RETRIEVE_VALUES_FROM = "ledstate";
 Ubidots ubidots(UBIDOTS_TOKEN, UBI_TCP);
 
 /****************************************/
-
-//Librerias
-#include "Ubidots.h"
 
 //LAYOUT Pines
   const int pinSonda = A0;                    //Sonda de la temperatura
