@@ -97,7 +97,7 @@ const char* DEVICE_LABEL_TO_RETRIEVE_VALUES_FROM = "840d8eb07c53";  // Replace w
 const char* VARIABLE_LABEL_TO_RETRIEVE_VALUES_FROM = "ledstate";
 Ubidots ubidots(UBIDOTS_TOKEN, UBI_TCP);
 
-/****************************************
+/****************************************/
 
 //Librerias
 #include "Ubidots.h"
