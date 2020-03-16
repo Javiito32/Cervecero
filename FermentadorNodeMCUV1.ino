@@ -116,6 +116,7 @@
   int cronometroi;                            //Tiempo inicial para el envio a Rasberry
   int cronometrof;                            //Tiempo final pare el envio a Rasberry
   int cronometro;                             //Tiempo actual para el envio a Rasberry
+  String receta;                              //Almacena la informacion de la receta
 
 /*
  * CICLO DE ARRANQUE
@@ -174,7 +175,7 @@ while(true){
   delay(100);
   if (Serial.available()){
     dato = Serial.read();
-    if(dato>'0' && dato<='9'){ 
+    if(dato>'0' && dato<='9'){
       menu(dato);
       dato = '0';
       break;
@@ -192,11 +193,6 @@ while(true){
  *  - 2: Coccion.
  *  - 3: Trasvase.
  *  - 4: Fermentacion.
- *  - 5: Reserva.
- *  - 6: Reserva.
- *  - 7: Reserva.
- *  - 8: Reserva.
- *  - 9: Reserva.
  *  
  *  Parametros: numero de proceso introducido como caracter
  *  No devuelve nada
@@ -206,6 +202,7 @@ void menu(char n){
   else if (n=='2') { coccion();}
   else if (n=='3') { trasvase();}
   else if (n=='4') { fermentacion();}
+  else if (n=='9') { leerdatos(1);}
   else Serial.println("Proceso no existente");
 }
 
@@ -470,7 +467,52 @@ void calentar( float temperaturaProceso, float tiempoProceso){
   cronometrof = 0;
 }
 
+void leerdatos(int n){
+  if (WiFi.status() == WL_CONNECTED) {
 
+    HTTPClient http;  // Object of the class HTTPClient.
+    String ppeticion = "http://192.168.1.150/pedirdatos.php?id=";
+    String peticion = ppeticion + n;
+    Serial.println(peticion);
+    http.begin(peticion);  // Request destination.
+    int httpCode = http.GET(); // Send the request.
+
+    if (httpCode > 0) { //Check the returning code
+
+      String datos = http.getString();   // Get the text from the destination (1 or 0).
+      Serial.println(datos);
+      int longitud = datos.length();
+      int ptemp = datos.indexOf("temp="); //Posicion de temp
+      String stemp = "";
+      for (int i = ptemp + 5; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stemp += datos[i];
+      }
+      float temp = stemp.toFloat();
+      Serial.print("Temperatura= ");
+      Serial.println(temp);
+
+      int phum = datos.indexOf("hum=");
+      String shum = "";
+      for (int i = phum + 4; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else shum += datos[i];
+      }
+      float hum = shum.toFloat();
+      Serial.print("Humedad= ");
+      Serial.println(hum);
+      
+      
+
+    }else{
+
+      Serial.println("La receta no existe o no se ha encontrado");
+
+    }
+
+    http.end();   //Close connection
+}
+}
 /*
  * Metodo leer. 
  * Sirve para leer una cadena de caracteres que se recibe por el puerto
