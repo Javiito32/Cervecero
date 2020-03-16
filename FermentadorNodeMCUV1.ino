@@ -84,22 +84,6 @@
  * PINES Y VARIABLES
  */
 //Librerias
-#include "Ubidots.h"
-
-/***************************************
- * Define Instances and Constants
- ****************************************/
-
-const char* UBIDOTS_TOKEN = "BBFF-0zWwVurprtGmHpfjoFBLIKPLEGnEB4";  // Put here your Ubidots TOKEN
-
-const char* WIFI_SSID = "Kerjox";      // Put here your Wi-Fi SSID
-const char* WIFI_PASS = "";      // Put here your Wi-Fi password
-
-const char* DEVICE_LABEL_TO_RETRIEVE_VALUES_FROM = "840d8eb07c53";  // Replace with your device label
-const char* VARIABLE_LABEL_TO_RETRIEVE_VALUES_FROM = "ledstate";
-Ubidots ubidots(UBIDOTS_TOKEN, UBI_TCP);
-
-/****************************************/
 
 //LAYOUT Pines
   const int pinSonda = A0;                    //Sonda de la temperatura
