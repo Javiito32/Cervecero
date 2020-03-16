@@ -169,22 +169,23 @@ void setup(){
  */
 void loop(){
 //Mensaje inicial
+  Serial.println("------------------------------");
   Serial.println("Ready");
-   
+  Serial.println("------------------------------");
 //Lectura de datos para ejecutar un proceso
 while(true){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
     
     HTTPClient http;  // Object of the class HTTPClient.
-    http.begin("http://192.168.1.150/menu.php");  // Request destination.
+    http.begin("http://192.168.1.150/arduino/menu.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode > 0) {
         String datoString = http.getString();
         dato = datoString.toInt();
         if (dato != 0){
           Serial.println(dato);
-          http.begin("http://192.168.1.150/menu.php?reset=1");
+          http.begin("http://192.168.1.150/arduino/menu.php?reset=1");
           http.GET();
           break;
         }
@@ -481,37 +482,55 @@ void leerdatos(int n){
   if (WiFi.status() == WL_CONNECTED) {
 
     HTTPClient http;  // Object of the class HTTPClient.
-    String ppeticion = "http://192.168.1.150/pedirdatos.php?id=";
+    String ppeticion = "http://192.168.1.150/arduino/pedirdatos.php?id=";
     String peticion = ppeticion + n;
+    Serial.println("------------------------------");
+    Serial.print("Petición al servidor: ");
     Serial.println(peticion);
     http.begin(peticion);  // Request destination.
     int httpCode = http.GET(); // Send the request.
 
     if (httpCode > 0) { //Check the returning code
 
-      String datos = http.getString();   // Get the text from the destination (1 or 0).
+      String datos = http.getString(); 
+      Serial.println("------------------------------");            // Obtiene la string
+      Serial.print("String recibida: ");
       Serial.println(datos);
       int longitud = datos.length();
-      int ptemp = datos.indexOf("temp="); //Posicion de temp
-      String stemp = "";
-      for (int i = ptemp + 5; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stemp += datos[i];
-      }
-      float temp = stemp.toFloat();
-      Serial.print("Temperatura= ");
-      Serial.println(temp);
+      Serial.println("------------------------------");
 
-      int phum = datos.indexOf("hum=");
-      String shum = "";
-      for (int i = phum + 4; i < longitud; i ++){
+    //Procesar datos nombre
+      int pnombre = datos.indexOf("nombre=");
+      String nombre = "";
+      for (int i = pnombre + 7; i < longitud; i ++){
         if (datos[i] == ';') i = longitud;
-        else shum += datos[i];
+        else nombre += datos[i];
       }
-      float hum = shum.toFloat();
-      Serial.print("Humedad= ");
-      Serial.println(hum);
-      
+      Serial.print("Nombre de la cerveza= ");
+      Serial.println(nombre);
+
+    //Procesar datos temperatura
+      int ptempMacer = datos.indexOf("tempMacer=");               //Posicion de temp
+      String stempMacer = "";
+      for (int i = ptempMacer + 10; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stempMacer += datos[i];
+      }
+      float tempMacer = stempMacer.toFloat();
+      Serial.print("Temperatura del proceso= ");
+      Serial.println(tempMacer);
+
+    //Procesar datos tiempo
+      int ptimeMacer = datos.indexOf("timeMacer=");
+      String stimeMacer = "";
+      for (int i = ptimeMacer + 10; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stimeMacer += datos[i];
+      }
+      float timeMacer = stimeMacer.toFloat();
+      Serial.print("Tiempo en Seg del proceso= ");
+      Serial.println(timeMacer);
+    
       
 
     }else{
