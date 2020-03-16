@@ -103,7 +103,7 @@
   const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
   const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
   int sensorTemperatura;                      //Variable que almacen la lectura de la sonda
-  char dato;                                  //Dato leido para entrar el menu
+  int dato;                                  //Dato leido para entrar el menu
   float tmax;                                 //Temperatura maxima para los procesos
   float tmin;                                 //Temperatura minima para los procesos
   float tiempoi;                              //Tiempo inicial para los procesos en milis
@@ -128,17 +128,18 @@ void setup(){
   delay(10);
 
 // Conectar con la red WiFi
-  Serial.println("Hello Digital Craft");
-  Serial.println("Connecting ");
+  Serial.println("");
+  Serial.print("Connecting");
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {       //Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
   }
-
+  Serial.println("");
   Serial.println("WiFi connected");
 
+  Serial.print("IP: ");
   Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
   
 //Configuracion de pines
@@ -173,15 +174,24 @@ void loop(){
 //Lectura de datos para ejecutar un proceso
 while(true){
   delay(100);
-  if (Serial.available()){
-    dato = Serial.read();
-    if(dato>'0' && dato<='9'){ 
-      menu(dato);
-      dato = '0';
-      break;
-    }
+  if (WiFi.status() == WL_CONNECTED){
+    
+    HTTPClient http;  // Object of the class HTTPClient.
+    http.begin("http://192.168.1.150/menu.php");  // Request destination.
+    int httpCode = http.GET(); // Send the request.
+      if (httpCode > 0) {
+        String datoString = http.getString();
+        dato = datoString.toInt();
+        if (dato != 0){
+          Serial.println(dato);
+          http.begin("http://192.168.1.150/menu.php?reset=1");
+          http.GET();
+          break;
+        }
+        }
+      }
   }
-}
+  menu(dato);
 }
 
 /*
@@ -197,12 +207,12 @@ while(true){
  *  Parametros: numero de proceso introducido como caracter
  *  No devuelve nada
  */
-void menu(char n){   
-       if (n=='1') { maceracion(); }
-  else if (n=='2') { coccion();}
-  else if (n=='3') { trasvase();}
-  else if (n=='4') { fermentacion();}
-  else if (n=='9') { leerdatos(1);}
+void menu(int n){ 
+       if (n==1) { maceracion(); }
+  else if (n==2) { coccion();}
+  else if (n==3) { trasvase();}
+  else if (n==4) { fermentacion();}
+  else if (n==9) { leerdatos(1);}
   else Serial.println("Proceso no existente");
 }
 
