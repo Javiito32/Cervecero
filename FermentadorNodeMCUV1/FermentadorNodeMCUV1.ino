@@ -483,6 +483,7 @@ void leerdatos(int n){
     HTTPClient http;  // Object of the class HTTPClient.
     String ppeticion = "http://192.168.1.150/pedirdatos.php?id=";
     String peticion = ppeticion + n;
+    Serial.print("Petición al servidor: ");
     Serial.println(peticion);
     http.begin(peticion);  // Request destination.
     int httpCode = http.GET(); // Send the request.
@@ -490,6 +491,7 @@ void leerdatos(int n){
     if (httpCode > 0) { //Check the returning code
 
       String datos = http.getString();   // Get the text from the destination (1 or 0).
+      Serial.print("String recibida: ");
       Serial.println(datos);
       int longitud = datos.length();
       int ptemp = datos.indexOf("temp="); //Posicion de temp
