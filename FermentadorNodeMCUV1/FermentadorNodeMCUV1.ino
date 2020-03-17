@@ -85,14 +85,17 @@
  */
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
+  #include <Wire.h>                           // incluye libreria para interfaz I2C
+  #include <RTClib.h>                         // incluye libreria para el manejo del modulo RTC
+  #include <TimeLib.h>
 //LAYOUT Pines
   const int pinSonda = A0;                    //Sonda de la temperatura
-  const int resis = D0;                       //Resistencia para calentar
-  const int bombaRecirculacion = D1;          //Bomba de recirculacion 230V
-  const int bombaTrasvase = D2;               //Bomba trasvase 230V
-  const int bombaFrio = D3;                   //Bomba refrigeracion 230V
-  const int peltier = D4;                     //Celulas Peltier
-  const int reserva = D5;                     //Este cable se deja en reserva, era para el RELE DE ESTADO SOLIDO que no se usa
+  const int resis = D0;                       //Resistencia para calentar               
+  const int bombaRecirculacion = D3;          //Bomba de recirculacion 230V
+  const int bombaTrasvase = D4;               //Bomba trasvase 230V
+  const int bombaFrio = D5;                   //Bomba refrigeracion 230V
+  const int peltier = D6;                     //Celulas Peltier
+  const int reserva = D7;                     //Este cable se deja en reserva, era para el RELE DE ESTADO SOLIDO que no se usa
   
 //Variables configurables
   const float anchoVentana = 1;               //Rango para la temperatura
@@ -103,28 +106,32 @@
   const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
   const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
   int sensorTemperatura;                      //Variable que almacen la lectura de la sonda
-  int dato;                                  //Dato leido para entrar el menu
+  int dato;                                   //Dato leido para entrar el menu
   float tmax;                                 //Temperatura maxima para los procesos
   float tmin;                                 //Temperatura minima para los procesos
-  float tiempoi;                              //Tiempo inicial para los procesos en milis
-  float tiempof;                              //Tiempo final para los procesos en milis
-  float tiempoActual;                         //Tiempo actual del proceso en milis
-  float tiempoRestante;                       //Tiempo que falta para el final de los procesos en milis
+  unsigned long tiempoi;                      //Tiempo inicial para los procesos en seg
+  unsigned long tiempof;                      //Tiempo final para los procesos en seg
+  unsigned long tiempoActual;                 //Tiempo actual del proceso en seg
+  long tiempoRestante;                        //Tiempo que falta para el final de los procesos en seg
   float tiempoEnviar;                         //Tiempo que se envia a la Rasberry en segundos
   float milivoltios;                          //Variable para almacenar los milivoltios
   float celsius;                              //Variable para almacenar los grados
   int cronometroi;                            //Tiempo inicial para el envio a Rasberry
   int cronometrof;                            //Tiempo final pare el envio a Rasberry
   int cronometro;                             //Tiempo actual para el envio a Rasberry
-  String receta;                              //Almacena la informacion de la receta
-  float tempMacer;
-  float tiempoMacer;
-  float tempCoc;
-  float tiempoCoc;
-  float tiempoTrans;
-  float tempFermen;
-  float tiempoFermen;
-  
+  float tempMacer;                            //Temperatura de maceración de la receta seleccionada
+  unsigned long tiempoMacer;                  //Tiempo maceración de la recta selecionada
+  float tempCoc;                              //Temperatura de cocción de la receta seleccionada
+  unsigned long tiempoCoc;                    //Tiempo cocción de la recta selecionada
+  unsigned long tiempoTrans;                  //Tiempo transvase de la recta selecionada
+  float tempFermen;                           //Temperatura de fermentación de la receta seleccionada
+  unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
+  unsigned long timeset;                      //Se usa para establecer el tiempo en el RTC
+
+//Objetos
+  HTTPClient http;                            // Object of the class HTTPClient.
+  RTC_DS3231 rtc;                             // crea objeto del tipo RTC_DS3231
+
 /*
  * CICLO DE ARRANQUE
  * Configuramos los pines. Puesta a cero inicial.
@@ -133,7 +140,10 @@ void setup(){
 //Inicializamos el puerto serie
   Serial.begin(115200);
   delay(10);
-
+  
+//Iniciamos la comunicación con el RTC
+  Wire.begin(D2,D1);
+  
 // Conectar con la red WiFi
   Serial.println("");
   Serial.print("Connecting");
@@ -174,24 +184,26 @@ void setup(){
  * Indicamos a la Raspberry que hemos arrancado. 
  * Leemos datos en bucle hasta entrar en un proceso.
  */
+
 void loop(){
+
 //Mensaje inicial
   Serial.println("------------------------------");
   Serial.println("Ready");
   Serial.println("------------------------------");
-//Lectura de datos para ejecutar un proceso
-while(true){
+  pregunta();
+  menuinicio(dato);
+}
+void pregunta(){
+  while(true){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
-    
-    HTTPClient http;  // Object of the class HTTPClient.
     http.begin("http://192.168.1.150/arduino/menu.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode > 0) {
         String datoString = http.getString();
         dato = datoString.toInt();
         if (dato != 0){
-          Serial.println(dato);
           http.begin("http://192.168.1.150/arduino/menu.php?reset=1");
           http.GET();
           break;
@@ -199,7 +211,6 @@ while(true){
         }
       }
   }
-  menu(dato);
 }
 
 /*
@@ -215,14 +226,54 @@ while(true){
  *  Parametros: numero de proceso introducido como caracter
  *  No devuelve nada
  */
-void menu(int n){ 
+void menuinicio(int n){ 
+       if (n==1) { receta();}
+  else if (n==2) { ajustes();}
+  else if (n==3) { preparar();}
+  else Serial.println("La accion deseada no existe");
+}
+
+void receta(){
+  Serial.println("Selecciona receta: ");
+  pregunta();
+  leerdatos(dato);
+}
+
+void ajustes(){
+  Serial.println("Ajustes");
+  pregunta();
+  menuajustes(dato);
+}
+
+void preparar(){
+  Serial.println("Selecciona proceso: ");
+  pregunta();
+  menuproceso(dato);
+}
+
+void menuajustes(int n){
+      if (n==1) { time_set();}
+  else if (n==2){ gettime();}
+  else Serial.println("La accion deseada no existe");
+}
+
+
+void menuproceso(int n){ 
        if (n==1) { maceracion(); }
   else if (n==2) { coccion();}
   else if (n==3) { trasvase();}
   else if (n==4) { fermentacion();}
-  else if (n==9) { leerdatos(1);}
   else Serial.println("Proceso no existente");
 }
+
+
+void gettime(){
+  DateTime now = rtc.now();
+  tiempoActual = now.unixtime();
+  Serial.println(tiempoActual);
+}
+
+
 
 
 /*  
@@ -241,6 +292,28 @@ void menu(int n){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
+void time_set (){
+    http.begin("http://192.168.1.150/arduino/time.php");  // Request destination.
+    int httpCode = http.GET(); // Send the request.
+      if (httpCode > 0) {
+        String stringtime = http.getString();
+        timeset = (long) strtol(stringtime.c_str(),NULL,0);
+        rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
+        DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
+            // DateTime y asigna a variable fecha
+        Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
+        Serial.print("/");       // caracter barra como separador
+        Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
+        Serial.print("/");       // caracter barra como separador
+        Serial.print(fecha.year());      // funcion que obtiene el año de la fecha completa
+        Serial.print(" ");       // caracter espacio en blanco como separador
+        Serial.print(fecha.hour());      // funcion que obtiene la hora de la fecha completa
+        Serial.print(":");       // caracter dos puntos como separador
+        Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
+        Serial.print(":");       // caracter dos puntos como separador
+        Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
+      }
+  }
 void maceracion (){
 //Confirmacion para RASPBERRY del inicio de proceso de maceracion
   Serial.println("O1");
@@ -328,7 +401,7 @@ void trasvase(){
   Serial.println("O3");
   
 //Iniciamos el tiempo
-  tiempoi = millis();
+  gettime();
   
 //Trasvase ON
   digitalWrite(bombaFrio,HIGH);
@@ -444,32 +517,20 @@ void recircular(){
  *             temperatura del proceso en grados
  * No devuelve nada
  */
-void calentar( float temperaturaProceso, float tiempoProceso){
+void calentar( float temperaturaProceso, long tiempoProceso){
 //TRATAMIENTO DE LAS VARIABLES
   //Tratamiento de la ventana de temperatura
+    Serial.println(tiempoProceso);
     tmax = temperaturaProceso+anchoVentana;
     tmin = temperaturaProceso-anchoVentana;
-  //Tratamiento del tiempo del proceso
-    tiempoi = millis();
-    tiempoProceso = tiempoProceso * 1000;                 //Paso del tiempo a milis
-    tiempof = tiempoProceso + tiempoi;
-  //Control de tiempo para los envios por pantalla
-    cronometroi = millis();
-    cronometrof = 1000 + cronometroi;
-
-//CICLO DE CALENTAMIENTO
-  do{
-    tiempoActual = millis();
-    cronometro = millis();
-  //Cuenta atras para sacar por pantalla
-    tiempoRestante = tiempof - tiempoActual;
-    cronometro = cronometrof - cronometro;
-    if(cronometro == 0.0){
-      tiempoEnviar = tiempoRestante/1000;                 //Paso del tiempo a segundos
-      enviarTiempo(tiempoEnviar);
-      cronometroi = millis();
-      cronometrof = 1000 + cronometroi;
-    }
+    boolean fin = false;
+    gettime();
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + tiempoProceso;
+    do{
+      gettime();
+      tiempoRestante = tiempof - tiempoActual;
+      enviarTiempo(tiempoRestante);
   //Tratamiento de la temperatura
     sensorTemperatura = analogRead(pinSonda);
     milivoltios = (sensorTemperatura / 1023.0) * 3300;
@@ -478,7 +539,9 @@ void calentar( float temperaturaProceso, float tiempoProceso){
   //Mantenimiento de la ventana de temperatura
     if(celsius > tmax){digitalWrite(resis,LOW);}
     if(celsius < tmin){digitalWrite(resis,HIGH);}
-  }while(tiempoActual+1 < tiempof);
+    if (tiempoRestante <= 0) fin = true;
+    delay(1000);
+  }while(!fin);
   
 //PUESTA A CERO FINAL
   tmax = 0;
@@ -490,6 +553,15 @@ void calentar( float temperaturaProceso, float tiempoProceso){
   cronometroi = 0;
   cronometrof = 0;
 }
+
+/*
+ * Metodo leer. 
+ * Sirve para leer una cadena de caracteres que se recibe de la SQL
+ * y se almacena en un String. Los datos vienen separados por ";".
+ * 
+ * Contiene el parametro del ID de la receta que tiene que leer de la SQL.
+ * Asigna los valores oportunos a las variables de cotrol (tmperatura y tiempo de cada proceso).
+ */
 
 void leerdatos(int n){
   if (WiFi.status() == WL_CONNECTED) {
@@ -519,8 +591,7 @@ void leerdatos(int n){
         if (datos[i] == ';') i = longitud;
         else nombre += datos[i];
       }
-      Serial.print("Nombre de la cerveza= ");
-      Serial.println(nombre);
+      
 
     //Procesar datos de la Temperatura de Maceración
       int ptempMacer = datos.indexOf("tempMacer=");               //Posicion de temp
@@ -539,7 +610,7 @@ void leerdatos(int n){
         if (datos[i] == ';') i = longitud;
         else stiempoMacer += datos[i];
       }
-      tiempoMacer = stiempoMacer.toFloat();
+      tiempoMacer = (long) strtol(stiempoMacer.c_str(),NULL,0);
       
 
     //Procesar datos de la Temperatura de Cocción
@@ -559,7 +630,7 @@ void leerdatos(int n){
         if (datos[i] == ';') i = longitud;
         else stiempoCoc += datos[i];
       }
-      tiempoCoc = stiempoCoc.toFloat();
+      tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
       
 
     //Procesar datos tiempo del Transbase
@@ -569,7 +640,7 @@ void leerdatos(int n){
         if (datos[i] == ';') i = longitud;
         else stiempoTrans += datos[i];
       }
-      tiempoTrans = stiempoTrans.toFloat();
+      tiempoTrans = (long) strtol(stiempoTrans.c_str(),NULL,0);
       
 
     //Procesar datos tiempo del Fermentación
@@ -589,10 +660,14 @@ void leerdatos(int n){
         if (datos[i] == ';') i = longitud;
         else stiempoFermen += datos[i];
       }
-      tiempoFermen = stiempoFermen.toFloat();
+      tiempoFermen = (long) strtol(stiempoFermen.c_str(),NULL,0);
       
 
     //Mostrar información de la receta por Serial
+    if (tiempoMacer != 0){
+      //Nombre de la cerveza
+        Serial.print("Nombre de la cerveza= ");
+        Serial.println(nombre);
       //Temperaturas
         Serial.print("Temperatura del proceso Maceración= ");
         Serial.println(tempMacer);
@@ -609,92 +684,19 @@ void leerdatos(int n){
         Serial.println(tiempoTrans);
         Serial.print("Tiempo en Seg del proceso Fermentación= ");
         Serial.println(tiempoFermen);
-        
+    }else{
+      Serial.println("La receta no existe");
+    }
     }else{
 
-      Serial.println("La receta no existe o no se ha encontrado");
+      Serial.println("Error de conexión");
 
     }
 
     http.end();   //Close connection
 }
 }
-/*
- * Metodo leer. 
- * Sirve para leer una cadena de caracteres que se recibe por el puerto
- * serie y se almacena en un String. Dejará de leer cuando reciba un punto.
- * 
- * No tiene parametros
- * Devuelve la cadena leida.
- */
-String leer(){
-//VARIABLES LOCALES
-  char caracterLeido;
-  char caracterViejo;
-  String cadenaLeida = "";
-  String cadenaVieja = "";
-  boolean lectura = true;
-  boolean estado = true;
-  
-//BUCLE DE LECTURA
-  while(lectura){
-  //Lee si esta disponible
-    if(Serial.available()>0){
-      caracterLeido = Serial.read();
-      //Deja de leer cuando se encuentra con un punto
-      if(caracterLeido == '.'){lectura = false;}
-      //Tratamiento de la cadena
-      cadenaVieja = cadenaLeida;
-      cadenaLeida += caracterLeido;
-      estado = cadenaVieja.compareTo(cadenaLeida);
-      if(estado == false){cadenaLeida = cadenaVieja;}
-    }
-  }//Fin del bucle de lectura
-  
-//DEVOLUCION DE LA CADENA LEIDA
-  return cadenaLeida;
-}
 
-/*
- * Metodo desencriptarTemperatura.
- * Almacena en una cadena los carácteres que contienen el dato de la temperatura
- * y dicho String lo convierte a número.
- * 
- * Parametros: Cadena de carácteres a tratar
- * Devuelve el valor de la temperatura con decimales
- */
-float desencriptarTemperatura (String cadena){
-//Almacenamiento de la subcadena correspondiente a la temperatura
-  String temperatura = cadena.substring(1,6);
-  
-//Conversión de String a número
-  float valorTemperatura = temperatura.toFloat();
-  
-//Tratamiento del número
-  valorTemperatura = valorTemperatura/10;
-  
-//Devolución del valor de temperatura
-  return valorTemperatura;
-}
-
-/*
- * Metodo desencriptarTiempo.
- * Almacena en una cadena los carácteres que contienen el dato del tiempo
- * y dicho String lo convierte a número.
- * 
- * Parametros: Cadena de carácteres a tratar
- * Devuelve el valor del tiempo en segundos
- */
-float desencriptarTiempo (String cadena){
-//Almacenamiento de la subcadena correspondiente al tiempo
-  String tiempo = cadena.substring(6,cadena.length());
-  
-//Conversion de String a numero
-  float valortiempo = tiempo.toFloat();
-  
-//Devolucion del valor de tiempo
-  return valortiempo;
-}
 
 
 /*
@@ -705,17 +707,11 @@ float desencriptarTiempo (String cadena){
  * Parametros: Tiempo
  * No devuelve nada
  */
-void enviarTiempo (float tiempoRestante){
+void enviarTiempo (long t){
 //Variables locales
-  String mensaje = "S";
-  unsigned long tiempo;
-  
-//Conversion a String
-  tiempo = tiempoRestante;
-  mensaje.concat(tiempo);
-  
-//Envia el string por a la Raspberry
-  Serial.println(mensaje);
+  Serial.print("Quedan: ");
+  Serial.print(t);
+  Serial.println(" Segundos");
 }
 
 
