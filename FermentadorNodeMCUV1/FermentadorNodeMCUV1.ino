@@ -253,7 +253,7 @@ void preparar(){
 
 void menuajustes(int n){
       if (n==1) { time_set();}
-  else if (n==2){ gettime();}
+  else if (n==2){ showtime();}
   else Serial.println("La accion deseada no existe");
 }
 
@@ -266,11 +266,15 @@ void menuproceso(int n){
   else Serial.println("Proceso no existente");
 }
 
+void showtime(){
+  DateTime now = rtc.now();
+  tiempoActual = now.unixtime();
+  Serial.println(tiempoActual);
+}
 
 void gettime(){
   DateTime now = rtc.now();
   tiempoActual = now.unixtime();
-  Serial.println(tiempoActual);
 }
 
 
