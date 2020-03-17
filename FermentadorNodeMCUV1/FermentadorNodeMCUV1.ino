@@ -476,7 +476,7 @@ void fermentacion(){
       Serial.print(hour(tiempoRestante));      // funcion que obtiene la hora de la fecha completa
       Serial.print(":");       // caracter dos puntos como separador
       Serial.println(minute(tiempoRestante));      // funcion que obtiene los minutos de la fecha completa
-      delay(1000);
+      delay(60000);
     }while(!fin);
 //PUESTA A CERO FINAL
   tiempoi = 0;
