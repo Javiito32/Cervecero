@@ -117,7 +117,14 @@
   int cronometrof;                            //Tiempo final pare el envio a Rasberry
   int cronometro;                             //Tiempo actual para el envio a Rasberry
   String receta;                              //Almacena la informacion de la receta
-
+  float tempMacer;
+  float tiempoMacer;
+  float tempCoc;
+  float tiempoCoc;
+  float tiempoTrans;
+  float tempFermen;
+  float tiempoFermen;
+  
 /*
  * CICLO DE ARRANQUE
  * Configuramos los pines. Puesta a cero inicial.
@@ -239,10 +246,11 @@ void maceracion (){
   Serial.println("O1");
   
 //LECTURA DE VARIABLES
-  String informacionMaceracion = leer();
-  float temperaturaMaceracion = desencriptarTemperatura (informacionMaceracion);      //Variable con la temperatura del proceso
-  float tiempoMaceracion = desencriptarTiempo (informacionMaceracion);                //Variable del tiempo del proceso en segundos
-
+  //String informacionMaceracion = leer();
+  //float temperaturaMaceracion = desencriptarTemperatura (informacionMaceracion);      //Variable con la temperatura del proceso
+  //float tiempoMaceracion = desencriptarTiempo (informacionMaceracion);                //Variable del tiempo del proceso en segundos
+  float temperaturaMaceracion = tempMacer;
+  float tiempoMaceracion = tiempoMacer;
 //MODO RECIRCULACION
   recircular();
   
@@ -282,9 +290,11 @@ void coccion (){
   Serial.println("O2");
   
 //LECTURA DE VARIABLES
-  String informacionCoccion = leer();
-  float temperaturaCoccion = desencriptarTemperatura (informacionCoccion);      //Variable con la temperatura del proceso
-  float tiempoCoccion = desencriptarTiempo (informacionCoccion);                //Variable del tiempo del proceso en segundos
+  //String informacionCoccion = leer();
+  //float temperaturaCoccion = desencriptarTemperatura (informacionCoccion);      //Variable con la temperatura del proceso
+  //float tiempoCoccion = desencriptarTiempo (informacionCoccion);                //Variable del tiempo del proceso en segundos
+  float temperaturaCoccion = tempCoc;
+  float tiempoCoccion = tiempoCoc;
 
 //MODO RECIRCULACION
   recircular();
@@ -334,8 +344,9 @@ void trasvase(){
     tiempoRestante = tiempoActual - tiempoi;                                        //Tiempo que llevamos de trasvase
     if(tiempoRestante > tiempoTrasvase){fin = true;}
   //Control del proceso por orden de la Raspberry
-    String informacionTrasvase = leer();
-    float tiempoTrasvase = desencriptarTiempo (informacionTrasvase);                //Variable del tiempo del proceso en segundos
+    //String informacionTrasvase = leer();
+    //float tiempoTrasvase = desencriptarTiempo (informacionTrasvase);                //Variable del tiempo del proceso en segundos
+    float tiempoTrasvase = tiempoTrans;
     if(tiempoTrasvase == 0.00){fin = true;}
   }while(!fin);
   
@@ -370,11 +381,13 @@ void fermentacion(){
   Serial.println("O4");
   
 //LECTURA DE VARIABLES
-  String informacionFermentacion = leer();
-  float temperaturaFermentacion = desencriptarTemperatura (informacionFermentacion);      //Variable con la temperatura del proceso
-  float tiempoFermentacion = desencriptarTiempo (informacionFermentacion);                //Variable del tiempo del proceso en segundos
-
-//CONTADOR DE TIEMPO
+  //String informacionFermentacion = leer();
+  //float temperaturaFermentacion = desencriptarTemperatura (informacionFermentacion);      //Variable con la temperatura del proceso
+  //float tiempoFermentacion = desencriptarTiempo (informacionFermentacion);                //Variable del tiempo del proceso en segundos
+  float temperaturaFermentacion = tempFermen;
+  float tiempoFermentacion = tiempoFermen;
+  delay(5000);
+/*//CONTADOR DE TIEMPO
   //Tratamiento del tiempo del proceso
     tiempoi = millis();
     tiempoFermentacion = tiempoFermentacion * 1000;                 //Paso del tiempo a milis
@@ -390,11 +403,11 @@ void fermentacion(){
       cronometro = cronometrof - cronometro;
       if(cronometro == 0){
         tiempoEnviar = tiempoRestante/1000;                 //Paso del tiempo a segundos
-        enviarTiempo(tiempoEnviar);
+        enviarTiempo(tiempoEnviar);                         //Esto no hace petar el arduino
         cronometroi = millis();
         cronometrof = 1000 + cronometroi;
       }
-    }while(tiempoActual+1 < tiempof);
+    }while(tiempoActual+1 < tiempof);*/
   
 //PUESTA A CERO FINAL
   tiempoi = 0;
@@ -499,7 +512,7 @@ void leerdatos(int n){
       int longitud = datos.length();
       Serial.println("------------------------------");
 
-    //Procesar datos nombre
+    //Procesar datos nombre Receta
       int pnombre = datos.indexOf("nombre=");
       String nombre = "";
       for (int i = pnombre + 7; i < longitud; i ++){
@@ -509,30 +522,94 @@ void leerdatos(int n){
       Serial.print("Nombre de la cerveza= ");
       Serial.println(nombre);
 
-    //Procesar datos temperatura
+    //Procesar datos de la Temperatura de Maceración
       int ptempMacer = datos.indexOf("tempMacer=");               //Posicion de temp
       String stempMacer = "";
       for (int i = ptempMacer + 10; i < longitud; i ++){
         if (datos[i] == ';') i = longitud;
         else stempMacer += datos[i];
       }
-      float tempMacer = stempMacer.toFloat();
-      Serial.print("Temperatura del proceso= ");
-      Serial.println(tempMacer);
-
-    //Procesar datos tiempo
-      int ptimeMacer = datos.indexOf("timeMacer=");
-      String stimeMacer = "";
-      for (int i = ptimeMacer + 10; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stimeMacer += datos[i];
-      }
-      float timeMacer = stimeMacer.toFloat();
-      Serial.print("Tiempo en Seg del proceso= ");
-      Serial.println(timeMacer);
-    
+      tempMacer = stempMacer.toFloat();
       
 
+    //Procesar datos tiempo la Maceración
+      int ptiempoMacer = datos.indexOf("tiempoMacer=");
+      String stiempoMacer = "";
+      for (int i = ptiempoMacer + 12; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stiempoMacer += datos[i];
+      }
+      tiempoMacer = stiempoMacer.toFloat();
+      
+
+    //Procesar datos de la Temperatura de Cocción
+      int ptempCoc = datos.indexOf("tempCoc=");
+      String stempCoc = "";
+      for (int i = ptempCoc + 8; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stempCoc += datos[i];
+      }
+      tempCoc = stempCoc.toFloat();
+      
+
+    //Procesar datos tiempo de Cocción
+      int ptiempoCoc = datos.indexOf("tiempoCoc=");
+      String stiempoCoc = "";
+      for (int i = ptiempoCoc + 10; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stiempoCoc += datos[i];
+      }
+      tiempoCoc = stiempoCoc.toFloat();
+      
+
+    //Procesar datos tiempo del Transbase
+      int ptiempoTrans = datos.indexOf("tiempoTrans=");
+      String stiempoTrans = "";
+      for (int i = ptiempoTrans + 12; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stiempoTrans += datos[i];
+      }
+      tiempoTrans = stiempoTrans.toFloat();
+      
+
+    //Procesar datos tiempo del Fermentación
+      int ptempFermen = datos.indexOf("tempFermen=");
+      String stempFermen = "";
+      for (int i = ptempFermen + 11; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stempFermen += datos[i];
+      }
+      tempFermen = stempFermen.toFloat();
+      
+
+    //Procesar datos de la Temperatura de Fermentación
+      int ptiempoFermen = datos.indexOf("tiempoFermen=");
+      String stiempoFermen = "";
+      for (int i = ptiempoFermen + 13; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else stiempoFermen += datos[i];
+      }
+      tiempoFermen = stiempoFermen.toFloat();
+      
+
+    //Mostrar información de la receta por Serial
+      //Temperaturas
+        Serial.print("Temperatura del proceso Maceración= ");
+        Serial.println(tempMacer);
+        Serial.print("Temperatura del proceso Cocción= ");
+        Serial.println(tempCoc);
+        Serial.print("Temperatura del proceso de Fermentación= ");
+        Serial.println(tempFermen);
+      //Tiempos en segundos
+        Serial.print("Tiempo en Seg del proceso Maceración= ");
+        Serial.println(tiempoMacer);
+        Serial.print("Tiempo en Seg del proceso Cocción= ");
+        Serial.println(tiempoCoc);
+        Serial.print("Tiempo en Seg del proceso Transbase= ");
+        Serial.println(tiempoTrans);
+        Serial.print("Tiempo en Seg del proceso Fermentación= ");
+        Serial.println(tiempoFermen);
+        
     }else{
 
       Serial.println("La receta no existe o no se ha encontrado");
