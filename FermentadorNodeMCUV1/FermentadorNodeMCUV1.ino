@@ -458,30 +458,22 @@ void fermentacion(){
   //float temperaturaFermentacion = desencriptarTemperatura (informacionFermentacion);      //Variable con la temperatura del proceso
   //float tiempoFermentacion = desencriptarTiempo (informacionFermentacion);                //Variable del tiempo del proceso en segundos
   float temperaturaFermentacion = tempFermen;
-  float tiempoFermentacion = tiempoFermen;
-  delay(5000);
-/*//CONTADOR DE TIEMPO
-  //Tratamiento del tiempo del proceso
-    tiempoi = millis();
-    tiempoFermentacion = tiempoFermentacion * 1000;                 //Paso del tiempo a milis
-    tiempof = tiempoFermentacion + tiempoi;
-  //Control de tiempo para los envios por pantalla
-    cronometroi = millis();
-    cronometrof = 1000 + cronometroi;
+  long tiempoFermentacion = tiempoFermen;
+
+    boolean fin = false;
+    gettime();
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + (tiempoFermen * 2628000);
     do{
-      tiempoActual = millis();
-      cronometro = millis();
-    //Cuenta atras para sacar por pantalla
+      gettime();
       tiempoRestante = tiempof - tiempoActual;
-      cronometro = cronometrof - cronometro;
-      if(cronometro == 0){
-        tiempoEnviar = tiempoRestante/1000;                 //Paso del tiempo a segundos
-        enviarTiempo(tiempoEnviar);                         //Esto no hace petar el arduino
-        cronometroi = millis();
-        cronometrof = 1000 + cronometroi;
-      }
-    }while(tiempoActual+1 < tiempof);*/
-  
+      Serial.print(day(tiempoRestante));     // funcion que obtiene el dia de la fecha completa
+      Serial.print(" dias /");       // caracter barra como separador
+      Serial.print(hour(tiempoRestante));      // funcion que obtiene la hora de la fecha completa
+      Serial.print(":");       // caracter dos puntos como separador
+      Serial.print(minute(tiempoRestante));      // funcion que obtiene los minutos de la fecha completa
+      delay(1000);
+    }while(!fin);
 //PUESTA A CERO FINAL
   tiempoi = 0;
   tiempof = 0;
@@ -682,7 +674,7 @@ void leerdatos(int n){
         Serial.println(tiempoCoc);
         Serial.print("Tiempo en Seg del proceso Transbase= ");
         Serial.println(tiempoTrans);
-        Serial.print("Tiempo en Seg del proceso Fermentación= ");
+        Serial.print("Tiempo en Meses del proceso Fermentación= ");
         Serial.println(tiempoFermen);
     }else{
       Serial.println("La receta no existe");
