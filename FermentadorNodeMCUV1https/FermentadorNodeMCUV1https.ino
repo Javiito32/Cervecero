@@ -252,7 +252,9 @@ void menuinicio(int n){
 }
 
 void receta(){
+  Serial.println("------------------------------");
   Serial.println("Selecciona receta: ");
+  Serial.println("------------------------------");
   pregunta();
   leerdatos(dato);
 }
