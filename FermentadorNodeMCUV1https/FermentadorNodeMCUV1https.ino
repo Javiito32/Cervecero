@@ -118,9 +118,9 @@
   float tiempoEnviar;                         //Tiempo que se envia a la Rasberry en segundos
   float milivoltios;                          //Variable para almacenar los milivoltios
   float celsius;                              //Variable para almacenar los grados
-  int cronometroi;                            //Tiempo inicial para el envio a Rasberry
-  int cronometrof;                            //Tiempo final pare el envio a Rasberry
-  int cronometro;                             //Tiempo actual para el envio a Rasberry
+  //int cronometroi;                            //Tiempo inicial para el envio a Rasberry
+  //int cronometrof;                            //Tiempo final pare el envio a Rasberry
+  //int cronometro;                             //Tiempo actual para el envio a Rasberry
   float tempMacer;                            //Temperatura de maceración de la receta seleccionada
   unsigned long tiempoMacer;                  //Tiempo maceración de la recta selecionada
   float tempCoc;                              //Temperatura de cocción de la receta seleccionada
@@ -129,6 +129,7 @@
   float tempFermen;                           //Temperatura de fermentación de la receta seleccionada
   unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
   unsigned long timeset;                      //Se usa para establecer el tiempo en el RTC
+  bool falloProceso = 0;
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
 
 //Objetos
@@ -178,9 +179,9 @@ void setup(){
   tiempof = 0;
   tiempoActual = 0;
   tiempoRestante = 0;
-  cronometroi = 0;
-  cronometrof = 0;
-  cronometro = 0;
+  //cronometroi = 0;
+  //cronometrof = 0;
+  //cronometro = 0;
 }
 /*
  * CICLO PRINCIPAL
@@ -290,26 +291,8 @@ void gettime(){
   tiempoActual = now.unixtime();
 }
 
-
-
-
-/*  
- *  Funcion para realizar MACERACION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
- *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
- *  del proceso en segundos, acabando la consigna en "."
- *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
- *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
- *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
- *  del tiempo restante del proceso.
- *  Una vez alcanzado el tiempo envia mensaje de fin.  
- *  
- *  Parametros: No lleva parametros
- *  No devuelve nada
- */
 void time_set (){
+  if (WiFi.status() == WL_CONNECTED){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
@@ -335,6 +318,27 @@ void time_set (){
         Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
       }
   }
+ }
+
+
+/*  
+ *  Funcion para realizar MACERACION.
+ *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
+ *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
+ *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
+ *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
+ *  del proceso en segundos, acabando la consigna en "."
+ *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
+ *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
+ *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
+ *  del tiempo restante del proceso.
+ *  Una vez alcanzado el tiempo envia mensaje de fin.  
+ *  
+ *  Parametros: No lleva parametros
+ *  No devuelve nada
+ */
+
+  
 void maceracion (){
 //Confirmacion para RASPBERRY del inicio de proceso de maceracion
   Serial.println("O1");
@@ -359,7 +363,9 @@ void maceracion (){
   digitalWrite(peltier,LOW);
   
 //Envio a RASPBERRY el mensaje de fin de proceso.
-  finProceso(1,0);
+  finProceso(1,falloProceso);
+
+  
   
 }
 
@@ -500,9 +506,9 @@ void fermentacion(){
   tiempof = 0;
   tiempoActual = 0;
   tiempoEnviar = 0;
-  cronometro = 0;
-  cronometroi = 0;
-  cronometrof = 0;
+  //cronometro = 0;
+  //cronometroi = 0;
+  //cronometrof = 0;
   
 //Envio a RASPBERRY el mensaje de fin de proceso.
   finProceso(4,0);
@@ -533,14 +539,28 @@ void recircular(){
 void calentar( float temperaturaProceso, long tiempoProceso){
 //TRATAMIENTO DE LAS VARIABLES
   //Tratamiento de la ventana de temperatura
-    Serial.println(tiempoProceso);
+    Serial.println("------------------------");
+    Serial.print("El proceso dura: ");
+    Serial.print(tiempoProceso);
+    Serial.println(" Minutos");
+    Serial.println("------------------------");
     tmax = temperaturaProceso+anchoVentana;
     tmin = temperaturaProceso-anchoVentana;
     boolean fin = false;
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoProceso * 60);
+    long comprobarCancelacion;
+    comprobarCancelacion = tiempoActual + 5;
     do{
+      if (tiempoActual >= comprobarCancelacion){
+        comprobarCancelacion = tiempoActual + 5;
+        cancelar();
+        if (falloProceso){
+          break;
+        }
+      }
+      
       gettime();
       tiempoRestante = tiempof - tiempoActual;
       //enviarTiempo(tiempoRestante);
@@ -567,9 +587,27 @@ void calentar( float temperaturaProceso, long tiempoProceso){
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
-  cronometro = 0;
-  cronometroi = 0;
-  cronometrof = 0;
+  //cronometro = 0;
+  //cronometroi = 0;
+  //cronometrof = 0;
+}
+
+void cancelar() {
+  if (WiFi.status() == WL_CONNECTED){
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    http.begin("https://192.168.1.150/arduino/fallo.php");  // Request destination.
+    int httpCode = http.GET(); // Send the request.
+      if (httpCode > 0) {
+        String stringcancelar = http.getString();
+        int cancelar = stringcancelar.toInt();
+        if (cancelar == 1){
+          falloProceso = 1;
+          http.end();
+        }
+    }
+   }
 }
 
 /*
@@ -718,22 +756,6 @@ void leerdatos(int n){
 
 
 /*
- * Metodo enviarTiempo.
- * Convierte el tiempo pasado como parametro a un String que muestra
- * por el puerto Serie (para ser recibido por la Rasberry)
- * 
- * Parametros: Tiempo
- * No devuelve nada
- */
-void enviarTiempo (long t){
-//Variables locales
-  Serial.print("Quedan: ");
-  Serial.print(t);
-  Serial.println(" Segundos");
-}
-
-
-/*
  * Metodo para enviar el final del proceso con errores.
  * Envia un mensaje a la Rasberry con los errores del proceso.
  * 
@@ -741,14 +763,25 @@ void enviarTiempo (long t){
  *             error Representa el numero de error (0 si no hay)
  * No devuelve nada
  */
-void finProceso (int dato,int error){
+void finProceso (int proceso,bool error){
 //Variables locales
   String mensaje = "O";
   
 //Conversion a String
-  mensaje.concat(dato);
+  mensaje.concat(proceso);
   mensaje.concat("F");
   mensaje.concat(error);
+  if (falloProceso){
+    if (WiFi.status() == WL_CONNECTED) {
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    http.begin(*client, "https://192.168.1.150/arduino/fallo.php?reset=1");
+    http.GET();
+    http.end();
+  }
+  falloProceso = 0;
+ }
   
 //Envia el string por a la Raspberry
   Serial.println(mensaje);
