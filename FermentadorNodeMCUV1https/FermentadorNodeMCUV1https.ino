@@ -90,6 +90,7 @@
   #include <Wire.h>                           // incluye libreria para interfaz I2C
   #include <RTClib.h>                         // incluye libreria para el manejo del modulo RTC
   #include <TimeLib.h>
+  
 //LAYOUT Pines
   const int pinSonda = A0;                    //Sonda de la temperatura
   const int resis = D0;                       //Resistencia para calentar               
@@ -109,8 +110,8 @@
   const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
   int sensorTemperatura;                      //Variable que almacen la lectura de la sonda
   int dato;                                   //Dato leido para entrar el menu
-  float tmax;                                 //Temperatura maxima para los procesos
-  float tmin;                                 //Temperatura minima para los procesos
+  //float tmax;                                 //Temperatura maxima para los procesos
+  //float tmin;                                 //Temperatura minima para los procesos
   unsigned long tiempoi;                      //Tiempo inicial para los procesos en seg
   unsigned long tiempof;                      //Tiempo final para los procesos en seg
   unsigned long tiempoActual;                 //Tiempo actual del proceso en seg
@@ -130,6 +131,8 @@
   unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
   unsigned long timeset;                      //Se usa para establecer el tiempo en el RTC
   bool falloProceso = 0;
+  long tiempoCancelacion;
+  String procesoActual;
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
 
 //Objetos
@@ -173,8 +176,8 @@ void setup(){
   pinMode(reserva,OUTPUT);
   
 //Puesta a cero inicial de las variables de trabajo
-  tmax = 0;
-  tmin = 0;
+  //tmax = 0;
+  //tmin = 0;
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
@@ -187,7 +190,8 @@ void setup(){
  * CICLO PRINCIPAL
  * Indicamos a la Raspberry que hemos arrancado. 
  * Leemos datos en bucle hasta entrar en un proceso.
- */
+*/
+  
 
 void loop(){
   
@@ -207,8 +211,9 @@ void pregunta(){
     client->setInsecure();
     http.begin(*client, "https://192.168.1.150/arduino/menu.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
-      if (httpCode > 0) {
+      if (httpCode == 200 || httpCode == 201) {
         String datoString = http.getString();
+        http.end();
         dato = datoString.toInt();
         //Serial.println(dato);
         http.end();
@@ -218,7 +223,10 @@ void pregunta(){
           http.end();
           break;
         }
+        }else{
+          Serial.println("El servidor no responde");
         }
+        
       }
   }
 }
@@ -298,7 +306,7 @@ void time_set (){
     client->setInsecure();
     http.begin("https://192.168.1.150/arduino/time.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
-      if (httpCode > 0) {
+      if (httpCode == 200 || httpCode == 201) {
         String stringtime = http.getString();
         http.end();
         timeset = (long) strtol(stringtime.c_str(),NULL,0);
@@ -342,6 +350,7 @@ void time_set (){
 void maceracion (){
 //Confirmacion para RASPBERRY del inicio de proceso de maceracion
   Serial.println("O1");
+  procesoActual = "Maceración";
   
 //LECTURA DE VARIABLES
   //String informacionMaceracion = leer();
@@ -363,8 +372,8 @@ void maceracion (){
   digitalWrite(peltier,LOW);
   
 //Envio a RASPBERRY el mensaje de fin de proceso.
-  finProceso(1,falloProceso);
-
+  finProceso(procesoActual,falloProceso);
+  logInfo(procesoActual, "Fin");
   
   
 }
@@ -388,6 +397,7 @@ void maceracion (){
 void coccion (){
 //Confirmacion para RASPBERRY del inicio de proceso de maceracion
   Serial.println("O2");
+  procesoActual = "Cocción";
   
 //LECTURA DE VARIABLES
   //String informacionCoccion = leer();
@@ -409,7 +419,8 @@ void coccion (){
   digitalWrite(bombaFrio,LOW);
   digitalWrite(peltier,LOW);
 //Envio a RASPBERRY el mensaje de fin de proceso.
-  finProceso(2,0);
+  finProceso(procesoActual,falloProceso);
+  logInfo(procesoActual, "Fin");
 }
 
 /*
@@ -426,6 +437,7 @@ void trasvase(){
   boolean fin = false;
 //Confirmacion para RASPBERRY del inicio de proceso de trasvase
   Serial.println("O3");
+  procesoActual = "Transvase";
   
 //Iniciamos el tiempo
   gettime();
@@ -460,7 +472,8 @@ void trasvase(){
   tiempoActual = 0;
   
 //Envio a RASPBERRY el mensaje de fin de proceso.
-  finProceso(3,0);
+  finProceso(procesoActual,falloProceso);
+  logInfo(procesoActual, "Fin");
 }
 
 
@@ -479,6 +492,8 @@ void trasvase(){
 void fermentacion(){
 //Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
+  procesoActual = "Fermentación";
+  logInfo(procesoActual, "Inicio");
   
 //LECTURA DE VARIABLES
   //String informacionFermentacion = leer();
@@ -491,27 +506,42 @@ void fermentacion(){
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoFermen * 2628000);
+    long tiempoCancelacion = tiempoActual + 5;
+    long tiempoMtiempo = tiempoActual + 60;
     do{
       gettime();
       tiempoRestante = tiempof - tiempoActual;
-      Serial.print(day(tiempoRestante));     // funcion que obtiene el dia de la fecha completa
+     //Para cancelar
+      if (tiempoActual >= tiempoCancelacion){
+        tiempoCancelacion = tiempoActual + 5;
+        cancelar();
+        if (falloProceso){
+          break;
+        }
+      }
+      if (tiempoActual >= tiempoMtiempo){
+        tiempoMtiempo = tiempoActual + 60;
+        Serial.print(day(tiempoRestante));     // funcion que obtiene el dia de la fecha completa
       Serial.print(" dias /");       // caracter barra como separador
       Serial.print(hour(tiempoRestante));      // funcion que obtiene la hora de la fecha completa
       Serial.print(":");       // caracter dos puntos como separador
       Serial.println(minute(tiempoRestante));      // funcion que obtiene los minutos de la fecha completa
-      delay(60000);
+      }
+      if (tiempoRestante <= 0) fin = true;
+      delay(1000);
     }while(!fin);
 //PUESTA A CERO FINAL
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
-  tiempoEnviar = 0;
+  //tiempoEnviar = 0;
   //cronometro = 0;
   //cronometroi = 0;
   //cronometrof = 0;
   
 //Envio a RASPBERRY el mensaje de fin de proceso.
-  finProceso(4,0);
+  finProceso(procesoActual,falloProceso);
+  logInfo(procesoActual, "Fin");
 }
 
 
@@ -544,17 +574,16 @@ void calentar( float temperaturaProceso, long tiempoProceso){
     Serial.print(tiempoProceso);
     Serial.println(" Minutos");
     Serial.println("------------------------");
-    tmax = temperaturaProceso+anchoVentana;
-    tmin = temperaturaProceso-anchoVentana;
+    float tmax = temperaturaProceso+anchoVentana;
+    float tmin = temperaturaProceso-anchoVentana;
     boolean fin = false;
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoProceso * 60);
-    long comprobarCancelacion;
-    comprobarCancelacion = tiempoActual + 5;
+    long tiempoCancelacion = tiempoActual + 5;
     do{
-      if (tiempoActual >= comprobarCancelacion){
-        comprobarCancelacion = tiempoActual + 5;
+      if (tiempoActual >= tiempoCancelacion){
+        tiempoCancelacion = tiempoActual + 5;
         cancelar();
         if (falloProceso){
           break;
@@ -597,15 +626,17 @@ void cancelar() {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    http.begin("https://192.168.1.150/arduino/fallo.php");  // Request destination.
+    http.begin(*client,"https://192.168.1.150/arduino/fallo.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
-      if (httpCode > 0) {
+      if (httpCode == 200 || httpCode == 201) {
         String stringcancelar = http.getString();
         int cancelar = stringcancelar.toInt();
         if (cancelar == 1){
           falloProceso = 1;
           http.end();
         }
+    }else{
+      Serial.print("El servidor no responde");
     }
    }
 }
@@ -621,19 +652,21 @@ void cancelar() {
 
 void leerdatos(int n){
   if (WiFi.status() == WL_CONNECTED) {
-
-    HTTPClient http;  // Object of the class HTTPClient.
-    String ppeticion = "http://192.168.1.150/arduino/pedirdatos.php?id=";
-    String peticion = ppeticion + n;
+    
+    String peticion = "https://192.168.1.150/arduino/pedirdatos.php?id=";
+    peticion = peticion + n;
     Serial.println("------------------------------");
     Serial.print("Petición al servidor: ");
     Serial.println(peticion);
-    http.begin(peticion);  // Request destination.
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    http.begin(*client,peticion);  // Request destination.
     int httpCode = http.GET(); // Send the request.
-
-    if (httpCode > 0) { //Check the returning code
-
+    Serial.println(httpCode);
+    if (httpCode == 200 || httpCode == 201) { //Check the returning code
       String datos = http.getString(); 
+      http.end();   //Close connection
       Serial.println("------------------------------");                           // Obtiene la string
       Serial.print("String recibida: ");
       Serial.println(datos);
@@ -745,11 +778,10 @@ void leerdatos(int n){
     }
     }else{
 
-      Serial.println("Error de conexión");
+      Serial.println("El servidor no responde");
 
     }
 
-    http.end();   //Close connection
 }
 }
 
@@ -763,14 +795,15 @@ void leerdatos(int n){
  *             error Representa el numero de error (0 si no hay)
  * No devuelve nada
  */
-void finProceso (int proceso,bool error){
+void finProceso (String proceso,bool error){
 //Variables locales
-  String mensaje = "O";
+  String mensaje = "Proceso ";
   
 //Conversion a String
   mensaje.concat(proceso);
-  mensaje.concat("F");
+  mensaje.concat(" Fallo ");
   mensaje.concat(error);
+
   if (falloProceso){
     if (WiFi.status() == WL_CONNECTED) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
@@ -779,10 +812,15 @@ void finProceso (int proceso,bool error){
     http.begin(*client, "https://192.168.1.150/arduino/fallo.php?reset=1");
     http.GET();
     http.end();
+    falloProceso = 0;
   }
-  falloProceso = 0;
- }
+  }
+  
   
 //Envia el string por a la Raspberry
   Serial.println(mensaje);
+}
+
+void logInfo(String proceso,String Info) {
+  
 }
