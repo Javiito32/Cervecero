@@ -357,6 +357,7 @@ void maceracion (){
 //Confirmacion para RASPBERRY del inicio de proceso de maceracion
   Serial.println("O1");
   procesoActual = "Maceración";
+  logInfo(procesoActual, "Inicio");
   
 //LECTURA DE VARIABLES
   //String informacionMaceracion = leer();
@@ -404,6 +405,7 @@ void coccion (){
 //Confirmacion para RASPBERRY del inicio de proceso de maceracion
   Serial.println("O2");
   procesoActual = "Cocción";
+  logInfo(procesoActual, "Inicio");
   
 //LECTURA DE VARIABLES
   //String informacionCoccion = leer();
@@ -444,6 +446,7 @@ void trasvase(){
 //Confirmacion para RASPBERRY del inicio de proceso de trasvase
   Serial.println("O3");
   procesoActual = "Transvase";
+  logInfo(procesoActual, "Inicio");
   
 //Iniciamos el tiempo
   gettime();
@@ -828,5 +831,16 @@ void finProceso (String proceso,bool error){
 }
 
 void logInfo(String proceso,String Info) {
-  
+  if (WiFi.status() == WL_CONNECTED) {
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    String peticion = "https://192.168.1.150/arduino/log.php?proceso=";
+    peticion = peticion + proceso;
+    peticion = peticion + "&info=";
+    peticion = peticion + Info;
+    http.begin(*client, peticion);
+    http.GET();
+    http.end();
+  }
 }
