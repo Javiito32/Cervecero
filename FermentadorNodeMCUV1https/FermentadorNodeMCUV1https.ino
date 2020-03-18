@@ -83,8 +83,10 @@
 /*
  * PINES Y VARIABLES
  */
+  #include <Arduino.h>
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
+  #include <WiFiClientSecureBearSSL.h>
   #include <Wire.h>                           // incluye libreria para interfaz I2C
   #include <RTClib.h>                         // incluye libreria para el manejo del modulo RTC
   #include <TimeLib.h>
@@ -127,6 +129,7 @@
   float tempFermen;                           //Temperatura de fermentación de la receta seleccionada
   unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
   unsigned long timeset;                      //Se usa para establecer el tiempo en el RTC
+  //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
 
 //Objetos
   HTTPClient http;                            // Object of the class HTTPClient.
@@ -137,6 +140,7 @@
  * Configuramos los pines. Puesta a cero inicial.
  */
 void setup(){
+  
 //Inicializamos el puerto serie
   Serial.begin(115200);
   delay(10);
@@ -178,7 +182,6 @@ void setup(){
   cronometrof = 0;
   cronometro = 0;
 }
-
 /*
  * CICLO PRINCIPAL
  * Indicamos a la Raspberry que hemos arrancado. 
@@ -186,7 +189,7 @@ void setup(){
  */
 
 void loop(){
-
+  
 //Mensaje inicial
   Serial.println("------------------------------");
   Serial.println("Ready");
@@ -198,14 +201,20 @@ void pregunta(){
   while(true){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
-    http.begin("http://192.168.1.150/arduino/menu.php");  // Request destination.
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    http.begin(*client, "https://192.168.1.150/arduino/menu.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode > 0) {
         String datoString = http.getString();
         dato = datoString.toInt();
+        //Serial.println(dato);
+        http.end();
         if (dato != 0){
-          http.begin("http://192.168.1.150/arduino/menu.php?reset=1");
+          http.begin(*client, "https://192.168.1.150/arduino/menu.php?reset=1");
           http.GET();
+          http.end();
           break;
         }
         }
@@ -242,27 +251,18 @@ void receta(){
 void ajustes(){
   Serial.println("Ajustes");
   pregunta();
-  menuajustes(dato);
+       if (dato==1) { time_set();}
+  else if (dato==2) { showtime();}
+  else Serial.println("La accion deseada no existe");
 }
 
 void preparar(){
   Serial.println("Selecciona proceso: ");
   pregunta();
-  menuproceso(dato);
-}
-
-void menuajustes(int n){
-      if (n==1) { time_set();}
-  else if (n==2){ showtime();}
-  else Serial.println("La accion deseada no existe");
-}
-
-
-void menuproceso(int n){ 
-       if (n==1) { maceracion(); }
-  else if (n==2) { coccion();}
-  else if (n==3) { trasvase();}
-  else if (n==4) { fermentacion();}
+       if (dato==1) { maceracion(); }
+  else if (dato==2) { coccion();}
+  else if (dato==3) { trasvase();}
+  else if (dato==4) { fermentacion();}
   else Serial.println("Proceso no existente");
 }
 
@@ -270,6 +270,19 @@ void showtime(){
   DateTime now = rtc.now();
   tiempoActual = now.unixtime();
   Serial.println(tiempoActual);
+  DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
+            // DateTime y asigna a variable fecha
+        Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
+        Serial.print("/");       // caracter barra como separador
+        Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
+        Serial.print("/");       // caracter barra como separador
+        Serial.print(fecha.year());      // funcion que obtiene el año de la fecha completa
+        Serial.print(" ");       // caracter espacio en blanco como separador
+        Serial.print(fecha.hour());      // funcion que obtiene la hora de la fecha completa
+        Serial.print(":");       // caracter dos puntos como separador
+        Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
+        Serial.print(":");       // caracter dos puntos como separador
+        Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
 }
 
 void gettime(){
@@ -297,10 +310,14 @@ void gettime(){
  *  No devuelve nada
  */
 void time_set (){
-    http.begin("http://192.168.1.150/arduino/time.php");  // Request destination.
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    http.begin("https://192.168.1.150/arduino/time.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode > 0) {
         String stringtime = http.getString();
+        http.end();
         timeset = (long) strtol(stringtime.c_str(),NULL,0);
         rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
         DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
@@ -522,11 +539,16 @@ void calentar( float temperaturaProceso, long tiempoProceso){
     boolean fin = false;
     gettime();
     tiempoi = tiempoActual;
-    tiempof = tiempoi + tiempoProceso;
+    tiempof = tiempoi + (tiempoProceso * 60);
     do{
       gettime();
       tiempoRestante = tiempof - tiempoActual;
-      enviarTiempo(tiempoRestante);
+      //enviarTiempo(tiempoRestante);
+      Serial.print("Quedan ");
+      Serial.print(minute(tiempoRestante));
+      Serial.print(" Min y ");
+      Serial.print(second(tiempoRestante));
+      Serial.println(" Segundos");
   //Tratamiento de la temperatura
     sensorTemperatura = analogRead(pinSonda);
     milivoltios = (sensorTemperatura / 1023.0) * 3300;
@@ -672,11 +694,11 @@ void leerdatos(int n){
         Serial.print("Temperatura del proceso de Fermentación= ");
         Serial.println(tempFermen);
       //Tiempos en segundos
-        Serial.print("Tiempo en Seg del proceso Maceración= ");
+        Serial.print("Tiempo en Minutos del proceso Maceración= ");
         Serial.println(tiempoMacer);
-        Serial.print("Tiempo en Seg del proceso Cocción= ");
+        Serial.print("Tiempo en Segundos del proceso Cocción= ");
         Serial.println(tiempoCoc);
-        Serial.print("Tiempo en Seg del proceso Transbase= ");
+        Serial.print("Tiempo en Segundos del proceso Transbase= ");
         Serial.println(tiempoTrans);
         Serial.print("Tiempo en Meses del proceso Fermentación= ");
         Serial.println(tiempoFermen);
