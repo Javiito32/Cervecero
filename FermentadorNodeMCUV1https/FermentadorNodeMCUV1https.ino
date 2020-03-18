@@ -266,6 +266,10 @@ void ajustes(){
 }
 
 void preparar(){
+  if (tiempoMacer == 0){
+    Serial.println("Primero selecciona una receta");
+    return;
+  }
   Serial.println("Selecciona proceso: ");
   pregunta();
        if (dato==1) { maceracion(); }
@@ -507,7 +511,7 @@ void fermentacion(){
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoFermen * 2628000);
     long tiempoCancelacion = tiempoActual + 5;
-    long tiempoMtiempo = tiempoActual + 60;
+    long tiempoMtiempo = tiempoActual;
     do{
       gettime();
       tiempoRestante = tiempof - tiempoActual;
