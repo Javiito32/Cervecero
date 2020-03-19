@@ -92,36 +92,27 @@
   #include <TimeLib.h>
   
 //LAYOUT Pines
-  const int pinSonda = A0;                    //Sonda de la temperatura
-  const int resis = D0;                       //Resistencia para calentar               
-  const int bombaRecirculacion = D3;          //Bomba de recirculacion 230V
-  const int bombaTrasvase = D4;               //Bomba trasvase 230V
-  const int bombaFrio = D5;                   //Bomba refrigeracion 230V
-  const int peltier = D6;                     //Celulas Peltier
-  const int reserva = D7;                     //Este cable se deja en reserva, era para el RELE DE ESTADO SOLIDO que no se usa
+  #define pinSonda A0                    //Sonda de la temperatura
+  #define resis D0                       //Resistencia para calentar               
+  #define bombaRecirculacion D3          //Bomba de recirculacion 230V
+  #define bombaTrasvase D4               //Bomba trasvase 230V
+  #define bombaFrio D5                   //Bomba refrigeracion 230V
+  #define peltier D6                     //Celulas Peltier
+  #define sensorLiquido D7               //Sensor de liquido en tubo
   
 //Variables configurables
   const float anchoVentana = 1;               //Rango para la temperatura
   const float tiempoTrasvase = 210000;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
   const int retrasoBombas = 1000;             //Tiempo de retraso entre el arranque de la bomba frio y el resto
 
-//Variables de trabajo
+//Variables globales
   const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
   const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
-  int sensorTemperatura;                      //Variable que almacen la lectura de la sonda
   int dato;                                   //Dato leido para entrar el menu
-  //float tmax;                                 //Temperatura maxima para los procesos
-  //float tmin;                                 //Temperatura minima para los procesos
   unsigned long tiempoi;                      //Tiempo inicial para los procesos en seg
   unsigned long tiempof;                      //Tiempo final para los procesos en seg
   unsigned long tiempoActual;                 //Tiempo actual del proceso en seg
   long tiempoRestante;                        //Tiempo que falta para el final de los procesos en seg
-  float tiempoEnviar;                         //Tiempo que se envia a la Rasberry en segundos
-  float milivoltios;                          //Variable para almacenar los milivoltios
-  float celsius;                              //Variable para almacenar los grados
-  //int cronometroi;                            //Tiempo inicial para el envio a Rasberry
-  //int cronometrof;                            //Tiempo final pare el envio a Rasberry
-  //int cronometro;                             //Tiempo actual para el envio a Rasberry
   float tempMacer;                            //Temperatura de maceración de la receta seleccionada
   unsigned long tiempoMacer;                  //Tiempo maceración de la recta selecionada
   float tempCoc;                              //Temperatura de cocción de la receta seleccionada
@@ -129,15 +120,26 @@
   unsigned long tiempoTrans;                  //Tiempo transvase de la recta selecionada
   float tempFermen;                           //Temperatura de fermentación de la receta seleccionada
   unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
-  unsigned long timeset;                      //Se usa para establecer el tiempo en el RTC
-  bool falloProceso = 0;
-  long tiempoCancelacion;
-  String procesoActual;
+  bool falloProceso = 0;                      //Guarda si falla el tiempo
+  unsigned char procesoActual;
+  unsigned char estado;
+  //int sensorTemperatura;                      //Variable que almacen la lectura de la sonda
+  //float tmax;                                 //Temperatura maxima para los procesos
+  //float tmin;                                 //Temperatura minima para los procesos
+  //float tmax;                                 //Temperatura maxima para los procesos
+  //float tmin;                                 //Temperatura minima para los procesos
+  //long tiempoCancelacion;
+  //float tiempoEnviar;                         //Tiempo que se envia a la Rasberry en segundos
+  //float milivoltios;                          //Variable para almacenar los milivoltios
+  //float celsius;                              //Variable para almacenar los grados
+  //int cronometroi;                            //Tiempo inicial para el envio a Rasberry
+  //int cronometrof;                            //Tiempo final pare el envio a Rasberry
+  //int cronometro;                             //Tiempo actual para el envio a Rasberry
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
-
+    
 //Objetos
-  HTTPClient http;                            // Object of the class HTTPClient.
-  RTC_DS3231 rtc;                             // crea objeto del tipo RTC_DS3231
+  HTTPClient http;                              // Object of the class HTTPClient.
+  RTC_DS3231 rtc;                               // crea objeto del tipo RTC_DS3231
 
 /*
  * CICLO DE ARRANQUE
@@ -173,15 +175,15 @@ void setup(){
   pinMode(bombaTrasvase,OUTPUT);
   pinMode(bombaFrio,OUTPUT);
   pinMode(peltier,OUTPUT);
-  pinMode(reserva,OUTPUT);
+  pinMode(sensorLiquido,INPUT);
   
 //Puesta a cero inicial de las variables de trabajo
-  //tmax = 0;
-  //tmin = 0;
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
   tiempoRestante = 0;
+  //tmax = 0;
+  //tmin = 0;
   //cronometroi = 0;
   //cronometrof = 0;
   //cronometro = 0;
@@ -247,7 +249,8 @@ void pregunta(){
 void menuinicio(int n){ 
        if (n==1) { receta();}
   else if (n==2) { ajustes();}
-  else if (n==3) { preparar();}
+  else if (n==3) { procesos();}
+  else if (n==4) { limpieza();}
   else Serial.println("La accion deseada no existe");
 }
 
@@ -267,7 +270,7 @@ void ajustes(){
   else Serial.println("La accion deseada no existe");
 }
 
-void preparar(){
+void procesos(){
   if (tiempoMacer == 0){
     Serial.println("Primero selecciona una receta");
     return;
@@ -279,6 +282,14 @@ void preparar(){
   else if (dato==3) { trasvase();}
   else if (dato==4) { fermentacion();}
   else Serial.println("Proceso no existente");
+}
+
+void limpieza(){
+    Serial.println("------------------------");
+    Serial.println("Se ha iniciado la limpieza");
+    Serial.println("    Por favor, espere");
+    Serial.println("------------------------");
+    trasvase();
 }
 
 void showtime(){
@@ -315,7 +326,7 @@ void time_set (){
       if (httpCode == 200 || httpCode == 201) {
         String stringtime = http.getString();
         http.end();
-        timeset = (long) strtol(stringtime.c_str(),NULL,0);
+        unsigned long timeset = (long) strtol(stringtime.c_str(),NULL,0);
         rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
         DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
             // DateTime y asigna a variable fecha
@@ -354,17 +365,15 @@ void time_set (){
 
   
 void maceracion (){
-//Confirmacion para RASPBERRY del inicio de proceso de maceracion
+//Confirmacion del inicio de proceso de maceracion
   Serial.println("O1");
-  procesoActual = "Maceración";
-  logInfo(procesoActual, "Inicio");
+  procesoActual = 1;
+  estado = 1;
+  logInfo(procesoActual,estado);
   
 //LECTURA DE VARIABLES
-  //String informacionMaceracion = leer();
-  //float temperaturaMaceracion = desencriptarTemperatura (informacionMaceracion);      //Variable con la temperatura del proceso
-  //float tiempoMaceracion = desencriptarTiempo (informacionMaceracion);                //Variable del tiempo del proceso en segundos
-  float temperaturaMaceracion = tempMacer;
-  float tiempoMaceracion = tiempoMacer;
+  float temperaturaMaceracion = tempMacer;                          //Variable con la temperatura del proceso
+  float tiempoMaceracion = tiempoMacer;                             //Variable del tiempo del proceso en minutos
 //MODO RECIRCULACION
   recircular();
   
@@ -378,10 +387,11 @@ void maceracion (){
   digitalWrite(bombaFrio,LOW);
   digitalWrite(peltier,LOW);
   
-//Envio a RASPBERRY el mensaje de fin de proceso.
+//Envio mensaje de fin de proceso.
+  if (falloProceso) estado = 3;
+  else estado = 2;
+  logInfo(procesoActual,estado);
   finProceso(procesoActual,falloProceso);
-  logInfo(procesoActual, "Fin");
-  
   
 }
 
@@ -401,18 +411,16 @@ void maceracion (){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
-void coccion (){
-//Confirmacion para RASPBERRY del inicio de proceso de maceracion
+void coccion (){ 
+//Confirmacion del inicio de proceso de cocción
   Serial.println("O2");
-  procesoActual = "Cocción";
-  logInfo(procesoActual, "Inicio");
+  procesoActual = 2;
+  estado = 1;
+  logInfo(procesoActual,estado);
   
-//LECTURA DE VARIABLES
-  //String informacionCoccion = leer();
-  //float temperaturaCoccion = desencriptarTemperatura (informacionCoccion);      //Variable con la temperatura del proceso
-  //float tiempoCoccion = desencriptarTiempo (informacionCoccion);                //Variable del tiempo del proceso en segundos
-  float temperaturaCoccion = tempCoc;
-  float tiempoCoccion = tiempoCoc;
+//LECTURA DE VARIABLES            
+  float temperaturaCoccion = tempCoc;                         //Variable con la temperatura del proceso
+  float tiempoCoccion = tiempoCoc;                            //Variable del tiempo del proceso en minutos
 
 //MODO RECIRCULACION
   recircular();
@@ -426,9 +434,11 @@ void coccion (){
   digitalWrite(bombaTrasvase,LOW);
   digitalWrite(bombaFrio,LOW);
   digitalWrite(peltier,LOW);
-//Envio a RASPBERRY el mensaje de fin de proceso.
+//Envio mensaje de fin de proceso.
+  if (falloProceso) estado = 3;
+  else estado = 2;
+  logInfo(procesoActual,estado);
   finProceso(procesoActual,falloProceso);
-  logInfo(procesoActual, "Fin");
 }
 
 /*
@@ -442,14 +452,12 @@ void coccion (){
  *  No devuelve nada
  */
 void trasvase(){
-  boolean fin = false;
-//Confirmacion para RASPBERRY del inicio de proceso de trasvase
+//Confirmacion del inicio de proceso de trasvase
   Serial.println("O3");
-  procesoActual = "Transvase";
-  logInfo(procesoActual, "Inicio");
+  procesoActual = 3;
+  estado = 1;
+  logInfo(procesoActual,estado);
   
-//Iniciamos el tiempo
-  gettime();
   
 //Trasvase ON
   digitalWrite(bombaFrio,HIGH);
@@ -457,32 +465,45 @@ void trasvase(){
   digitalWrite(bombaRecirculacion,LOW);
   digitalWrite(bombaTrasvase,HIGH);
   digitalWrite(peltier,HIGH);
-  
-//Lectura de orden de fin
-  do{
-  //Control del proceso por tiempo limite de seguridad
-    tiempoActual = millis();
-    tiempoRestante = tiempoActual - tiempoi;                                        //Tiempo que llevamos de trasvase
-    if(tiempoRestante > tiempoTrasvase){fin = true;}
-  //Control del proceso por orden de la Raspberry
-    //String informacionTrasvase = leer();
-    //float tiempoTrasvase = desencriptarTiempo (informacionTrasvase);                //Variable del tiempo del proceso en segundos
-    float tiempoTrasvase = tiempoTrans;
-    if(tiempoTrasvase == 0.00){fin = true;}
-  }while(!fin);
-  
+
+//Control de tiempo y sensor de liquido
+    Serial.println("------------------------");
+    Serial.print("El tiempo de seguridad es de: ");
+    Serial.print("10");
+    Serial.println(" Minutos");
+    Serial.println("------------------------");
+    gettime();
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + (10 * 60);
+    long tiempoCancelacion = tiempoActual + 5;
+    do{
+      gettime();
+      tiempoRestante = tiempof - tiempoActual;
+      if (tiempoActual >= tiempoCancelacion){
+        tiempoCancelacion = tiempoActual + 5;
+        comprobarCancelar();
+        if (falloProceso){
+          break;
+        }
+      }
+      /*Serial.print("Quedan ");
+      Serial.print(minute(tiempoRestante));
+      Serial.print(" Min y ");
+      Serial.print(second(tiempoRestante));
+      Serial.println(" Segundos");*/
+      if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
+    delay(1000);
+  }while(true);
 //Trasvase OFF  
   digitalWrite(bombaTrasvase,LOW);
   digitalWrite(peltier,LOW);
   digitalWrite(bombaFrio,LOW);
   
-//Puesta a cero de las variables
-  tiempoi = 0;
-  tiempoActual = 0;
-  
-//Envio a RASPBERRY el mensaje de fin de proceso.
+//Envio mensaje de fin de proceso.
+  if (falloProceso) estado = 3;
+  else estado = 2;
+  logInfo(procesoActual,estado);
   finProceso(procesoActual,falloProceso);
-  logInfo(procesoActual, "Fin");
 }
 
 
@@ -501,8 +522,9 @@ void trasvase(){
 void fermentacion(){
 //Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
-  procesoActual = "Fermentación";
-  logInfo(procesoActual, "Inicio");
+  procesoActual = 4;
+  estado = 1;
+  logInfo(procesoActual,estado);
   
 //LECTURA DE VARIABLES
   //String informacionFermentacion = leer();
@@ -510,35 +532,33 @@ void fermentacion(){
   //float tiempoFermentacion = desencriptarTiempo (informacionFermentacion);                //Variable del tiempo del proceso en segundos
   float temperaturaFermentacion = tempFermen;
   long tiempoFermentacion = tiempoFermen;
-
-    boolean fin = false;
+  gettime();
+  tiempoi = tiempoActual;
+  tiempof = tiempoi + (tiempoFermen * 2628000);
+  long tiempoCancelacion = tiempoActual + 5;
+  long tiempoMtiempo = tiempoActual;
+  do{
     gettime();
-    tiempoi = tiempoActual;
-    tiempof = tiempoi + (tiempoFermen * 2628000);
-    long tiempoCancelacion = tiempoActual + 5;
-    long tiempoMtiempo = tiempoActual;
-    do{
-      gettime();
-      tiempoRestante = tiempof - tiempoActual;
-     //Para cancelar
-      if (tiempoActual >= tiempoCancelacion){
-        tiempoCancelacion = tiempoActual + 5;
-        cancelar();
-        if (falloProceso){
-          break;
-        }
+    tiempoRestante = tiempof - tiempoActual;
+    
+    if (tiempoActual >= tiempoCancelacion){
+      tiempoCancelacion = tiempoActual + 5;
+      comprobarCancelar();
+      if (falloProceso){
+        break;
       }
-      if (tiempoActual >= tiempoMtiempo){
-        tiempoMtiempo = tiempoActual + 60;
-        Serial.print(day(tiempoRestante));     // funcion que obtiene el dia de la fecha completa
+    }
+    if (tiempoActual >= tiempoMtiempo){
+      tiempoMtiempo = tiempoActual + 60;
+      Serial.print(day(tiempoRestante));     // funcion que obtiene el dia de la fecha completa
       Serial.print(" dias /");       // caracter barra como separador
       Serial.print(hour(tiempoRestante));      // funcion que obtiene la hora de la fecha completa
       Serial.print(":");       // caracter dos puntos como separador
       Serial.println(minute(tiempoRestante));      // funcion que obtiene los minutos de la fecha completa
-      }
-      if (tiempoRestante <= 0) fin = true;
+    }
+    if (tiempoRestante <= 0) break;
       delay(1000);
-    }while(!fin);
+  }while(true);
 //PUESTA A CERO FINAL
   tiempoi = 0;
   tiempof = 0;
@@ -548,10 +568,13 @@ void fermentacion(){
   //cronometroi = 0;
   //cronometrof = 0;
   
-//Envio a RASPBERRY el mensaje de fin de proceso.
+//Envio mensaje de fin de proceso.
+  if (falloProceso) estado = 3;
+  else estado = 2;
+  logInfo(procesoActual,estado);
   finProceso(procesoActual,falloProceso);
-  logInfo(procesoActual, "Fin");
 }
+
 
 
 /*
@@ -585,15 +608,14 @@ void calentar( float temperaturaProceso, long tiempoProceso){
     Serial.println("------------------------");
     float tmax = temperaturaProceso+anchoVentana;
     float tmin = temperaturaProceso-anchoVentana;
-    boolean fin = false;
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoProceso * 60);
     long tiempoCancelacion = tiempoActual + 5;
     do{
-      if (tiempoActual >= tiempoCancelacion){
+      if (tiempoActual >= tiempoCancelacion && tiempoCancelacion <= tiempof){
         tiempoCancelacion = tiempoActual + 5;
-        cancelar();
+        comprobarCancelar();
         if (falloProceso){
           break;
         }
@@ -608,16 +630,15 @@ void calentar( float temperaturaProceso, long tiempoProceso){
       Serial.print(second(tiempoRestante));
       Serial.println(" Segundos");
   //Tratamiento de la temperatura
-    sensorTemperatura = analogRead(pinSonda);
-    milivoltios = (sensorTemperatura / 1023.0) * 3300;
-    celsius = milivoltios / 10;
- 
+    int sensorTemperatura = analogRead(pinSonda);
+    float milivoltios = (sensorTemperatura / 1023.0) * 3300;
+    float celsius = milivoltios / 10;
   //Mantenimiento de la ventana de temperatura
     if(celsius > tmax){digitalWrite(resis,LOW);}
     if(celsius < tmin){digitalWrite(resis,HIGH);}
-    if (tiempoRestante <= 0) fin = true;
+    if (tiempoRestante <= 0) break;
     delay(1000);
-  }while(!fin);
+  }while(true);
   
 //PUESTA A CERO FINAL
   tmax = 0;
@@ -630,8 +651,9 @@ void calentar( float temperaturaProceso, long tiempoProceso){
   //cronometrof = 0;
 }
 
-void cancelar() {
+void comprobarCancelar() {
   if (WiFi.status() == WL_CONNECTED){
+    Serial.println("Comprobación de cancelación");
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
@@ -645,7 +667,7 @@ void cancelar() {
           http.end();
         }
     }else{
-      Serial.print("El servidor no responde");
+      Serial.println("El servidor no responde");
     }
    }
 }
@@ -731,16 +753,6 @@ void leerdatos(int n){
       tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
       
 
-    //Procesar datos tiempo del Transbase
-      int ptiempoTrans = datos.indexOf("tiempoTrans=");
-      String stiempoTrans = "";
-      for (int i = ptiempoTrans + 12; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoTrans += datos[i];
-      }
-      tiempoTrans = (long) strtol(stiempoTrans.c_str(),NULL,0);
-      
-
     //Procesar datos tiempo del Fermentación
       int ptempFermen = datos.indexOf("tempFermen=");
       String stempFermen = "";
@@ -778,8 +790,6 @@ void leerdatos(int n){
         Serial.println(tiempoMacer);
         Serial.print("Tiempo en Segundos del proceso Cocción= ");
         Serial.println(tiempoCoc);
-        Serial.print("Tiempo en Segundos del proceso Transbase= ");
-        Serial.println(tiempoTrans);
         Serial.print("Tiempo en Meses del proceso Fermentación= ");
         Serial.println(tiempoFermen);
     }else{
@@ -804,10 +814,9 @@ void leerdatos(int n){
  *             error Representa el numero de error (0 si no hay)
  * No devuelve nada
  */
-void finProceso (String proceso,bool error){
+void finProceso (unsigned char proceso,bool error){
 //Variables locales
   String mensaje = "Proceso ";
-  
 //Conversion a String
   mensaje.concat(proceso);
   mensaje.concat(" Fallo ");
@@ -830,15 +839,15 @@ void finProceso (String proceso,bool error){
   Serial.println(mensaje);
 }
 
-void logInfo(String proceso,String Info) {
+void logInfo(unsigned char proceso,unsigned char estado) {
   if (WiFi.status() == WL_CONNECTED) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
     String peticion = "https://192.168.1.150/arduino/log.php?proceso=";
     peticion = peticion + proceso;
-    peticion = peticion + "&info=";
-    peticion = peticion + Info;
+    peticion = peticion + "&estado=";
+    peticion = peticion + estado;
     http.begin(*client, peticion);
     http.GET();
     http.end();
