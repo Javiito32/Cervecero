@@ -10,8 +10,10 @@ if (isset($_GET['error'])) {
 ?>
 <body>
 <form action="receta.php" method="post">
-<input type="text" name="receta">
+<input type="text" name="menu">
 <input type="submit" value="Enviar">
 </form>
+<form action="cancelar.php" method="post" id="cancelar"></form>
+<input type="button" value="Cancelar Proceso" onclick="document.getElementById('cancelar').submit()">
 </body>
 </html>

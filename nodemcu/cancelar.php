@@ -6,13 +6,12 @@
 <body>
  <?php
  require 'conexion.php';
- $menu = htmlentities(addslashes($_POST["menu"]));
- $sql = "UPDATE info SET menu = $menu WHERE id=1";
+ $sql = "UPDATE info SET fallo = 1 WHERE id=1";
 if ($conn->query($sql)) {
     header('location:index.php');
 
 } else {
-    header('location:index.php?error=No se encontró la receta');
+    header('location:index.php?error=No se pudo cancelar');
 }
 ?>
 </div>
