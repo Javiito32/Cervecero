@@ -170,11 +170,6 @@ void setup(){
   tiempof = 0;
   tiempoActual = 0;
   tiempoRestante = 0;
-  //tmax = 0;
-  //tmin = 0;
-  //cronometroi = 0;
-  //cronometrof = 0;
-  //cronometro = 0;
 }
 /*
  * CICLO PRINCIPAL
