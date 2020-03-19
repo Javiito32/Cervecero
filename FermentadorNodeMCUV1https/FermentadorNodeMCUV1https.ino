@@ -123,18 +123,6 @@
   bool falloProceso = 0;                      //Guarda si falla el tiempo
   unsigned char procesoActual;
   unsigned char estado;
-  //int sensorTemperatura;                      //Variable que almacen la lectura de la sonda
-  //float tmax;                                 //Temperatura maxima para los procesos
-  //float tmin;                                 //Temperatura minima para los procesos
-  //float tmax;                                 //Temperatura maxima para los procesos
-  //float tmin;                                 //Temperatura minima para los procesos
-  //long tiempoCancelacion;
-  //float tiempoEnviar;                         //Tiempo que se envia a la Rasberry en segundos
-  //float milivoltios;                          //Variable para almacenar los milivoltios
-  //float celsius;                              //Variable para almacenar los grados
-  //int cronometroi;                            //Tiempo inicial para el envio a Rasberry
-  //int cronometrof;                            //Tiempo final pare el envio a Rasberry
-  //int cronometro;                             //Tiempo actual para el envio a Rasberry
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
@@ -486,11 +474,6 @@ void trasvase(){
           break;
         }
       }
-      /*Serial.print("Quedan ");
-      Serial.print(minute(tiempoRestante));
-      Serial.print(" Min y ");
-      Serial.print(second(tiempoRestante));
-      Serial.println(" Segundos");*/
       if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
     delay(1000);
   }while(true);
@@ -527,9 +510,6 @@ void fermentacion(){
   logInfo(procesoActual,estado);
   
 //LECTURA DE VARIABLES
-  //String informacionFermentacion = leer();
-  //float temperaturaFermentacion = desencriptarTemperatura (informacionFermentacion);      //Variable con la temperatura del proceso
-  //float tiempoFermentacion = desencriptarTiempo (informacionFermentacion);                //Variable del tiempo del proceso en segundos
   float temperaturaFermentacion = tempFermen;
   long tiempoFermentacion = tiempoFermen;
   gettime();
@@ -563,10 +543,6 @@ void fermentacion(){
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
-  //tiempoEnviar = 0;
-  //cronometro = 0;
-  //cronometroi = 0;
-  //cronometrof = 0;
   
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
@@ -646,9 +622,6 @@ void calentar( float temperaturaProceso, long tiempoProceso){
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
-  //cronometro = 0;
-  //cronometroi = 0;
-  //cronometrof = 0;
 }
 
 void comprobarCancelar() {
