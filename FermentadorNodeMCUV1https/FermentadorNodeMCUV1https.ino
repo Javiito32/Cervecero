@@ -124,6 +124,7 @@
   unsigned char procesoActual;
   unsigned char estado;
   String mac;
+  int IDplaca;
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
@@ -160,6 +161,28 @@ void setup(){
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   mac = WiFi.macAddress();
+
+//Solicitud de Identificador de placa según la mac
+  while (true){
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    String consulta = "https://192.168.1.150/arduino/get_id.php?mac=";
+    consulta = consulta + mac;
+    Serial.println(consulta);
+    http.begin(*client, consulta);  // Request destination.
+    int httpCode = http.GET(); // Send the request.
+      if (httpCode == 200 || httpCode == 201) {
+        String stringIDplaca = http.getString();
+        http.end();
+        IDplaca = stringIDplaca.toInt();
+        break;
+      }else{
+        Serial.println("------------------------------");
+        Serial.println("Error al solicitar el identificador de palca");
+        Serial.println("------------------------------");
+      }
+  }
   
 //Configuracion de pines
   pinMode(resis,OUTPUT);
@@ -183,6 +206,7 @@ void setup(){
   
 
 void loop(){
+  Serial.println(IDplaca);
   
 //Mensaje inicial
   Serial.println("------------------------------");
@@ -198,8 +222,8 @@ void pregunta(){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?menu=1&placaID=";
-    consulta = consulta + mac;
+    String consulta = "https://192.168.1.150/arduino/menu.php?menu=1&IDplaca=";
+    consulta = consulta + IDplaca;
     http.begin(*client, consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
@@ -207,10 +231,9 @@ void pregunta(){
         http.end();
         dato = datoString.toInt();
         //Serial.println(dato);
-        http.end();
         if (dato != 0){
-          String consulta = "https://192.168.1.150/arduino/menu.php?resetmenu=1&placaID=";
-          consulta = consulta + mac;
+          String consulta = "https://192.168.1.150/arduino/menu.php?resetmenu=1&IDplaca=";
+          consulta = consulta + IDplaca;
           http.begin(*client, consulta);
           http.GET();
           http.end();
@@ -633,8 +656,8 @@ void comprobarCancelar() {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?fallo=1&placaID=";
-    consulta = consulta + mac;
+    String consulta = "https://192.168.1.150/arduino/menu.php?fallo=1&IDplaca=";
+    consulta = consulta + IDplaca;
     http.begin(*client,consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
@@ -805,8 +828,8 @@ void finProceso (unsigned char proceso,bool error){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?resetfallo=1&placaID=";
-    consulta = consulta + mac;
+    String consulta = "https://192.168.1.150/arduino/menu.php?resetfallo=1&IDplaca=";
+    consulta = consulta + IDplaca;
     http.begin(*client, consulta);
     http.GET();
     http.end();
@@ -828,8 +851,8 @@ void logInfo(unsigned char proceso,unsigned char estado) {
     peticion = peticion + proceso;
     peticion = peticion + "&estado=";
     peticion = peticion + estado;
-    peticion = peticion + "&placaID=";
-    peticion = peticion + mac;
+    peticion = peticion + "&IDplaca=";
+    peticion = peticion + IDplaca;
     http.begin(*client, peticion);
     http.GET();
     http.end();
