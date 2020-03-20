@@ -6,8 +6,9 @@
 <body>
  <?php
  require 'conexion.php';
+ $mac = "'84:0D:8E:B0:7C:53'";
  $menu = htmlentities(addslashes($_POST["menu"]));
- $sql = "UPDATE info SET menu = $menu WHERE id=1";
+ $sql = "UPDATE info SET menu = $menu WHERE placaID=$mac";
 if ($conn->query($sql)) {
     header('location:index.php');
 

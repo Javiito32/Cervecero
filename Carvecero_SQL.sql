@@ -33,70 +33,45 @@ REPLACE INTO `estados` (`id`, `estado`) VALUES
 
 -- Volcando estructura para tabla cervecero.info
 CREATE TABLE IF NOT EXISTS `info` (
-  `ID` int(11) NOT NULL DEFAULT '1',
+  `placaID` varchar(17) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '00-00-00-00-00-00',
   `menu` int(11) NOT NULL DEFAULT '0',
   `fallo` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`ID`)
+  PRIMARY KEY (`placaID`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla cervecero.info: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `info` DISABLE KEYS */;
-REPLACE INTO `info` (`ID`, `menu`, `fallo`) VALUES
-	(1, 0, 0);
+REPLACE INTO `info` (`placaID`, `menu`, `fallo`) VALUES
+	('84:0D:8E:B0:7C:53', 0, 0);
 /*!40000 ALTER TABLE `info` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.log
 CREATE TABLE IF NOT EXISTS `log` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `time` timestamp NOT NULL,
+  `placaID` varchar(17) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `proceso` int(11) DEFAULT NULL,
   `estado` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `estado` (`estado`),
   KEY `proceso` (`proceso`),
+  KEY `placaID` (`placaID`),
   CONSTRAINT `FK_log_estados` FOREIGN KEY (`estado`) REFERENCES `estados` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `FK_log_info` FOREIGN KEY (`placaID`) REFERENCES `info` (`placaID`),
   CONSTRAINT `FK_log_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Volcando datos para la tabla cervecero.log: ~8 rows (aproximadamente)
 /*!40000 ALTER TABLE `log` DISABLE KEYS */;
-REPLACE INTO `log` (`ID`, `time`, `proceso`, `estado`) VALUES
-	(1, '2020-03-19 14:30:21', 1, 1),
-	(2, '2020-03-19 14:30:33', 1, 3),
-	(3, '2020-03-19 14:43:33', 1, 1),
-	(4, '2020-03-19 14:44:35', 1, 2),
-	(5, '2020-03-19 17:27:17', 3, 1),
-	(6, '2020-03-19 17:30:10', 3, 1),
-	(7, '2020-03-19 17:39:19', 3, 1),
-	(8, '2020-03-19 17:39:22', 3, 2),
-	(9, '2020-03-19 18:06:49', 3, 1),
-	(10, '2020-03-19 18:07:51', 3, 3),
-	(11, '2020-03-19 18:17:19', 3, 1),
-	(12, '2020-03-19 18:18:45', 3, 2),
-	(13, '2020-03-19 18:18:59', 3, 1),
-	(14, '2020-03-19 18:19:32', 3, 3),
-	(15, '2020-03-19 18:21:11', 3, 1),
-	(16, '2020-03-19 18:22:29', 3, 3),
-	(17, '2020-03-19 18:23:33', 1, 1),
-	(18, '2020-03-19 18:24:34', 1, 2),
-	(19, '2020-03-19 18:44:01', 1, 1),
-	(20, '2020-03-19 18:45:02', 1, 2),
-	(21, '2020-03-19 18:47:57', 1, 1),
-	(22, '2020-03-19 18:48:58', 1, 2),
-	(23, '2020-03-19 18:59:09', 1, 1),
-	(24, '2020-03-19 19:00:10', 1, 2),
-	(25, '2020-03-19 19:06:08', 2, 1),
-	(26, '2020-03-19 19:06:21', 2, 3),
-	(27, '2020-03-19 19:06:28', 3, 1),
-	(28, '2020-03-19 19:06:47', 3, 3),
-	(29, '2020-03-19 22:43:03', 1, 1),
-	(30, '2020-03-19 22:43:30', 1, 3);
+REPLACE INTO `log` (`ID`, `time`, `placaID`, `proceso`, `estado`) VALUES
+	(2, '2020-03-20 02:22:15', '84:0D:8E:B0:7C:53', 1, 1),
+	(3, '2020-03-20 02:22:23', '84:0D:8E:B0:7C:53', 1, 3);
 /*!40000 ALTER TABLE `log` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.procesos
 CREATE TABLE IF NOT EXISTS `procesos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `proceso` varchar(50) DEFAULT NULL,
+  `proceso` varchar(17) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -125,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `recetas` (
 -- Volcando datos para la tabla cervecero.recetas: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `recetas` DISABLE KEYS */;
 REPLACE INTO `recetas` (`ID`, `nombre`, `tempMacer`, `tiempoMacer`, `tempCoc`, `tiempoCoc`, `tempFermen`, `tiempoFermen`) VALUES
-	(1, 'Pinta', 54, 1, 30, 50, 42, 1);
+	(1, 'Pinta', 54, 1, 30, 1, 42, 1);
 /*!40000 ALTER TABLE `recetas` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -123,6 +123,7 @@
   bool falloProceso = 0;                      //Guarda si falla el tiempo
   unsigned char procesoActual;
   unsigned char estado;
+  String mac;
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
@@ -156,6 +157,9 @@ void setup(){
 
   Serial.print("IP: ");
   Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
+  mac = WiFi.macAddress();
   
 //Configuracion de pines
   pinMode(resis,OUTPUT);
@@ -194,7 +198,9 @@ void pregunta(){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    http.begin(*client, "https://192.168.1.150/arduino/menu.php");  // Request destination.
+    String consulta = "https://192.168.1.150/arduino/menu.php?menu=1&placaID=";
+    consulta = consulta + mac;
+    http.begin(*client, consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
         String datoString = http.getString();
@@ -203,7 +209,9 @@ void pregunta(){
         //Serial.println(dato);
         http.end();
         if (dato != 0){
-          http.begin(*client, "https://192.168.1.150/arduino/menu.php?reset=1");
+          String consulta = "https://192.168.1.150/arduino/menu.php?resetmenu=1&placaID=";
+          consulta = consulta + mac;
+          http.begin(*client, consulta);
           http.GET();
           http.end();
           break;
@@ -515,7 +523,6 @@ void fermentacion(){
   do{
     gettime();
     tiempoRestante = tiempof - tiempoActual;
-    
     if (tiempoActual >= tiempoCancelacion){
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
@@ -579,12 +586,13 @@ void calentar( float temperaturaProceso, long tiempoProceso){
     Serial.println("------------------------");
     float tmax = temperaturaProceso+anchoVentana;
     float tmin = temperaturaProceso-anchoVentana;
+    
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoProceso * 60);
     long tiempoCancelacion = tiempoActual + 5;
     do{
-      if (tiempoActual >= tiempoCancelacion && tiempoCancelacion <= tiempof){
+      if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
         if (falloProceso){
@@ -625,7 +633,9 @@ void comprobarCancelar() {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    http.begin(*client,"https://192.168.1.150/arduino/fallo.php");  // Request destination.
+    String consulta = "https://192.168.1.150/arduino/menu.php?fallo=1&placaID=";
+    consulta = consulta + mac;
+    http.begin(*client,consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
         String stringcancelar = http.getString();
@@ -795,7 +805,9 @@ void finProceso (unsigned char proceso,bool error){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    http.begin(*client, "https://192.168.1.150/arduino/fallo.php?reset=1");
+    String consulta = "https://192.168.1.150/arduino/menu.php?resetfallo=1&placaID=";
+    consulta = consulta + mac;
+    http.begin(*client, consulta);
     http.GET();
     http.end();
     falloProceso = 0;
@@ -816,6 +828,8 @@ void logInfo(unsigned char proceso,unsigned char estado) {
     peticion = peticion + proceso;
     peticion = peticion + "&estado=";
     peticion = peticion + estado;
+    peticion = peticion + "&placaID=";
+    peticion = peticion + mac;
     http.begin(*client, peticion);
     http.GET();
     http.end();
