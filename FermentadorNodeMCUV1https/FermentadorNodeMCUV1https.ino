@@ -127,7 +127,9 @@
   unsigned char estado;
   String mac;
   int IDplaca;
+  int IDreceta;
   byte porcentaje;
+  bool recovery;
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
@@ -200,12 +202,32 @@ void setup(){
         Serial.println("------------------------------");
       }
   }
-  
-//Puesta a cero inicial de las variables de trabajo
-  tiempoi = 0;
-  tiempof = 0;
-  tiempoActual = 0;
-  tiempoRestante = 0;
+  while (true){
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    String consulta = "https://192.168.1.150/arduino/recovery?IDplaca=";
+    consulta = consulta + IDplaca;
+    //Serial.println(consulta);
+    http.begin(*client, consulta);  // Request destination.
+    int httpCode = http.GET(); // Send the request.
+      if (httpCode == 200 || httpCode == 201) {
+        String stringRecovery = http.getString();
+        http.end();
+        recovery = stringRecovery.toInt();
+        tiempoi = 0;
+        tiempof = 0;
+        Serial.println("------------------------------");
+        Serial.print("El ID de la placa es el: ");
+        Serial.println(IDplaca);
+        Serial.println("------------------------------");
+        break;
+      }else{
+        Serial.println("------------------------------");
+        Serial.println("Error al solicitar el identificador de palca");
+        Serial.println("------------------------------");
+      }
+  }
 }
 /*
  * CICLO PRINCIPAL
@@ -281,7 +303,8 @@ void receta(){
   Serial.println("Selecciona receta: ");
   Serial.println("------------------------------");
   pregunta();
-  leerdatos(dato);
+  IDreceta = dato;
+  leerReceta();
 }
 
 void procesos(){
@@ -291,10 +314,10 @@ void procesos(){
   }
   Serial.println("Selecciona proceso: ");
   pregunta();
-       if (dato==1) { maceracion(); }
-  else if (dato==2) { coccion();}
+       if (dato==1) { pregunta(); maceracion(dato); }
+  else if (dato==2) { pregunta(); coccion(dato);}
   else if (dato==3) { trasvase();}
-  else if (dato==4) { fermentacion();}
+  else if (dato==4) { pregunta(); fermentacion(dato);}
   else Serial.println("Proceso no existente");
 }
 
@@ -406,18 +429,17 @@ void time_set (){
  */
 
   
-void maceracion (){
+void maceracion (byte pasoProceso){
 //Confirmacion del inicio de proceso de maceracion
   Serial.println("O1");
 //Configuracion del proceso
   procesoActual = 1;
   estado = 1;
-  logInfo(procesoActual,estado);
-  int i = 0;
+  sendInfo(procesoActual,pasoProceso,estado);
   
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[i].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[i].toInt();                             //Variable del tiempo del proceso en minutos
+  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
+  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                             //Variable del tiempo del proceso en minutos
 //MODO RECIRCULACION
   recircular();
   
@@ -433,8 +455,8 @@ void maceracion (){
   
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
-  else {estado = 2; i++; c_nokia_c();}
-  logInfo(procesoActual,estado);
+  else {estado = 2; c_nokia_c();}
+  sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
   
 }
@@ -455,12 +477,12 @@ void maceracion (){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
-void coccion (){ 
+void coccion (byte pasoProceso){ 
 //Confirmacion del inicio de proceso de cocción
   Serial.println("O2");
   procesoActual = 2;
   estado = 1;
-  logInfo(procesoActual,estado);
+  sendInfo(procesoActual,pasoProceso,estado);
   
 //LECTURA DE VARIABLES            
   float temperaturaCoccion = tempCoc;                         //Variable con la temperatura del proceso
@@ -481,7 +503,7 @@ void coccion (){
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
   else estado = 2;
-  logInfo(procesoActual,estado);
+  sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
 }
 
@@ -500,7 +522,7 @@ void trasvase(){
   Serial.println("O3");
   procesoActual = 3;
   estado = 1;
-  logInfo(procesoActual,estado);
+  sendInfo(procesoActual,0,estado);
   
   
 //Trasvase ON
@@ -541,7 +563,7 @@ void trasvase(){
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
   else estado = 2;
-  logInfo(procesoActual,estado);
+  sendInfo(procesoActual,0,estado);
   finProceso(procesoActual,falloProceso);
 }
 
@@ -558,12 +580,12 @@ void trasvase(){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
-void fermentacion(){
+void fermentacion(byte pasoProceso){
 //Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
   procesoActual = 4;
   estado = 1;
-  logInfo(procesoActual,estado);
+  sendInfo(procesoActual,pasoProceso,estado);
   
 //LECTURA DE VARIABLES
   float temperaturaFermentacion = tempFermen;
@@ -599,7 +621,7 @@ void fermentacion(){
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
   else {estado = 2; c_nokia_c();};
-  logInfo(procesoActual,estado);
+  sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
 }
 
@@ -715,11 +737,11 @@ void comprobarCancelar() {
  * Asigna los valores oportunos a las variables de cotrol (tmperatura y tiempo de cada proceso).
  */
 
-void leerdatos(int c){
+void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
     
     String peticion = "https://192.168.1.150/arduino/pedirdatos.php?id=";
-    peticion = peticion + c;
+    peticion = peticion + IDreceta;
     Serial.println("------------------------------");
     Serial.print("Petición al servidor: ");
     Serial.println(peticion);
@@ -817,7 +839,7 @@ void leerdatos(int c){
       
 
     //Mostrar información de la receta por Serial
-    if (tempMacer != 0){
+  if (tempMacer != 0){
       //Nombre de la cerveza
         Serial.print("Nombre de la cerveza= ");
         Serial.println(nombre);
@@ -885,30 +907,30 @@ void finProceso (unsigned char proceso,bool error){
   Serial.println(mensaje);
 }
 
-void logInfo(unsigned char proceso,unsigned char estado) {
+void sendInfo(unsigned char proceso,byte pasoProceso,unsigned char estado) {
   if (WiFi.status() == WL_CONNECTED) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String peticion = "https://192.168.1.150/arduino/log.php?proceso=";
+    String peticion = "https://192.168.1.150/arduino/info.php?proceso=";
     peticion = peticion + proceso;
     peticion = peticion + "&estado=";
     peticion = peticion + estado;
+    peticion = peticion + "&pasoProceso=";
+    peticion = peticion + pasoProceso;
     peticion = peticion + "&IDplaca=";
     peticion = peticion + IDplaca;
+    peticion = peticion + "&porcentaje=";
+    peticion = peticion + porcentaje;
+    peticion = peticion + "&receta=";
+    peticion = peticion + IDreceta;
     http.begin(*client, peticion);
     http.GET();
     http.end();
   }
 }
 
-/*void count(String str){
-  int a = 1;
-  for (int i = 0; i < str.length(); i ++){
-      if (str[i] == ':') {a = a + 1;}
-  }
-  contarData = a;
-}*/
+
 int count(String str){
   int a = 1;
   for (int i = 0; i < str.length(); i ++){
