@@ -130,6 +130,10 @@
   int IDreceta;
   byte porcentaje;
   bool recovery;
+  int recoveryTiempoRestante;
+  int recoveryProceso;
+  int recoveryPasoProceso;
+  
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
@@ -198,7 +202,7 @@ void setup(){
         break;
       }else{
         Serial.println("------------------------------");
-        Serial.println("Error al solicitar el identificador de palca");
+        Serial.println("No hay ningún recovery");
         Serial.println("------------------------------");
       }
   }
@@ -206,25 +210,84 @@ void setup(){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/recovery?IDplaca=";
+    String consulta = "https://192.168.1.150/arduino/recovery.php?IDplaca=";
     consulta = consulta + IDplaca;
     //Serial.println(consulta);
     http.begin(*client, consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
-        String stringRecovery = http.getString();
+        String datos = http.getString();
+        Serial.println(datos);
         http.end();
-        recovery = stringRecovery.toInt();
-        tiempoi = 0;
-        tiempof = 0;
-        Serial.println("------------------------------");
-        Serial.print("El ID de la placa es el: ");
-        Serial.println(IDplaca);
-        Serial.println("------------------------------");
+        //Decode
+        int longitud = datos.length();
+        int pestado = datos.indexOf("estado=");
+        String sestado = "";
+        for (int i = pestado + 7; i < longitud; i ++){
+        if (datos[i] == ';') i = longitud;
+        else sestado += datos[i];
+        }
+        int estado = sestado.toInt();
+
+        if(estado == 1){
+          recovery = 1;
+          Serial.println("------------------------------");
+          Serial.println("Iniciando proceso de recovery");
+          Serial.println("------------------------------");
+
+
+          int preceta = datos.indexOf("receta=");
+          String sreceta = "";
+          for (int i = preceta + 7; i < longitud; i ++){
+          if (datos[i] == ';') i = longitud;
+          else sreceta += datos[i];
+          }
+          IDreceta = sreceta.toInt();
+          
+
+          int ptiempoRestante = datos.indexOf("tiempoRestante=");
+          String stiempoRestante = "";
+          for (int i = ptiempoRestante + 15; i < longitud; i ++){
+          if (datos[i] == ';') i = longitud;
+          else stiempoRestante += datos[i];
+          }
+          recoveryTiempoRestante = stiempoRestante.toInt();
+
+
+
+          int pproceso = datos.indexOf("proceso=");
+          String sproceso = "";
+          for (int i = pproceso + 8; i < longitud; i ++){
+          if (datos[i] == ';') i = longitud;
+          else sproceso += datos[i];
+          }
+          recoveryProceso = sproceso.toInt();
+
+
+
+          int ppasoProceso = datos.indexOf("pasoProceso=");
+          String spasoProceso = "";
+          for (int i = ppasoProceso + 12; i < longitud; i ++){
+          if (datos[i] == ';') i = longitud;
+          else spasoProceso += datos[i];
+          }
+          recoveryPasoProceso = spasoProceso.toInt();
+
+
+     
+        }
+        Serial.println("Receta a recuperar: ");
+        Serial.print(IDreceta);
+        Serial.println("Tiempo que le falta: ");
+        Serial.print(recoveryTiempoRestante);
+        Serial.println("Proceso que estaba: ");
+        Serial.print(recoveryProceso);
+        Serial.println("Paso del proceso que estaba: ");
+        Serial.print(recoveryPasoProceso);
         break;
       }else{
         Serial.println("------------------------------");
-        Serial.println("Error al solicitar el identificador de palca");
+        Serial.println("No hay recovery");
         Serial.println("------------------------------");
       }
   }
@@ -430,22 +493,33 @@ void time_set (){
 
   
 void maceracion (byte pasoProceso){
+  if(recovery == 1){
+    procesoActual = 1;
+    estado = 1;
+//LECTURA DE VARIABLES
+  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
+  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
+//MODO RECIRCULACION
+  recircular();
+//CICLO DE CALENTAMIENTO
+  calentar(temperaturaMaceracion,tiempoMaceracion);
+  
+  }else{
 //Confirmacion del inicio de proceso de maceracion
   Serial.println("O1");
 //Configuracion del proceso
   procesoActual = 1;
   estado = 1;
   sendInfo(procesoActual,pasoProceso,estado);
-  
 //LECTURA DE VARIABLES
   float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                             //Variable del tiempo del proceso en minutos
+  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
 //MODO RECIRCULACION
   recircular();
   
 //CICLO DE CALENTAMIENTO
   calentar(temperaturaMaceracion,tiempoMaceracion);
-  
+}
 //APAGADO DE BOMBAS Y RELES
   digitalWrite(resis,LOW);
   digitalWrite(bombaRecirculacion,LOW);
@@ -455,7 +529,8 @@ void maceracion (byte pasoProceso){
   
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
-  else {estado = 2; c_nokia_c();}
+  else {estado = 2; c_nokia_c();};
+  recovery = 0;
   sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
   
@@ -503,6 +578,7 @@ void coccion (byte pasoProceso){
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
   else estado = 2;
+  recovery = 0;
   sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
 }
@@ -620,7 +696,8 @@ void fermentacion(byte pasoProceso){
   
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
-  else {estado = 2; c_nokia_c();};
+  else {estado = 2; c_nokia_c();}
+  recovery = 0;
   sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
 }
@@ -676,7 +753,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       }
       gettime();
       tiempoRestante = tiempof - tiempoActual;
-      if (tiempoRestante <= 0) break;
+      if (tiempoRestante <= 0) {break; porcentaje = 100;}
       if (tiempoActual >= tiempoPorcentaje){
         tiempoPorcentaje = tiempoActual + 2;
         int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
