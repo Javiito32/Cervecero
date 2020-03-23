@@ -202,10 +202,12 @@ void setup(){
         break;
       }else{
         Serial.println("------------------------------");
-        Serial.println("No hay ningún recovery");
+        Serial.println("No se pudo obtener el ID de placa");
         Serial.println("------------------------------");
       }
   }
+
+//Revisión de si hay algún proces que recuperar que se ha quedado a medias
   while (true){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
@@ -232,7 +234,7 @@ void setup(){
         if(estado == 1){
           recovery = 1;
           Serial.println("------------------------------");
-          Serial.println("Iniciando proceso de recovery");
+          Serial.println("No hay procesos pendiantes");
           Serial.println("------------------------------");
 
 
@@ -276,18 +278,20 @@ void setup(){
 
      
         }
-        Serial.println("Receta a recuperar: ");
-        Serial.print(IDreceta);
-        Serial.println("Tiempo que le falta: ");
-        Serial.print(recoveryTiempoRestante);
-        Serial.println("Proceso que estaba: ");
-        Serial.print(recoveryProceso);
-        Serial.println("Paso del proceso que estaba: ");
-        Serial.print(recoveryPasoProceso);
+        Serial.print("Receta a recuperar: ");
+        Serial.println(IDreceta);
+        Serial.print("Tiempo que le falta: ");
+        Serial.println(recoveryTiempoRestante);
+        Serial.print("Proceso que estaba: ");
+        Serial.println(recoveryProceso);
+        Serial.print("Paso del proceso que estaba: ");
+        Serial.println(recoveryPasoProceso);
+        //leerReceta();
+        //recoveryProcesos(recoveryProceso,recoveryPasoProceso);
         break;
       }else{
         Serial.println("------------------------------");
-        Serial.println("No hay recovery");
+        Serial.println("No hay ningún proceso que restaurar");
         Serial.println("------------------------------");
       }
   }
@@ -353,6 +357,19 @@ void pregunta(){
  *  Parametros: numero de proceso introducido como caracter
  *  No devuelve nada
  */
+
+ void recoveryProcesos(int proceso, int pasoProceso){
+  if (tempMacer == 0){
+    Serial.println("Primero selecciona una receta");
+    return;
+  }
+       if (proceso==1) { maceracion(pasoProceso); }
+  else if (proceso==2) { coccion(pasoProceso);}
+  else if (proceso==3) { trasvase();}
+  else if (proceso==4) { fermentacion(pasoProceso);}
+  else Serial.println("Proceso no existente");
+}
+
 void menuinicio(int n){ 
        if (n==1) { receta();}
   else if (n==2) { procesos();}
@@ -531,7 +548,7 @@ void maceracion (byte pasoProceso){
   if (falloProceso) estado = 3;
   else {estado = 2; c_nokia_c();};
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso,estado);
+  //sendInfo(procesoActual,pasoProceso,estado);
   finProceso(procesoActual,falloProceso);
   
 }
@@ -726,23 +743,37 @@ void recircular(){
  * No devuelve nada
  */
 void calentar( int temperaturaProceso, long tiempoProceso){
-//TRATAMIENTO DE LAS VARIABLES
+
   //Tratamiento de la ventana de temperatura
+  int tiempoProcesoSeg;
+  if (recovery == 1){
+    Serial.println("------------------------");
+    Serial.print("El proceso dura: ");
+    Serial.print(minute(recoveryTiempoRestante));
+    Serial.println(" Minutos");
+    Serial.println("------------------------");
+    gettime();
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + (tiempoProceso * 60);
+    tiempoProcesoSeg = tiempof - tiempoi;
+    tiempof = tiempoi + recoveryTiempoRestante;
+  }else{
     Serial.println("------------------------");
     Serial.print("El proceso dura: ");
     Serial.print(tiempoProceso);
     Serial.println(" Minutos");
     Serial.println("------------------------");
-    int tmax = temperaturaProceso+anchoVentana;
-    int tmin = temperaturaProceso-anchoVentana;
-    
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoProceso * 60);
-    int tiempoProcesoSeg = tiempof - tiempoi;
+    tiempoProcesoSeg = tiempof - tiempoi;
+  }
+    
     long tiempoCancelacion = tiempoActual + 5;
     int tiempoPorcentaje = tiempoActual + 2;
-    
+
+    int tmax = temperaturaProceso+anchoVentana;
+    int tmin = temperaturaProceso-anchoVentana;
     do{
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
