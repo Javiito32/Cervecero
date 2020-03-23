@@ -207,7 +207,8 @@ void setup(){
       }
   }
 
-//Revisión de si hay algún proces que recuperar que se ha quedado a medias
+
+  //Revisión de si hay algún procesos que recuperar que se ha quedado a medias
   while (true){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
@@ -286,24 +287,26 @@ void setup(){
         Serial.println(recoveryProceso);
         Serial.print("Paso del proceso que estaba: ");
         Serial.println(recoveryPasoProceso);
-        //leerReceta();
-        //recoveryProcesos(recoveryProceso,recoveryPasoProceso);
         break;
       }else{
         Serial.println("------------------------------");
         Serial.println("No hay ningún proceso que restaurar");
         Serial.println("------------------------------");
+        break;
       }
   }
+  leerReceta();
+  recoveryProcesos(recoveryProceso,recoveryPasoProceso);
 }
 /*
  * CICLO PRINCIPAL
  * Indicamos a la Raspberry que hemos arrancado. 
  * Leemos datos en bucle hasta entrar en un proceso.
 */
-  
 
 void loop(){
+
+
   
 //Mensaje inicial
   Serial.println("------------------------------");
@@ -422,8 +425,7 @@ void ajustes(){
 }
 
 void pruebas(){
-  Serial.println(month(1597976328));
-  Serial.println(day(1597976328));
+  leerReceta();
 }
 
 void tonos(){
