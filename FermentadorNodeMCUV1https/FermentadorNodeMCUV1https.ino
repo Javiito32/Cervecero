@@ -529,7 +529,7 @@ void maceracion (byte pasoProceso){
 //Configuracion del proceso
   procesoActual = 1;
   estado = 1;
-  sendInfo(procesoActual,pasoProceso,estado);
+  sendInfo(procesoActual,pasoProceso);
 //LECTURA DE VARIABLES
   float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
   int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
@@ -576,7 +576,7 @@ void coccion (byte pasoProceso){
   Serial.println("O2");
   procesoActual = 2;
   estado = 1;
-  sendInfo(procesoActual,pasoProceso,estado);
+  sendInfo(procesoActual,pasoProceso);
   
 //LECTURA DE VARIABLES            
   float temperaturaCoccion = tempCoc;                         //Variable con la temperatura del proceso
@@ -598,7 +598,7 @@ void coccion (byte pasoProceso){
   if (falloProceso) estado = 3;
   else estado = 2;
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso,estado);
+  sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
 }
 
@@ -617,7 +617,7 @@ void trasvase(){
   Serial.println("O3");
   procesoActual = 3;
   estado = 1;
-  sendInfo(procesoActual,0,estado);
+  sendInfo(procesoActual,0);
   
   
 //Trasvase ON
@@ -658,7 +658,7 @@ void trasvase(){
 //Envio mensaje de fin de proceso.
   if (falloProceso) estado = 3;
   else estado = 2;
-  sendInfo(procesoActual,0,estado);
+  sendInfo(procesoActual,0);
   finProceso(procesoActual,falloProceso);
 }
 
@@ -680,7 +680,7 @@ void fermentacion(byte pasoProceso){
   Serial.println("O4");
   procesoActual = 4;
   estado = 1;
-  sendInfo(procesoActual,pasoProceso,estado);
+  sendInfo(procesoActual,pasoProceso);
   
 //LECTURA DE VARIABLES
   float temperaturaFermentacion = tempFermen;
@@ -717,7 +717,7 @@ void fermentacion(byte pasoProceso){
   if (falloProceso) estado = 3;
   else {estado = 2; c_nokia_c();}
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso,estado);
+  sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
 }
 
@@ -1017,23 +1017,25 @@ void finProceso (unsigned char proceso,bool error){
   Serial.println(mensaje);
 }
 
-void sendInfo(unsigned char proceso,byte pasoProceso,unsigned char estado) {
+void sendInfo(byte pasoProceso,unsigned char proceso) {
   if (WiFi.status() == WL_CONNECTED) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String peticion = "https://192.168.1.150/arduino/info.php?proceso=";
-    peticion = peticion + proceso;
-    peticion = peticion + "&estado=";
-    peticion = peticion + estado;
-    peticion = peticion + "&pasoProceso=";
-    peticion = peticion + pasoProceso;
-    peticion = peticion + "&IDplaca=";
+    String peticion = "https://192.168.1.150/arduino/info.php?IDplaca=";
     peticion = peticion + IDplaca;
-    peticion = peticion + "&porcentaje=";
-    peticion = peticion + porcentaje;
     peticion = peticion + "&receta=";
     peticion = peticion + IDreceta;
+    peticion = peticion + "&proceso=";
+    peticion = peticion + proceso;
+    peticion = peticion + "&pasoProceso=";
+    peticion = peticion + pasoProceso;
+    peticion = peticion + "&estado=";
+    peticion = peticion + estado;
+    peticion = peticion + "&tiempoRestante=";
+    peticion = peticion + tiempoRestante;
+    peticion = peticion + "&porcentaje=";
+    peticion = peticion + porcentaje;
     http.begin(*client, peticion);
     http.GET();
     http.end();
