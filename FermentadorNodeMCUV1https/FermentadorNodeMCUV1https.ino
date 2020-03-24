@@ -123,8 +123,8 @@
   float tempFermen;                           //Temperatura de fermentación de la receta seleccionada
   unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
   bool falloProceso = 0;                      //Guarda si falla el tiempo
-  unsigned char procesoActual;
-  unsigned char estado;
+  int procesoActual;
+  int estado;
   String mac;
   int IDplaca;
   int IDreceta;
@@ -235,7 +235,7 @@ void setup(){
         if(estado == 1){
           recovery = 1;
           Serial.println("------------------------------");
-          Serial.println("No hay procesos pendiantes");
+          Serial.println("Hay procesos pendiantes");
           Serial.println("------------------------------");
 
 
@@ -276,9 +276,6 @@ void setup(){
           }
           recoveryPasoProceso = spasoProceso.toInt();
 
-
-     
-        }
         Serial.print("Receta a recuperar: ");
         Serial.println(IDreceta);
         Serial.print("Tiempo que le falta: ");
@@ -288,6 +285,9 @@ void setup(){
         Serial.print("Paso del proceso que estaba: ");
         Serial.println(recoveryPasoProceso);
         break;
+     
+        }
+        
       }else{
         Serial.println("------------------------------");
         Serial.println("No hay ningún proceso que restaurar");
@@ -295,8 +295,11 @@ void setup(){
         break;
       }
   }
-  leerReceta();
-  recoveryProcesos(recoveryProceso,recoveryPasoProceso);
+  if (recovery == 1){
+    leerReceta();
+    recoveryProcesos(recoveryProceso,recoveryPasoProceso);
+  }
+  
 }
 /*
  * CICLO PRINCIPAL
@@ -529,6 +532,7 @@ void maceracion (byte pasoProceso){
 //Configuracion del proceso
   procesoActual = 1;
   estado = 1;
+  porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
 //LECTURA DE VARIABLES
   float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
@@ -547,10 +551,10 @@ void maceracion (byte pasoProceso){
   digitalWrite(peltier,LOW);
   
 //Envio mensaje de fin de proceso.
-  if (falloProceso) estado = 3;
-  else {estado = 2; c_nokia_c();};
+  if (falloProceso) {estado = 3; porcentaje = 100;}
+  else {estado = 2; c_nokia_c(); porcentaje = 100;};
   recovery = 0;
-  //sendInfo(procesoActual,pasoProceso,estado);
+  sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
   
 }
@@ -990,7 +994,7 @@ void leerReceta(){
  *             error Representa el numero de error (0 si no hay)
  * No devuelve nada
  */
-void finProceso (unsigned char proceso,bool error){
+void finProceso (int proceso,bool error){
 //Variables locales
   String mensaje = "Proceso ";
 //Conversion a String
@@ -1017,7 +1021,7 @@ void finProceso (unsigned char proceso,bool error){
   Serial.println(mensaje);
 }
 
-void sendInfo(byte pasoProceso,unsigned char proceso) {
+void sendInfo(int proceso,byte pasoProceso) {
   if (WiFi.status() == WL_CONNECTED) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
@@ -1037,6 +1041,7 @@ void sendInfo(byte pasoProceso,unsigned char proceso) {
     peticion = peticion + "&porcentaje=";
     peticion = peticion + porcentaje;
     http.begin(*client, peticion);
+    Serial.println(peticion);
     http.GET();
     http.end();
   }
