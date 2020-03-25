@@ -117,11 +117,11 @@
   long tiempoRestante;                        //Tiempo que falta para el final de los procesos en seg
   String tempMacer[10];                       //Temperatura de maceración de la receta seleccionada
   String tiempoMacer[10];                     //Tiempo maceración de la recta selecionada
-  float tempCoc;                              //Temperatura de cocción de la receta seleccionada
-  unsigned long tiempoCoc;                    //Tiempo cocción de la recta selecionada
+  String tempCoc[10];                              //Temperatura de cocción de la receta seleccionada
+  String tiempoCoc[10];                    //Tiempo cocción de la recta selecionada
   unsigned long tiempoTrans;                  //Tiempo transvase de la recta selecionada
-  float tempFermen;                           //Temperatura de fermentación de la receta seleccionada
-  unsigned long tiempoFermen;                 //Tiempo fermentación de la recta selecionada
+  String tempFermen[10];                           //Temperatura de fermentación de la receta seleccionada
+  String tiempoFermen[10];                 //Tiempo fermentación de la recta selecionada
   bool falloProceso = 0;                      //Guarda si falla el tiempo
   int procesoActual;
   int estado;
@@ -287,7 +287,6 @@ void setup(){
         break;
      
         }
-        
       }else{
         Serial.println("------------------------------");
         Serial.println("No hay ningún proceso que restaurar");
@@ -515,16 +514,10 @@ void time_set (){
 
   
 void maceracion (byte pasoProceso){
+
   if(recovery == 1){
     procesoActual = 1;
     estado = 1;
-//LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
-//MODO RECIRCULACION
-  recircular();
-//CICLO DE CALENTAMIENTO
-  calentar(temperaturaMaceracion,tiempoMaceracion);
   
   }else{
 //Confirmacion del inicio de proceso de maceracion
@@ -534,15 +527,14 @@ void maceracion (byte pasoProceso){
   estado = 1;
   porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
+}
 //LECTURA DE VARIABLES
   float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
   int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
 //MODO RECIRCULACION
   recircular();
-  
 //CICLO DE CALENTAMIENTO
   calentar(temperaturaMaceracion,tiempoMaceracion);
-}
 //APAGADO DE BOMBAS Y RELES
   digitalWrite(resis,LOW);
   digitalWrite(bombaRecirculacion,LOW);
@@ -576,22 +568,27 @@ void maceracion (byte pasoProceso){
  *  No devuelve nada
  */
 void coccion (byte pasoProceso){ 
-//Confirmacion del inicio de proceso de cocción
+  if(recovery == 1){
+    procesoActual = 2;
+    estado = 1;
+  
+  }else{
+//Confirmacion del inicio de proceso de maceracion
   Serial.println("O2");
+//Configuracion del proceso
   procesoActual = 2;
   estado = 1;
+  porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
-  
-//LECTURA DE VARIABLES            
-  float temperaturaCoccion = tempCoc;                         //Variable con la temperatura del proceso
-  float tiempoCoccion = tiempoCoc;                            //Variable del tiempo del proceso en minutos
-
+} 
+//LECTURA DE VARIABLES
+  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
+  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
 //MODO RECIRCULACION
   recircular();
-
-//CICLO DE CALENTAMIENTO
-  calentar(temperaturaCoccion, tiempoCoccion);
   
+//CICLO DE CALENTAMIENTO
+  calentar(temperaturaMaceracion,tiempoMaceracion);
 //APAGADO DE BOMBAS Y RELES
   digitalWrite(resis,LOW);
   digitalWrite(bombaRecirculacion,LOW);
@@ -599,8 +596,8 @@ void coccion (byte pasoProceso){
   digitalWrite(bombaFrio,LOW);
   digitalWrite(peltier,LOW);
 //Envio mensaje de fin de proceso.
-  if (falloProceso) estado = 3;
-  else estado = 2;
+  if (falloProceso) {estado = 3; porcentaje = 100;}
+  else {estado = 2; c_nokia_c(); porcentaje = 100;};
   recovery = 0;
   sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
@@ -617,13 +614,15 @@ void coccion (byte pasoProceso){
  *  No devuelve nada
  */
 void trasvase(){
+    if (recovery != 1){
+
 //Confirmacion del inicio de proceso de trasvase
   Serial.println("O3");
   procesoActual = 3;
   estado = 1;
   sendInfo(procesoActual,0);
-  
-  
+    }
+   
 //Trasvase ON
   digitalWrite(bombaFrio,HIGH);
   delay(retrasoBombas);
@@ -660,8 +659,9 @@ void trasvase(){
   digitalWrite(bombaFrio,LOW);
   
 //Envio mensaje de fin de proceso.
-  if (falloProceso) estado = 3;
-  else estado = 2;
+  if (falloProceso) {estado = 3; porcentaje = 100;}
+  else {estado = 2; c_nokia_c(); porcentaje = 100;};
+  recovery = 0;
   sendInfo(procesoActual,0);
   finProceso(procesoActual,falloProceso);
 }
@@ -687,12 +687,14 @@ void fermentacion(byte pasoProceso){
   sendInfo(procesoActual,pasoProceso);
   
 //LECTURA DE VARIABLES
-  float temperaturaFermentacion = tempFermen;
-  int tiempoFermentacion = tiempoFermen;
+  float temperaturaFermentacion = tempFermen[pasoProceso].toFloat();
+  int tiempoFermentacion = tiempoFermen[pasoProceso].toInt();
+
   gettime();
   tiempoi = tiempoActual;
-  tiempof = tiempoi + (tiempoFermen * 2629750);
+  tiempof = tiempoi + (tiempoFermentacion * 2629750);
   Serial.println(tiempof);
+
   long tiempoCancelacion = tiempoActual + 5;
   long tiempoMtiempo = tiempoActual;
   do{
@@ -712,14 +714,10 @@ void fermentacion(byte pasoProceso){
     if (tiempoRestante <= 0) break;
       delay(1000);
   }while(true);
-//PUESTA A CERO FINAL
-  tiempoi = 0;
-  tiempof = 0;
-  tiempoActual = 0;
   
 //Envio mensaje de fin de proceso.
-  if (falloProceso) estado = 3;
-  else {estado = 2; c_nokia_c();}
+  if (falloProceso) {estado = 3; porcentaje = 100;}
+  else {estado = 2; c_nokia_c(); porcentaje = 100;};
   recovery = 0;
   sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
@@ -919,7 +917,11 @@ void leerReceta(){
         if (datos[i] == ';') i = longitud;
         else stempCoc += datos[i];
       }
-      tempCoc = stempCoc.toFloat();
+      //tempCoc = stempCoc.toFloat();
+      numParametros = count(stempCoc);
+      for (int i = 0;i < numParametros;i ++){
+        tempCoc[i] = s.separa(stempCoc, ':', i);
+      }
       
 
     //Procesar datos tiempo de Cocción
@@ -929,7 +931,11 @@ void leerReceta(){
         if (datos[i] == ';') i = longitud;
         else stiempoCoc += datos[i];
       }
-      tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
+      //tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
+      numParametros = count(stiempoCoc);
+      for (int i = 0;i < numParametros;i ++){
+        tiempoCoc[i] = s.separa(stiempoCoc, ':', i);
+      }
       
 
     //Procesar datos tiempo del Fermentación
@@ -939,7 +945,11 @@ void leerReceta(){
         if (datos[i] == ';') i = longitud;
         else stempFermen += datos[i];
       }
-      tempFermen = stempFermen.toFloat();
+      //tempFermen = stempFermen.toFloat();
+      numParametros = count(stempFermen);
+      for (int i = 0;i < numParametros;i ++){
+        tempFermen[i] = s.separa(stempFermen, ':', i);
+      }
       
 
     //Procesar datos de la Temperatura de Fermentación
@@ -949,7 +959,11 @@ void leerReceta(){
         if (datos[i] == ';') i = longitud;
         else stiempoFermen += datos[i];
       }
-      tiempoFermen = stiempoFermen.toInt();
+      //tiempoFermen = stiempoFermen.toInt();
+      numParametros = count(stiempoFermen);
+      for (int i = 0;i < numParametros;i ++){
+        tiempoFermen[i] = s.separa(stiempoFermen, ':', i);
+      }
       
 
     //Mostrar información de la receta por Serial
@@ -962,16 +976,16 @@ void leerReceta(){
         //Serial.println(tempMacer);
         Serial.println(stempMacer);
         Serial.print("Temperatura del proceso Cocción= ");
-        Serial.println(tempCoc);
+        Serial.println(stempCoc);
         Serial.print("Temperatura del proceso de Fermentación= ");
-        Serial.println(tempFermen);
+        Serial.println(stempFermen);
       //Tiempos en segundos
         Serial.print("Tiempo en Minutos del proceso Maceración= ");
         Serial.println(stiempoMacer);
         Serial.print("Tiempo en Segundos del proceso Cocción= ");
-        Serial.println(tiempoCoc);
+        Serial.println(stiempoCoc);
         Serial.print("Tiempo en Meses del proceso Fermentación= ");
-        Serial.println(tiempoFermen);
+        Serial.println(stiempoFermen);
     }else{
       Serial.println("La receta no existe");
     }
