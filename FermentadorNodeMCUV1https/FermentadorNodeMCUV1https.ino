@@ -104,7 +104,7 @@
   
 //Variables configurables
   const float anchoVentana = 1;               //Rango para la temperatura
-  const float tiempoTransvase = 4;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
+  const float tiempoTrasvase = 210000;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
   const int retrasoBombas = 1000;             //Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
@@ -134,6 +134,7 @@
   int recoveryTiempoRestante;
   int recoveryProceso;
   int recoveryPasoProceso;
+  int tiempoProcesoSeg;
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
@@ -366,10 +367,6 @@ void pregunta(){
  */
 
  void recoveryProcesos(int proceso){
-  if (tempMacer == 0){
-    Serial.println("Primero selecciona una receta");
-    return;
-  }
        if (proceso==1) { maceracion(); }
   else if (proceso==2) { coccion();}
   else if (proceso==3) { trasvase();}
@@ -616,13 +613,17 @@ void coccion (){
  *  No devuelve nada
  */
 void trasvase(){
-    if (recovery != 1){
-
+  if (recovery != 1){
 //Confirmacion del inicio de proceso de trasvase
-  Serial.println("O3");
-  procesoActual = 3;
-  estado = 1;
-  sendInfo(procesoActual,0);
+    Serial.println("O3");
+    procesoActual = 3;
+    estado = 1;
+    tiempoRestante = 0;
+    porcentaje = 0;
+    sendInfo(procesoActual,0);
+    }else{
+      procesoActual = 3;
+      estado = 1;
     }
    
 //Trasvase ON
@@ -635,12 +636,12 @@ void trasvase(){
 //Control de tiempo y sensor de liquido
     Serial.println("------------------------");
     Serial.print("El tiempo de seguridad es de: ");
-    Serial.print(tiempoTransvase);
+    Serial.print("4");
     Serial.println(" Minutos");
     Serial.println("------------------------");
     gettime();
     tiempoi = tiempoActual;
-    tiempof = tiempoi + (tiempoTransvase * 60);
+    tiempof = tiempoi + (4 * 60);
     long tiempoCancelacion = tiempoActual + 5;
     do{
       gettime();
@@ -648,6 +649,7 @@ void trasvase(){
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
+        sendInfo(procesoActual,0);
         if (falloProceso){
           break;
         }
@@ -682,38 +684,73 @@ void trasvase(){
  *  No devuelve nada
  */
 void fermentacion(){
+  if (recovery == 1){
+    procesoActual = 4;
+    estado = 1;
+  }else{
 //Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
   procesoActual = 4;
   estado = 1;
+  porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
+  }
   
 //LECTURA DE VARIABLES
   float temperaturaFermentacion = tempFermen[pasoProceso].toFloat();
   int tiempoFermentacion = tiempoFermen[pasoProceso].toInt();
-
-  gettime();
-  tiempoi = tiempoActual;
-  tiempof = tiempoi + (tiempoFermentacion * 2629750);
-  Serial.println(tiempof);
+  if (recovery == 1){
+    Serial.println("------------------------");
+    Serial.print("El proceso dura: ");
+    Serial.print(month(recoveryTiempoRestante));
+    Serial.print(":");
+    Serial.print(day(recoveryTiempoRestante));
+    Serial.print(":");
+    Serial.println(hour(recoveryTiempoRestante));
+    Serial.println("------------------------");
+    gettime();
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + (tiempoFermentacion * 2629750);
+    tiempoProcesoSeg = tiempof - tiempoi;
+    tiempof = tiempoi + recoveryTiempoRestante;
+  }else{
+    Serial.println("------------------------");
+    Serial.print("El proceso dura: ");
+    Serial.print(month(tiempoFermentacion));
+    Serial.print(":");
+    Serial.print(day(tiempoFermentacion));
+    Serial.println(":");
+    Serial.print(hour(tiempoFermentacion));
+    Serial.println("------------------------");
+    gettime();
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + (tiempoFermentacion * 2629750);
+    tiempoProcesoSeg = tiempof - tiempoi;
+  }
 
   long tiempoCancelacion = tiempoActual + 5;
-  long tiempoMtiempo = tiempoActual;
+  int tiempoPorcentaje = tiempoActual + 2;
   do{
     gettime();
     tiempoRestante = tiempof - tiempoActual;
     if (tiempoActual >= tiempoCancelacion){
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
+      sendInfo(procesoActual,pasoProceso);
       if (falloProceso){
         break;
       }
     }
-    if (tiempoActual >= tiempoMtiempo){
-      tiempoMtiempo = tiempoActual + 60;
-      
-    }
-    if (tiempoRestante <= 0) break;
+    if (tiempoRestante <= 0) {break; porcentaje = 100;}
+      if (tiempoActual >= tiempoPorcentaje){
+        tiempoPorcentaje = tiempoActual + 2;
+        int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
+        porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;
+        Serial.print("Leeva el ");
+        Serial.print(porcentaje);
+        Serial.print("%");
+        Serial.println(" completado");
+      }
       delay(1000);
   }while(true);
   
@@ -751,7 +788,7 @@ void recircular(){
 void calentar( int temperaturaProceso, long tiempoProceso){
 
   //Tratamiento de la ventana de temperatura
-  int tiempoProcesoSeg;
+  
   if (recovery == 1){
     Serial.println("------------------------");
     Serial.print("El proceso dura: ");
@@ -1058,7 +1095,7 @@ void sendInfo(int proceso,byte pasoProceso) {
     peticion = peticion + "&porcentaje=";
     peticion = peticion + porcentaje;
     http.begin(*client, peticion);
-    //Serial.println(peticion);
+    Serial.println(peticion);
     http.GET();
     http.end();
   }
