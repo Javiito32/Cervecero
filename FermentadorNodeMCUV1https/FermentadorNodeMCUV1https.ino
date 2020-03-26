@@ -124,6 +124,7 @@
   String tiempoFermen[10];                 //Tiempo fermentación de la recta selecionada
   bool falloProceso = 0;                      //Guarda si falla el tiempo
   int procesoActual;
+  int pasoProceso;
   int estado;
   String mac;
   int IDplaca;
@@ -284,19 +285,20 @@ void setup(){
         Serial.println(recoveryProceso);
         Serial.print("Paso del proceso que estaba: ");
         Serial.println(recoveryPasoProceso);
-        break;
+        
      
-        }
+        }break;
       }else{
         Serial.println("------------------------------");
-        Serial.println("No hay ningún proceso que restaurar");
+        Serial.println("Error de conexión con el servidor");
         Serial.println("------------------------------");
         break;
       }
   }
   if (recovery == 1){
     leerReceta();
-    recoveryProcesos(recoveryProceso,recoveryPasoProceso);
+    pasoProceso = recoveryPasoProceso;
+    recoveryProcesos(recoveryProceso);
   }
   
 }
@@ -363,15 +365,15 @@ void pregunta(){
  *  No devuelve nada
  */
 
- void recoveryProcesos(int proceso, int pasoProceso){
+ void recoveryProcesos(int proceso){
   if (tempMacer == 0){
     Serial.println("Primero selecciona una receta");
     return;
   }
-       if (proceso==1) { maceracion(pasoProceso); }
-  else if (proceso==2) { coccion(pasoProceso);}
+       if (proceso==1) { maceracion(); }
+  else if (proceso==2) { coccion();}
   else if (proceso==3) { trasvase();}
-  else if (proceso==4) { fermentacion(pasoProceso);}
+  else if (proceso==4) { fermentacion();}
   else Serial.println("Proceso no existente");
 }
 
@@ -399,10 +401,10 @@ void procesos(){
   }
   Serial.println("Selecciona proceso: ");
   pregunta();
-       if (dato==1) { pregunta(); maceracion(dato); }
-  else if (dato==2) { pregunta(); coccion(dato);}
+       if (dato==1) { pregunta(); pasoProceso = dato; maceracion(); }
+  else if (dato==2) { pregunta(); pasoProceso = dato; coccion();}
   else if (dato==3) { trasvase();}
-  else if (dato==4) { pregunta(); fermentacion(dato);}
+  else if (dato==4) { pregunta(); pasoProceso = dato; fermentacion();}
   else Serial.println("Proceso no existente");
 }
 
@@ -513,7 +515,7 @@ void time_set (){
  */
 
   
-void maceracion (byte pasoProceso){
+void maceracion (){
 
   if(recovery == 1){
     procesoActual = 1;
@@ -567,7 +569,7 @@ void maceracion (byte pasoProceso){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
-void coccion (byte pasoProceso){ 
+void coccion (){ 
   if(recovery == 1){
     procesoActual = 2;
     estado = 1;
@@ -679,7 +681,7 @@ void trasvase(){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
-void fermentacion(byte pasoProceso){
+void fermentacion(){
 //Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
   procesoActual = 4;
@@ -782,6 +784,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
+        sendInfo(procesoActual,pasoProceso);
         if (falloProceso){
           break;
         }
@@ -819,7 +822,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
 
 void comprobarCancelar() {
   if (WiFi.status() == WL_CONNECTED){
-    Serial.println("Comprobación de cancelación");
+    //Serial.println("Comprobación de cancelación");
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
@@ -1055,7 +1058,7 @@ void sendInfo(int proceso,byte pasoProceso) {
     peticion = peticion + "&porcentaje=";
     peticion = peticion + porcentaje;
     http.begin(*client, peticion);
-    Serial.println(peticion);
+    //Serial.println(peticion);
     http.GET();
     http.end();
   }
