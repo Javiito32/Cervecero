@@ -104,7 +104,7 @@
   
 //Variables configurables
   const float anchoVentana = 1;               //Rango para la temperatura
-  const float tiempoTrasvase = 210000;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
+  const float tiempoTransvase = 4;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
   const int retrasoBombas = 1000;             //Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
@@ -635,12 +635,12 @@ void trasvase(){
 //Control de tiempo y sensor de liquido
     Serial.println("------------------------");
     Serial.print("El tiempo de seguridad es de: ");
-    Serial.print("10");
+    Serial.print(tiempoTransvase);
     Serial.println(" Minutos");
     Serial.println("------------------------");
     gettime();
     tiempoi = tiempoActual;
-    tiempof = tiempoi + (10 * 60);
+    tiempof = tiempoi + (tiempoTransvase * 60);
     long tiempoCancelacion = tiempoActual + 5;
     do{
       gettime();
