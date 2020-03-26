@@ -5,9 +5,8 @@
  
 <body>
  <?php
- require 'conexion.php';
- $mac = "'84:0D:8E:B0:7C:53'"; 
- $sql = "UPDATE info SET fallo = 1 WHERE placaID=$mac";
+ require 'conexion.php'; 
+ $sql = "UPDATE menu SET fallo = 1 WHERE IDplaca=1";
 if ($conn->query($sql)) {
     header('location:index.php');
 
