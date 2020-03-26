@@ -1095,7 +1095,7 @@ void sendInfo(int proceso,byte pasoProceso) {
     peticion = peticion + "&porcentaje=";
     peticion = peticion + porcentaje;
     http.begin(*client, peticion);
-    Serial.println(peticion);
+    //Serial.println(peticion);
     http.GET();
     http.end();
   }
