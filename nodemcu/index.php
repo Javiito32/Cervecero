@@ -8,9 +8,9 @@ if (isset($_GET['error'])) {
     echo"$_GET[error]";
 }
 ?>
-<body>
+<body onload="menu.focus()">
 <form action="receta.php" method="post">
-<input type="text" name="menu">
+<input type="text" name="menu" id="menu">
 <input type="submit" value="Enviar">
 </form>
 <form action="cancelar.php" method="post" id="cancelar"></form>
