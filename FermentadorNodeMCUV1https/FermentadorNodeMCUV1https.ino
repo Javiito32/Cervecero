@@ -117,11 +117,11 @@
   long tiempoRestante;                        //Tiempo que falta para el final de los procesos en seg
   String tempMacer[10];                       //Temperatura de maceración de la receta seleccionada
   String tiempoMacer[10];                     //Tiempo maceración de la recta selecionada
-  String tempCoc[10];                              //Temperatura de cocción de la receta seleccionada
-  String tiempoCoc[10];                    //Tiempo cocción de la recta selecionada
+  String tempCoc[10];                         //Temperatura de cocción de la receta seleccionada
+  String tiempoCoc[10];                       //Tiempo cocción de la recta selecionada
   unsigned long tiempoTrans;                  //Tiempo transvase de la recta selecionada
-  String tempFermen[10];                           //Temperatura de fermentación de la receta seleccionada
-  String tiempoFermen[10];                 //Tiempo fermentación de la recta selecionada
+  String tempFermen[10];                      //Temperatura de fermentación de la receta seleccionada
+  String tiempoFermen[10];                    //Tiempo fermentación de la recta selecionada
   bool falloProceso = 0;                      //Guarda si falla el tiempo
   int procesoActual;
   int pasoProceso;
@@ -319,27 +319,4 @@ void loop(){
   Serial.println("------------------------------");
   pregunta();
   menuinicio(dato);
-}
-
-void comprobarCancelar() {
-  if (WiFi.status() == WL_CONNECTED){
-    //Serial.println("Comprobación de cancelación");
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?fallo=1&IDplaca=";
-    consulta = consulta + IDplaca;
-    http.begin(*client,consulta);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String stringcancelar = http.getString();
-        int cancelar = stringcancelar.toInt();
-        if (cancelar == 1){
-          falloProceso = 1;
-          http.end();
-        }
-    }else{
-      Serial.println("El servidor no responde");
-    }
-   }
 }
