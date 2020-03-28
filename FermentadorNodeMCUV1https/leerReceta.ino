@@ -125,7 +125,7 @@ void leerReceta(){
       
 
     //Mostrar información de la receta por Serial
-  if (tempMacer != 0){
+  if (tempMacer[0] != 0){
       //Nombre de la cerveza
         Serial.print("Nombre de la cerveza= ");
         Serial.println(nombre);
