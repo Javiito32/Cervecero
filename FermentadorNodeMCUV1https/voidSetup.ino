@@ -9,8 +9,10 @@ void getID(){
     //Serial.println(consulta);
     http.begin(*client, consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
+    //Serial.println(httpCode);
       if (httpCode == 200 || httpCode == 201) {
         String stringIDplaca = http.getString();
+        //Serial.println(stringIDplaca);
         http.end();
         IDplaca = stringIDplaca.toInt();
         Serial.println("------------------------------");

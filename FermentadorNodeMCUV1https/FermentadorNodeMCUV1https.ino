@@ -145,7 +145,7 @@
   int recoveryProceso;
   int recoveryPasoProceso;
   int tiempoProcesoSeg;
-  String currentVersion = "1.0.1";
+  String currentVersion = "1.0.2";
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
@@ -181,7 +181,7 @@ void setup(){
 
 
 if (drd.detectDoubleReset()) {
-    Serial.println("Double Reset Detected");
+    //Serial.println("Double Reset Detected");
     digitalWrite(2, LOW);
     delay(200);
     digitalWrite(2, HIGH);
@@ -193,19 +193,19 @@ if (drd.detectDoubleReset()) {
     digitalWrite(2, LOW);
     wifiManager.setConfigPortalTimeout(180);
     wifiManager.startConfigPortal("Cervecero_2.0");
-  } else {
+  } /*else {
     Serial.println("No Double Reset Detected");
-  }
+  }*/
   delay(2000);
   drd.stop();
   
 // Conectar con la red WiFi
-do{
+/*do{
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.autoConnect("Cervecero_2.0");
-}while (WiFi.status() != WL_CONNECTED);
+}while (WiFi.status() != WL_CONNECTED);*/
 
-  /*Serial.println("");
+  Serial.println("");
   Serial.print("Connecting");
   WiFi.begin();
 
@@ -217,7 +217,7 @@ do{
   Serial.println("WiFi connected");
 
   Serial.print("IP: ");
-  Serial.println(WiFi.localIP());      */         //Mostrar la IP que tiene el dispositivo
+  Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   mac = WiFi.macAddress();
@@ -228,9 +228,10 @@ do{
   Serial.println("++++++++++++++++++++++++++++++++");
   
   getID();
+  checkrecovery();
   checkforUpdates();
   startUpdate();
-  checkrecovery();
+  
   
   if (recovery == 1){
     leerReceta();
