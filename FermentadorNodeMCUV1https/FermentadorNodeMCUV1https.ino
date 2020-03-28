@@ -91,6 +91,12 @@
   #include <RTClib.h>                         // incluye libreria para el manejo del modulo RTC
   #include <TimeLib.h>
   #include <Separador.h>
+  #include <RunningMedian.h>
+  #include <DNSServer.h>
+  #include <WiFiManager.h>
+  #include <DoubleResetDetector.h>
+  #include <ESP8266httpUpdate.h>
+  
   
 //LAYOUT Pines
   #define pinSonda A0                    //Sonda de la temperatura
@@ -101,15 +107,19 @@
   #define peltier D6                     //Celulas Peltier
   #define sensorLiquido D7               //Sensor de liquido en tubo
   #define zumbador D8                    //Zumbador para reproducir canciones
+  #define DRD_TIMEOUT 2
+  #define DRD_ADDRESS 0                  // RTC Memory Address for the DoubleResetDetector to use
+
+
   
 //Variables configurables
   const float anchoVentana = 1;               //Rango para la temperatura
-  const float tiempoTransvase = 4;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
+  const float tiempoTrasvase = 210000;        //Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
   const int retrasoBombas = 1000;             //Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
-  const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
-  const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
+  //const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
+  //const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
   int dato;                                   //Dato leido para entrar el menu
   unsigned long tiempoi;                      //Tiempo inicial para los procesos en seg
   unsigned long tiempof;                      //Tiempo final para los procesos en seg
@@ -117,11 +127,11 @@
   long tiempoRestante;                        //Tiempo que falta para el final de los procesos en seg
   String tempMacer[10];                       //Temperatura de maceración de la receta seleccionada
   String tiempoMacer[10];                     //Tiempo maceración de la recta selecionada
-  String tempCoc[10];                              //Temperatura de cocción de la receta seleccionada
-  String tiempoCoc[10];                    //Tiempo cocción de la recta selecionada
+  String tempCoc[10];                         //Temperatura de cocción de la receta seleccionada
+  String tiempoCoc[10];                       //Tiempo cocción de la recta selecionada
   unsigned long tiempoTrans;                  //Tiempo transvase de la recta selecionada
-  String tempFermen[10];                           //Temperatura de fermentación de la receta seleccionada
-  String tiempoFermen[10];                 //Tiempo fermentación de la recta selecionada
+  String tempFermen[10];                      //Temperatura de fermentación de la receta seleccionada
+  String tiempoFermen[10];                    //Tiempo fermentación de la recta selecionada
   bool falloProceso = 0;                      //Guarda si falla el tiempo
   int procesoActual;
   int pasoProceso;
@@ -134,13 +144,16 @@
   int recoveryTiempoRestante;
   int recoveryProceso;
   int recoveryPasoProceso;
+  int tiempoProcesoSeg;
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
   HTTPClient http;                              // Object of the class HTTPClient.
+  DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
   RTC_DS3231 rtc;                               // crea objeto del tipo RTC_DS3231
   Separador s;                                  //Objeto para separar datos
+  WiFiManager wifiManager;
 
 /*
  * CICLO DE ARRANQUE
@@ -156,6 +169,7 @@ void setup(){
   Wire.begin(D2,D1);
 
 //Configuracion de pines
+  pinMode(2, OUTPUT);
   pinMode(resis,OUTPUT);
   pinMode(bombaRecirculacion,OUTPUT);
   pinMode(bombaTrasvase,OUTPUT);
@@ -163,21 +177,34 @@ void setup(){
   pinMode(peltier,OUTPUT);
   pinMode(sensorLiquido,INPUT);
   pinMode(zumbador,OUTPUT);
+
+
+if (drd.detectDoubleReset()) {
+    Serial.println("Double Reset Detected");
+    digitalWrite(2, LOW);
+    wifiManager.startConfigPortal("Cervecero_2.0");
+  } else {
+    Serial.println("No Double Reset Detected");
+  }
+  delay(2000);
+  drd.stop();
   
 // Conectar con la red WiFi
-  Serial.println("");
-  Serial.print("Connecting");
-  WiFi.begin(ssid, password);
+  //Serial.println("");
+  //Serial.print("Connecting");
+  /*WiFi.begin();
 
   while (WiFi.status() != WL_CONNECTED) {       //Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println("WiFi connected");*/
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.autoConnect("Cervecero_2.0");
 
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
+  //Serial.print("IP: ");
+  //Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   mac = WiFi.macAddress();
@@ -318,895 +345,4 @@ void loop(){
   Serial.println("------------------------------");
   pregunta();
   menuinicio(dato);
-}
-void pregunta(){
-  while(true){
-  delay(100);
-  if (WiFi.status() == WL_CONNECTED){
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?menu=1&IDplaca=";
-    consulta = consulta + IDplaca;
-    http.begin(*client, consulta);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String datoString = http.getString();
-        http.end();
-        dato = datoString.toInt();
-        //Serial.println(dato);
-        if (dato != 0){
-          String consulta = "https://192.168.1.150/arduino/menu.php?resetmenu=1&IDplaca=";
-          consulta = consulta + IDplaca;
-          http.begin(*client, consulta);
-          http.GET();
-          http.end();
-          break;
-        }
-        }else{
-          Serial.println("El servidor no responde");
-        }
-        
-      }
-  }
-}
-
-/*
- * Funcion menu.
- * Es el encargado de gestionar el numero de proceso, del 1 al 9, y 
- * elegir el proceso a realizar.
- * Datos del menu:
- *  - 1: Maceracion.
- *  - 2: Coccion.
- *  - 3: Trasvase.
- *  - 4: Fermentacion.
- *  
- *  Parametros: numero de proceso introducido como caracter
- *  No devuelve nada
- */
-
- void recoveryProcesos(int proceso){
-  if (tempMacer == 0){
-    Serial.println("Primero selecciona una receta");
-    return;
-  }
-       if (proceso==1) { maceracion(); }
-  else if (proceso==2) { coccion();}
-  else if (proceso==3) { trasvase();}
-  else if (proceso==4) { fermentacion();}
-  else Serial.println("Proceso no existente");
-}
-
-void menuinicio(int n){ 
-       if (n==1) { receta();}
-  else if (n==2) { procesos();}
-  else if (n==3) { ajustes();}
-  else if (n==4) { limpieza();}
-  else Serial.println("La accion deseada no existe");
-}
-
-void receta(){
-  Serial.println("------------------------------");
-  Serial.println("Selecciona receta: ");
-  Serial.println("------------------------------");
-  pregunta();
-  IDreceta = dato;
-  leerReceta();
-}
-
-void procesos(){
-  if (tempMacer == 0){
-    Serial.println("Primero selecciona una receta");
-    return;
-  }
-  Serial.println("Selecciona proceso: ");
-  pregunta();
-       if (dato==1) { pregunta(); pasoProceso = dato; maceracion(); }
-  else if (dato==2) { pregunta(); pasoProceso = dato; coccion();}
-  else if (dato==3) { trasvase();}
-  else if (dato==4) { pregunta(); pasoProceso = dato; fermentacion();}
-  else Serial.println("Proceso no existente");
-}
-
-
-void limpieza(){
-    Serial.println("------------------------");
-    Serial.println("Se ha iniciado la limpieza");
-    Serial.println("    Por favor, espere");
-    Serial.println("------------------------");
-    trasvase();
-}
-
-void ajustes(){
-  Serial.println("Ajustes");
-  pregunta();
-       if (dato==1) { time_set();}
-  else if (dato==2) { showtime();}
-  else if (dato==3) { tonos();}
-  else if (dato==4) { pruebas();}
-  
-  else Serial.println("La accion deseada no existe");
-}
-
-void pruebas(){
-  leerReceta();
-}
-
-void tonos(){
-  Serial.println("------------------------------");
-  Serial.println("Selecciona Música: ");
-  Serial.println("------------------------------");
-  pregunta();
-       if (dato==1) { cancion2(); }
-  else if (dato==2) { cancion1();}
-  else if (dato==3) { c_nokia_c();}
-  else Serial.println("La canción no existe");
-}
-
-void showtime(){
-  DateTime now = rtc.now();
-  tiempoActual = now.unixtime();
-  Serial.println(tiempoActual);
-  DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
-            // DateTime y asigna a variable fecha
-        Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.year());      // funcion que obtiene el año de la fecha completa
-        Serial.print(" ");       // caracter espacio en blanco como separador
-        Serial.print(fecha.hour());      // funcion que obtiene la hora de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
-}
-
-void gettime(){
-  DateTime now = rtc.now();
-  tiempoActual = now.unixtime();
-}
-
-void time_set (){
-  if (WiFi.status() == WL_CONNECTED){
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    http.begin("https://192.168.1.150/arduino/time.php");  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String stringtime = http.getString();
-        http.end();
-        unsigned long timeset = (long) strtol(stringtime.c_str(),NULL,0);
-        rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
-        DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
-            // DateTime y asigna a variable fecha
-        Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.year());      // funcion que obtiene el año de la fecha completa
-        Serial.print(" ");       // caracter espacio en blanco como separador
-        Serial.print(fecha.hour());      // funcion que obtiene la hora de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
-      }
-  }
- }
-
-
-/*  
- *  Funcion para realizar MACERACION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
- *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
- *  del proceso en segundos, acabando la consigna en "."
- *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
- *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
- *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
- *  del tiempo restante del proceso.
- *  Una vez alcanzado el tiempo envia mensaje de fin.  
- *  
- *  Parametros: No lleva parametros
- *  No devuelve nada
- */
-
-  
-void maceracion (){
-
-  if(recovery == 1){
-    procesoActual = 1;
-    estado = 1;
-  
-  }else{
-//Confirmacion del inicio de proceso de maceracion
-  Serial.println("O1");
-//Configuracion del proceso
-  procesoActual = 1;
-  estado = 1;
-  porcentaje = 0;
-  sendInfo(procesoActual,pasoProceso);
-}
-//LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
-//MODO RECIRCULACION
-  recircular();
-//CICLO DE CALENTAMIENTO
-  calentar(temperaturaMaceracion,tiempoMaceracion);
-//APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
-  
-//Envio mensaje de fin de proceso.
-  if (falloProceso) {estado = 3; porcentaje = 100;}
-  else {estado = 2; c_nokia_c(); porcentaje = 100;};
-  recovery = 0;
-  sendInfo(procesoActual,pasoProceso);
-  finProceso(procesoActual,falloProceso);
-  
-}
-
-/*
- *  Funcion para realizar COCCION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
- *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
- *  del proceso en segundos, acabando la consigna en "."
- *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
- *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
- *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
- *  del tiempo restante del proceso.
- *  Una vez alcanzado el tiempo envia mensaje de fin.  
- *  
- *  Parametros: No lleva parametros
- *  No devuelve nada
- */
-void coccion (){ 
-  if(recovery == 1){
-    procesoActual = 2;
-    estado = 1;
-  
-  }else{
-//Confirmacion del inicio de proceso de maceracion
-  Serial.println("O2");
-//Configuracion del proceso
-  procesoActual = 2;
-  estado = 1;
-  porcentaje = 0;
-  sendInfo(procesoActual,pasoProceso);
-} 
-//LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
-//MODO RECIRCULACION
-  recircular();
-  
-//CICLO DE CALENTAMIENTO
-  calentar(temperaturaMaceracion,tiempoMaceracion);
-//APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
-//Envio mensaje de fin de proceso.
-  if (falloProceso) {estado = 3; porcentaje = 100;}
-  else {estado = 2; c_nokia_c(); porcentaje = 100;};
-  recovery = 0;
-  sendInfo(procesoActual,pasoProceso);
-  finProceso(procesoActual,falloProceso);
-}
-
-/*
- *  Funcion para realizar TRASVASE.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso y activa las 
- *  bombas y reles necesarios.
- *  Se pone en modo trasvase hasta que recibe un mensaje de fin que viene dado por la 
- *  siguiente consigna: "T0000S0."
- *    
- *  Parametros: No lleva parametros
- *  No devuelve nada
- */
-void trasvase(){
-    if (recovery != 1){
-
-//Confirmacion del inicio de proceso de trasvase
-  Serial.println("O3");
-  procesoActual = 3;
-  estado = 1;
-  sendInfo(procesoActual,0);
-    }
-   
-//Trasvase ON
-  digitalWrite(bombaFrio,HIGH);
-  delay(retrasoBombas);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(peltier,HIGH);
-
-//Control de tiempo y sensor de liquido
-    Serial.println("------------------------");
-    Serial.print("El tiempo de seguridad es de: ");
-    Serial.print(tiempoTransvase);
-    Serial.println(" Minutos");
-    Serial.println("------------------------");
-    gettime();
-    tiempoi = tiempoActual;
-    tiempof = tiempoi + (tiempoTransvase * 60);
-    long tiempoCancelacion = tiempoActual + 5;
-    do{
-      gettime();
-      tiempoRestante = tiempof - tiempoActual;
-      if (tiempoActual >= tiempoCancelacion){
-        tiempoCancelacion = tiempoActual + 5;
-        comprobarCancelar();
-        if (falloProceso){
-          break;
-        }
-      }
-      if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
-    delay(1000);
-  }while(true);
-//Trasvase OFF  
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
-  
-//Envio mensaje de fin de proceso.
-  if (falloProceso) {estado = 3; porcentaje = 100;}
-  else {estado = 2; c_nokia_c(); porcentaje = 100;};
-  recovery = 0;
-  sendInfo(procesoActual,0);
-  finProceso(procesoActual,falloProceso);
-}
-
-
-
-/*
- *  Funcion para realizar FERMENTACION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  Finaliza el proceso cuando acaba el tiempo
- *  Encripta las variables y las envia.
- *  Una vez alcanzado el tiempo envia mensaje de fin.  
- *  
- *  Parametros: No lleva parametros
- *  No devuelve nada
- */
-void fermentacion(){
-//Confirmacion para RASPBERRY del inicio de proceso de fermentacion
-  Serial.println("O4");
-  procesoActual = 4;
-  estado = 1;
-  sendInfo(procesoActual,pasoProceso);
-  
-//LECTURA DE VARIABLES
-  float temperaturaFermentacion = tempFermen[pasoProceso].toFloat();
-  int tiempoFermentacion = tiempoFermen[pasoProceso].toInt();
-
-  gettime();
-  tiempoi = tiempoActual;
-  tiempof = tiempoi + (tiempoFermentacion * 2629750);
-  Serial.println(tiempof);
-
-  long tiempoCancelacion = tiempoActual + 5;
-  long tiempoMtiempo = tiempoActual;
-  do{
-    gettime();
-    tiempoRestante = tiempof - tiempoActual;
-    if (tiempoActual >= tiempoCancelacion){
-      tiempoCancelacion = tiempoActual + 5;
-      comprobarCancelar();
-      if (falloProceso){
-        break;
-      }
-    }
-    if (tiempoActual >= tiempoMtiempo){
-      tiempoMtiempo = tiempoActual + 60;
-      
-    }
-    if (tiempoRestante <= 0) break;
-      delay(1000);
-  }while(true);
-  
-//Envio mensaje de fin de proceso.
-  if (falloProceso) {estado = 3; porcentaje = 100;}
-  else {estado = 2; c_nokia_c(); porcentaje = 100;};
-  recovery = 0;
-  sendInfo(procesoActual,pasoProceso);
-  finProceso(procesoActual,falloProceso);
-}
-
-
-
-/*
- * Metodo para recircular. 
- * Sirve poner los reles y bombas en la posicion de recirculacion.
- * 
- * No tiene parametros
- * No devuelve nada
- */
-void recircular(){
-  digitalWrite(bombaRecirculacion,HIGH);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
-}
-
-/*
- * Metodo calentar. 
- * Sirve realizar un ciclo de calentamiento hasta la temperatura alcanzar la temperatura pasada como parametro
- * Parametros: tiempo del proceso en segundos
- *             temperatura del proceso en grados
- * No devuelve nada
- */
-void calentar( int temperaturaProceso, long tiempoProceso){
-
-  //Tratamiento de la ventana de temperatura
-  int tiempoProcesoSeg;
-  if (recovery == 1){
-    Serial.println("------------------------");
-    Serial.print("El proceso dura: ");
-    Serial.print(minute(recoveryTiempoRestante));
-    Serial.println(" Minutos");
-    Serial.println("------------------------");
-    gettime();
-    tiempoi = tiempoActual;
-    tiempof = tiempoi + (tiempoProceso * 60);
-    tiempoProcesoSeg = tiempof - tiempoi;
-    tiempof = tiempoi + recoveryTiempoRestante;
-  }else{
-    Serial.println("------------------------");
-    Serial.print("El proceso dura: ");
-    Serial.print(tiempoProceso);
-    Serial.println(" Minutos");
-    Serial.println("------------------------");
-    gettime();
-    tiempoi = tiempoActual;
-    tiempof = tiempoi + (tiempoProceso * 60);
-    tiempoProcesoSeg = tiempof - tiempoi;
-  }
-    
-    long tiempoCancelacion = tiempoActual + 5;
-    int tiempoPorcentaje = tiempoActual + 2;
-
-    int tmax = temperaturaProceso+anchoVentana;
-    int tmin = temperaturaProceso-anchoVentana;
-    do{
-      if (tiempoActual >= tiempoCancelacion){
-        tiempoCancelacion = tiempoActual + 5;
-        comprobarCancelar();
-        sendInfo(procesoActual,pasoProceso);
-        if (falloProceso){
-          break;
-        }
-      }
-      gettime();
-      tiempoRestante = tiempof - tiempoActual;
-      if (tiempoRestante <= 0) {break; porcentaje = 100;}
-      if (tiempoActual >= tiempoPorcentaje){
-        tiempoPorcentaje = tiempoActual + 2;
-        int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
-        porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;
-        Serial.print("Leeva el ");
-        Serial.print(porcentaje);
-        Serial.print("%");
-        Serial.println(" completado");
-      }
-      
-  //Tratamiento de la temperatura
-    int sensorTemperatura = analogRead(pinSonda);
-    float milivoltios = (sensorTemperatura / 1023.0) * 3300;
-    float celsius = milivoltios / 10;
-  //Mantenimiento de la ventana de temperatura
-    if(celsius > tmax){digitalWrite(resis,LOW);}
-    if(celsius < tmin){digitalWrite(resis,HIGH);}
-    delay(1000);
-  }while(true);
-  
-//PUESTA A CERO FINAL
-  tmax = 0;
-  tmin = 0;
-  tiempoi = 0;
-  tiempof = 0;
-  tiempoActual = 0;
-}
-
-void comprobarCancelar() {
-  if (WiFi.status() == WL_CONNECTED){
-    //Serial.println("Comprobación de cancelación");
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?fallo=1&IDplaca=";
-    consulta = consulta + IDplaca;
-    http.begin(*client,consulta);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String stringcancelar = http.getString();
-        int cancelar = stringcancelar.toInt();
-        if (cancelar == 1){
-          falloProceso = 1;
-          http.end();
-        }
-    }else{
-      Serial.println("El servidor no responde");
-    }
-   }
-}
-
-/*
- * Metodo leer. 
- * Sirve para leer una cadena de caracteres que se recibe de la SQL
- * y se almacena en un String. Los datos vienen separados por ";".
- * 
- * Contiene el parametro del ID de la receta que tiene que leer de la SQL.
- * Asigna los valores oportunos a las variables de cotrol (tmperatura y tiempo de cada proceso).
- */
-
-void leerReceta(){
-  if (WiFi.status() == WL_CONNECTED) {
-    
-    String peticion = "https://192.168.1.150/arduino/pedirdatos.php?id=";
-    peticion = peticion + IDreceta;
-    Serial.println("------------------------------");
-    Serial.print("Petición al servidor: ");
-    Serial.println(peticion);
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    http.begin(*client,peticion);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-    Serial.println(httpCode);
-    if (httpCode == 200 || httpCode == 201) { //Check the returning code
-      String datos = http.getString(); 
-      http.end();   //Close connection
-      Serial.println("------------------------------");                           // Obtiene la string
-      Serial.print("String recibida: ");
-      Serial.println(datos);
-      int longitud = datos.length();
-      Serial.println("------------------------------");
-
-    //Procesar datos nombre Receta
-      int pnombre = datos.indexOf("nombre=");
-      String nombre = "";
-      for (int i = pnombre + 7; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else nombre += datos[i];
-      }
-      
-
-    //Procesar datos de la Temperatura de Maceración
-      int ptempMacer = datos.indexOf("tempMacer=");               //Posicion de temp
-      String stempMacer = "";
-      for (int i = ptempMacer + 10; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stempMacer += datos[i];
-      }
-      //tempMacer = stempMacer.toFloat();
-      int numParametros = count(stempMacer);
-      for (int i = 0;i < numParametros;i ++){
-        tempMacer[i] = s.separa(stempMacer, ':', i);
-      }
-      
-      
-
-    //Procesar datos tiempo la Maceración
-      int ptiempoMacer = datos.indexOf("tiempoMacer=");
-      String stiempoMacer = "";
-      for (int i = ptiempoMacer + 12; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoMacer += datos[i];
-      }
-      //tiempoMacer = stiempoMacer.toInt();
-      numParametros = count(stiempoMacer);
-      for (int i = 0;i < numParametros;i ++){
-        tiempoMacer[i] = s.separa(stiempoMacer, ':', i);
-      }
-      
-
-    //Procesar datos de la Temperatura de Cocción
-      int ptempCoc = datos.indexOf("tempCoc=");
-      String stempCoc = "";
-      for (int i = ptempCoc + 8; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stempCoc += datos[i];
-      }
-      //tempCoc = stempCoc.toFloat();
-      numParametros = count(stempCoc);
-      for (int i = 0;i < numParametros;i ++){
-        tempCoc[i] = s.separa(stempCoc, ':', i);
-      }
-      
-
-    //Procesar datos tiempo de Cocción
-      int ptiempoCoc = datos.indexOf("tiempoCoc=");
-      String stiempoCoc = "";
-      for (int i = ptiempoCoc + 10; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoCoc += datos[i];
-      }
-      //tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
-      numParametros = count(stiempoCoc);
-      for (int i = 0;i < numParametros;i ++){
-        tiempoCoc[i] = s.separa(stiempoCoc, ':', i);
-      }
-      
-
-    //Procesar datos tiempo del Fermentación
-      int ptempFermen = datos.indexOf("tempFermen=");
-      String stempFermen = "";
-      for (int i = ptempFermen + 11; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stempFermen += datos[i];
-      }
-      //tempFermen = stempFermen.toFloat();
-      numParametros = count(stempFermen);
-      for (int i = 0;i < numParametros;i ++){
-        tempFermen[i] = s.separa(stempFermen, ':', i);
-      }
-      
-
-    //Procesar datos de la Temperatura de Fermentación
-      int ptiempoFermen = datos.indexOf("tiempoFermen=");
-      String stiempoFermen = "";
-      for (int i = ptiempoFermen + 13; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoFermen += datos[i];
-      }
-      //tiempoFermen = stiempoFermen.toInt();
-      numParametros = count(stiempoFermen);
-      for (int i = 0;i < numParametros;i ++){
-        tiempoFermen[i] = s.separa(stiempoFermen, ':', i);
-      }
-      
-
-    //Mostrar información de la receta por Serial
-  if (tempMacer != 0){
-      //Nombre de la cerveza
-        Serial.print("Nombre de la cerveza= ");
-        Serial.println(nombre);
-      //Temperaturas
-        Serial.print("Temperatura del proceso Maceración= ");
-        //Serial.println(tempMacer);
-        Serial.println(stempMacer);
-        Serial.print("Temperatura del proceso Cocción= ");
-        Serial.println(stempCoc);
-        Serial.print("Temperatura del proceso de Fermentación= ");
-        Serial.println(stempFermen);
-      //Tiempos en segundos
-        Serial.print("Tiempo en Minutos del proceso Maceración= ");
-        Serial.println(stiempoMacer);
-        Serial.print("Tiempo en Segundos del proceso Cocción= ");
-        Serial.println(stiempoCoc);
-        Serial.print("Tiempo en Meses del proceso Fermentación= ");
-        Serial.println(stiempoFermen);
-    }else{
-      Serial.println("La receta no existe");
-    }
-    }else{
-
-      Serial.println("El servidor no responde");
-
-    }
-
-}
-}
-
-
-
-/*
- * Metodo para enviar el final del proceso con errores.
- * Envia un mensaje a la Rasberry con los errores del proceso.
- * 
- * Parametros: dato  Representa el numero de proceso
- *             error Representa el numero de error (0 si no hay)
- * No devuelve nada
- */
-void finProceso (int proceso,bool error){
-//Variables locales
-  String mensaje = "Proceso ";
-//Conversion a String
-  mensaje.concat(proceso);
-  mensaje.concat(" Fallo ");
-  mensaje.concat(error);
-
-  if (falloProceso){
-    if (WiFi.status() == WL_CONNECTED) {
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?resetfallo=1&IDplaca=";
-    consulta = consulta + IDplaca;
-    http.begin(*client, consulta);
-    http.GET();
-    http.end();
-    falloProceso = 0;
-  }
-  }
-  
-  
-//Envia el string por a la Raspberry
-  Serial.println(mensaje);
-}
-
-void sendInfo(int proceso,byte pasoProceso) {
-  if (WiFi.status() == WL_CONNECTED) {
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String peticion = "https://192.168.1.150/arduino/info.php?IDplaca=";
-    peticion = peticion + IDplaca;
-    peticion = peticion + "&receta=";
-    peticion = peticion + IDreceta;
-    peticion = peticion + "&proceso=";
-    peticion = peticion + proceso;
-    peticion = peticion + "&pasoProceso=";
-    peticion = peticion + pasoProceso;
-    peticion = peticion + "&estado=";
-    peticion = peticion + estado;
-    peticion = peticion + "&tiempoRestante=";
-    peticion = peticion + tiempoRestante;
-    peticion = peticion + "&porcentaje=";
-    peticion = peticion + porcentaje;
-    http.begin(*client, peticion);
-    //Serial.println(peticion);
-    http.GET();
-    http.end();
-  }
-}
-
-
-int count(String str){
-  int a = 1;
-  for (int i = 0; i < str.length(); i ++){
-      if (str[i] == ':') {a = a + 1;}
-  }
-  return a;
-}
-
-/*
- * Funcion para reproducir la cancion.
- * Uso de la funcion tone:
- * tone(pin, frequency, duration)
- * 
- * Parametros: pin del zumbador (Poner "zumbador" para llamar al pin 3)
- * No devuelve nada
- */
-
-void cancion2(){
-delay(100);
-  tone(zumbador,440,100);
-  tone(zumbador,587.33,100);
-  delay(100);  
-  delay(100);
-  tone(zumbador,293.66,200);
-}
-
-void c_nokia_c(){
-    tone(zumbador, 1318, 124.99996875);
-    delay(124.99996875);
-    delay(5.43478125);
-    tone(zumbador, 1174, 130.43475);
-    delay(130.43475);
-    delay(10.8695625);
-    tone(zumbador, 739, 244.56515625);
-    delay(244.56515625);
-    delay(10.8695625);
-    tone(zumbador, 830, 244.56515625);
-    delay(244.56515625);
-    delay(5.43478125);
-    tone(zumbador, 1108, 114.13040625);
-    delay(114.13040625);
-    tone(zumbador, 987, 141.3043125);
-    delay(141.3043125);
-    tone(zumbador, 587, 277.17384375);
-    delay(277.17384375);
-    tone(zumbador, 659, 298.91296875);
-    delay(298.91296875);
-    tone(zumbador, 987, 135.86953125);
-    delay(135.86953125);
-    delay(5.43478125);
-    tone(zumbador, 880, 168.47821875);
-    delay(168.47821875);
-    tone(zumbador, 554, 315.2173125);
-    delay(315.2173125);
-    delay(5.43478125);
-    
-    tone(zumbador, 659, 70.65215625);
-    delay(70.65215625);
-    tone(zumbador, 880, 913.04325);
-    delay(913.04325);
-  }
-void cancion1(){
-  
-  delay(100);
-  tone(zumbador,659.26);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,783.99);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,987.77);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1046.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1046.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1046.77);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1174.66);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,987.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,987.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,783.99);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,783.99);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
 }
