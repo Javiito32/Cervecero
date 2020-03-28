@@ -91,6 +91,12 @@
   #include <RTClib.h>                         // incluye libreria para el manejo del modulo RTC
   #include <TimeLib.h>
   #include <Separador.h>
+  #include <RunningMedian.h>
+  #include <DNSServer.h>
+  #include <WiFiManager.h>
+  #include <DoubleResetDetector.h>
+  #include <ESP8266httpUpdate.h>
+  
   
 //LAYOUT Pines
   #define pinSonda A0                    //Sonda de la temperatura
@@ -101,6 +107,10 @@
   #define peltier D6                     //Celulas Peltier
   #define sensorLiquido D7               //Sensor de liquido en tubo
   #define zumbador D8                    //Zumbador para reproducir canciones
+  #define DRD_TIMEOUT 2
+  #define DRD_ADDRESS 0                  // RTC Memory Address for the DoubleResetDetector to use
+
+
   
 //Variables configurables
   const float anchoVentana = 1;               //Rango para la temperatura
@@ -108,8 +118,8 @@
   const int retrasoBombas = 1000;             //Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
-  const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
-  const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
+  //const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
+  //const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
   int dato;                                   //Dato leido para entrar el menu
   unsigned long tiempoi;                      //Tiempo inicial para los procesos en seg
   unsigned long tiempof;                      //Tiempo final para los procesos en seg
@@ -140,8 +150,10 @@
     
 //Objetos
   HTTPClient http;                              // Object of the class HTTPClient.
+  DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
   RTC_DS3231 rtc;                               // crea objeto del tipo RTC_DS3231
   Separador s;                                  //Objeto para separar datos
+  WiFiManager wifiManager;
 
 /*
  * CICLO DE ARRANQUE
@@ -157,6 +169,7 @@ void setup(){
   Wire.begin(D2,D1);
 
 //Configuracion de pines
+  pinMode(2, OUTPUT);
   pinMode(resis,OUTPUT);
   pinMode(bombaRecirculacion,OUTPUT);
   pinMode(bombaTrasvase,OUTPUT);
@@ -164,21 +177,34 @@ void setup(){
   pinMode(peltier,OUTPUT);
   pinMode(sensorLiquido,INPUT);
   pinMode(zumbador,OUTPUT);
+
+
+if (drd.detectDoubleReset()) {
+    Serial.println("Double Reset Detected");
+    digitalWrite(2, LOW);
+    wifiManager.startConfigPortal("Cervecero_2.0");
+  } else {
+    Serial.println("No Double Reset Detected");
+  }
+  delay(2000);
+  drd.stop();
   
 // Conectar con la red WiFi
-  Serial.println("");
-  Serial.print("Connecting");
-  WiFi.begin(ssid, password);
+  //Serial.println("");
+  //Serial.print("Connecting");
+  /*WiFi.begin();
 
   while (WiFi.status() != WL_CONNECTED) {       //Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println("WiFi connected");*/
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.autoConnect("Cervecero_2.0");
 
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
+  //Serial.print("IP: ");
+  //Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   mac = WiFi.macAddress();

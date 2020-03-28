@@ -58,7 +58,7 @@ void ajustes(){
 }
 
 void pruebas(){
-  leerReceta();
+  ESPhttpUpdate.update("192.168.1.150", 80, "/update/arduino.bin");
 }
 
 void tonos(){
