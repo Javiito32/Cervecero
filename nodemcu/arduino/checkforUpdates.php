@@ -3,7 +3,13 @@ require '../conexion.php';
 $IDplaca = $_GET['IDplaca'];
 $version = $_GET['currentVersion'];
 if (isset($_GET['currentVersion'])) {
-    $sql = $conn->query("UPDATE updates SET currentVersion='$version' WHERE IDplaca=$IDplaca");
+    $sql = $conn->query("SELECT currentVersion FROM updates WHERE IDplaca = $IDplaca");
+    while ($valores = mysqli_fetch_array($sql)) {
+        if ($version != $valores['currentVersion']) {
+            $sql = $conn->query("UPDATE updates SET currentVersion='$version' WHERE IDplaca=$IDplaca");
+        }
+    }
+    
     $sql = $conn->query("SELECT version FROM firmwares ORDER BY fechaSalida DESC LIMIT 1");
     while ($valores = mysqli_fetch_array($sql)) {
         if ($version == $valores['version']) {
