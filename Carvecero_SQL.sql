@@ -38,12 +38,14 @@ CREATE TABLE IF NOT EXISTS `firmwares` (
   PRIMARY KEY (`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.firmwares: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.firmwares: ~5 rows (aproximadamente)
 /*!40000 ALTER TABLE `firmwares` DISABLE KEYS */;
 REPLACE INTO `firmwares` (`version`, `fechaSalida`) VALUES
 	('1.0.0', '2020-03-28 17:44:39'),
 	('1.0.1', '2020-03-28 17:44:44'),
-	('1.0.2', '2020-03-28 23:51:53');
+	('1.0.2', '2020-03-28 23:51:53'),
+	('1.0.3', '2020-03-29 14:50:19'),
+	('1.0.4', '2020-03-29 15:26:33');
 /*!40000 ALTER TABLE `firmwares` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.info
@@ -86,12 +88,14 @@ CREATE TABLE IF NOT EXISTS `log` (
   KEY `estado` (`estado`),
   KEY `proceso` (`proceso`),
   KEY `placaID` (`IDplaca`) USING BTREE,
+  KEY `FK_log_recetas` (`receta`),
   CONSTRAINT `FK_log_estados` FOREIGN KEY (`estado`) REFERENCES `estados` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `FK_log_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE NO ACTION ON UPDATE CASCADE,
-  CONSTRAINT `FK_log_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+  CONSTRAINT `FK_log_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  CONSTRAINT `FK_log_recetas` FOREIGN KEY (`receta`) REFERENCES `recetas` (`ID`) ON DELETE NO ACTION ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=329 DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.log: ~304 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.log: ~317 rows (aproximadamente)
 /*!40000 ALTER TABLE `log` DISABLE KEYS */;
 REPLACE INTO `log` (`ID`, `IDplaca`, `receta`, `time`, `proceso`, `pasoProceso`, `estado`, `tiempoRestante`, `porcentaje`) VALUES
 	(6, 1, NULL, '2020-03-20 19:53:53', 1, NULL, 1, NULL, NULL),
@@ -425,12 +429,25 @@ CREATE TABLE IF NOT EXISTS `log_updates` (
   KEY `FK_log_updates_placas` (`IDplaca`),
   CONSTRAINT `FK_log_updates_firmwares` FOREIGN KEY (`oldVersion`) REFERENCES `firmwares` (`version`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_log_updates_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.log_updates: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.log_updates: ~12 rows (aproximadamente)
 /*!40000 ALTER TABLE `log_updates` DISABLE KEYS */;
 REPLACE INTO `log_updates` (`IDplaca`, `fecha_update`, `oldVersion`, `newVersion`, `id`) VALUES
-	(1, '2020-03-29 00:15:58', '1.0.0', '1.0.2', 22);
+	(1, '2020-03-29 00:15:58', '1.0.0', '1.0.2', 22),
+	(1, '2020-03-29 12:55:43', '1.0.2', '1.0.2', 23),
+	(1, '2020-03-29 12:56:42', '1.0.2', '1.0.2', 24),
+	(1, '2020-03-29 12:58:15', '1.0.2', '1.0.2', 25),
+	(1, '2020-03-29 12:58:34', '1.0.2', '1.0.2', 26),
+	(1, '2020-03-29 12:58:47', '1.0.2', '1.0.2', 27),
+	(1, '2020-03-29 12:59:24', '1.0.2', '1.0.2', 28),
+	(1, '2020-03-29 12:59:45', '1.0.2', '1.0.2', 29),
+	(1, '2020-03-29 14:50:33', '1.0.2', '1.0.3', 30),
+	(1, '2020-03-29 15:22:47', '1.0.3', '1.0.3', 31),
+	(1, '2020-03-29 15:26:46', '1.0.3', '1.0.3', 32),
+	(1, '2020-03-29 15:26:55', '1.0.3', '1.0.2', 33),
+	(1, '2020-03-29 15:27:18', '1.0.2', '1.0.3', 34),
+	(1, '2020-03-29 15:27:56', '1.0.3', '1.0.4', 35);
 /*!40000 ALTER TABLE `log_updates` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.menu
@@ -509,11 +526,73 @@ CREATE TABLE IF NOT EXISTS `updates` (
   CONSTRAINT `FK_updates_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.updates: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.updates: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `updates` DISABLE KEYS */;
 REPLACE INTO `updates` (`IDplaca`, `currentVersion`) VALUES
-	(1, '1.0.2');
+	(1, '1.0.4');
 /*!40000 ALTER TABLE `updates` ENABLE KEYS */;
+
+-- Volcando estructura para tabla cervecero.users
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `first_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `city` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `zip` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_date` datetime DEFAULT NULL,
+  `registered_date` datetime DEFAULT NULL,
+  `removed_date` datetime DEFAULT NULL,
+  `active` tinyint(1) DEFAULT NULL,
+  `manager` int(11) DEFAULT NULL,
+  `site` int(11) DEFAULT NULL,
+  `image` int(11) DEFAULT NULL,
+  `shift_start` time DEFAULT NULL,
+  `shift_end` time DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Volcando datos para la tabla cervecero.users: ~36 rows (aproximadamente)
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+REPLACE INTO `users` (`id`, `title`, `first_name`, `last_name`, `phone`, `city`, `zip`, `updated_date`, `registered_date`, `removed_date`, `active`, `manager`, `site`, `image`, `shift_start`, `shift_end`) VALUES
+	(1, 'Miss', 'Quynn', 'Contreras', '1-971-977-4681', 'Slidell', '81080', '2020-03-29 20:59:25', '2012-04-06 18:53:00', NULL, 0, 1, 1, NULL, '08:00:00', '16:00:00'),
+	(2, 'Mr', 'Kaitlin', 'Smith', '1-436-523-6103', 'Orlando', 'U5G 7J3', '2020-03-29 20:59:25', '2012-11-20 05:58:25', NULL, 1, 1, 2, NULL, '09:00:00', '17:00:00'),
+	(3, 'Mrs', 'Cruz', 'Reynolds', '1-776-102-6352', 'Lynn', 'EJ89 9DQ', '2020-03-29 20:59:25', '2011-12-31 23:34:03', NULL, 0, 2, 3, NULL, '09:00:00', '17:00:00'),
+	(4, 'Dr', 'Sophia', 'Morris', '1-463-224-1405', 'Belleville', 'T1F 2X1', '2020-03-29 20:59:25', '2012-08-04 02:55:53', NULL, 0, 3, 4, NULL, '08:00:00', '15:30:00'),
+	(5, 'Miss', 'Kamal', 'Roberson', '1-134-408-5227', 'Rehoboth Beach', 'V7I 6T5', '2020-03-29 20:59:25', '2012-12-23 00:17:03', NULL, 1, 1, 5, NULL, '09:00:00', '17:00:00'),
+	(6, 'Dr', 'Dustin', 'Rosa', '1-875-919-3188', 'Jersey City', 'E4 8ZE', '2020-03-29 20:59:25', '2012-10-05 22:18:59', NULL, 0, 1, 6, NULL, '09:00:00', '17:00:00'),
+	(7, 'Dr', 'Xantha', 'George', '1-106-884-4754', 'Billings', 'Y2I 6J7', '2020-03-29 20:59:25', '2012-11-25 12:50:16', NULL, 0, 6, 1, NULL, '07:00:00', '15:00:00'),
+	(8, 'Mrs', 'Bryar', 'Long', '1-918-114-8083', 'San Bernardino', '82983', '2020-03-29 20:59:25', '2012-05-14 23:32:25', NULL, 0, 1, 2, NULL, '09:00:00', '17:00:00'),
+	(9, 'Mrs', 'Kuame', 'Wynn', '1-101-692-4039', 'Truth or Consequences', '21290', '2020-03-29 20:59:25', '2011-06-21 16:27:07', NULL, 1, 2, 3, NULL, '06:00:00', '14:00:00'),
+	(10, 'Ms', 'Indigo', 'Brennan', '1-756-756-8161', 'Moline', 'NO8 3UY', '2020-03-29 20:59:25', '2011-02-19 12:51:08', NULL, 1, 5, 4, NULL, '12:00:00', '00:00:00'),
+	(11, 'Mrs', 'Avram', 'Allison', '1-751-507-2640', 'Rancho Palos Verdes', 'I7Q 8H4', '2020-03-29 20:59:25', '2012-12-30 17:02:10', NULL, 0, 1, 5, NULL, '09:00:00', '17:00:00'),
+	(12, 'Mr', 'Martha', 'Burgess', '1-971-722-1203', 'Toledo', 'Q5R 9HI', '2020-03-29 20:59:25', '2011-02-04 17:25:55', NULL, 1, 1, 6, NULL, '12:00:00', '00:00:00'),
+	(13, 'Miss', 'Lael', 'Kim', '1-626-697-2194', 'Lake Charles', '34209', '2020-03-29 20:59:25', '2012-07-24 06:44:22', NULL, 1, 7, 1, NULL, '09:00:00', '17:00:00'),
+	(14, 'Dr', 'Lyle', 'Lewis', '1-231-793-3520', 'Simi Valley', 'H9B 2H4', '2020-03-29 20:59:25', '2012-08-30 03:28:54', NULL, 0, 1, 2, NULL, '00:00:00', '12:00:00'),
+	(15, 'Miss', 'Veronica', 'Marks', '1-750-981-6759', 'Glens Falls', 'E3C 5D1', '2020-03-29 20:59:25', '2012-08-14 12:09:24', NULL, 1, 2, 3, NULL, '09:00:00', '17:00:00'),
+	(16, 'Mrs', 'Wynne', 'Ruiz', '1-983-744-5362', 'Branson', 'L9E 6E2', '2020-03-29 20:59:25', '2012-11-06 01:04:07', NULL, 0, 1, 4, NULL, '12:00:00', '00:00:00'),
+	(17, 'Ms', 'Jessica', 'Bryan', '1-949-932-6772', 'Boulder City', 'F5P 6NU', '2020-03-29 20:59:25', '2013-02-01 20:22:33', NULL, 0, 5, 5, NULL, '09:00:00', '17:00:00'),
+	(18, 'Ms', 'Quinlan', 'Hyde', '1-625-664-6072', 'Sheridan', 'Y8A 1LQ', '2020-03-29 20:59:25', '2011-10-25 16:53:45', NULL, 1, 1, 6, NULL, '08:00:00', '15:00:00'),
+	(19, 'Miss', 'Mona', 'Terry', '1-443-179-7343', 'Juneau', 'G62 1OF', '2020-03-29 20:59:25', '2012-01-15 09:26:59', NULL, 0, 1, 1, NULL, '08:30:00', '16:30:00'),
+	(20, 'Mrs', 'Medge', 'Patterson', '1-636-979-0497', 'Texarkana', 'I5U 6E0', '2020-03-29 20:59:25', '2012-10-20 16:26:18', NULL, 1, 1, 2, NULL, '09:00:00', '17:00:00'),
+	(21, 'Mrs', 'Perry', 'Gamble', '1-440-976-9560', 'Arcadia', '98923', '2020-03-29 20:59:25', '2012-06-06 02:03:49', NULL, 1, 2, 3, NULL, '00:00:00', '12:00:00'),
+	(22, 'Mrs', 'Pandora', 'Armstrong', '1-197-431-4390', 'Glendora', '34124', '2020-03-29 20:59:25', '2011-08-29 01:45:06', NULL, 0, 7, 4, NULL, '21:00:00', '03:00:00'),
+	(23, 'Mr', 'Pandora', 'Briggs', '1-278-288-9221', 'Oneida', 'T9M 4H9', '2020-03-29 20:59:25', '2012-07-16 08:44:41', NULL, 1, 4, 5, NULL, '09:00:00', '17:00:00'),
+	(24, 'Mrs', 'Maris', 'Leblanc', '1-936-114-2921', 'Cohoes', 'V1H 6Z7', '2020-03-29 20:59:25', '2011-05-04 13:07:04', NULL, 1, 1, 6, NULL, '00:00:00', '12:00:00'),
+	(25, 'Mrs', 'Ishmael', 'Crosby', '1-307-243-2684', 'Midwest City', 'T6 8PS', '2020-03-29 20:59:25', '2011-07-02 23:11:11', NULL, 0, 3, 1, NULL, '09:00:00', '17:00:00'),
+	(26, 'Miss', 'Quintessa', 'Pickett', '1-801-122-7471', 'North Tonawanda', '09166', '2020-03-29 20:59:25', '2013-02-05 10:33:22', NULL, 1, 1, 2, NULL, '12:00:00', '00:00:00'),
+	(27, 'Miss', 'Ifeoma', 'Mays', '1-103-883-0962', 'Parkersburg', '87377', '2020-03-29 20:59:25', '2011-08-22 12:19:09', NULL, 0, 1, 3, NULL, '09:00:00', '17:00:00'),
+	(28, 'Mrs', 'Basia', 'Harrell', '1-528-238-4178', 'Cody', 'LJ54 1IU', '2020-03-29 20:59:25', '2012-05-07 14:42:55', NULL, 1, 1, 4, NULL, '09:00:00', '17:00:00'),
+	(29, 'Mrs', 'Hamilton', 'Blackburn', '1-676-857-1423', 'Delta Junction', 'X5 9HE', '2020-03-29 20:59:25', '2011-05-19 07:39:48', NULL, 0, 6, 5, NULL, '10:00:00', '18:00:00'),
+	(30, 'Ms', 'Dexter', 'Burton', '1-275-332-8186', 'Gainesville', '65914', '2020-03-29 20:59:25', '2013-02-01 16:21:20', NULL, 1, 5, 6, NULL, '21:00:00', '03:00:00'),
+	(31, 'Mrs', 'Quinn', 'Mccall', '1-808-916-4497', 'Fallon', 'X4 8UB', '2020-03-29 20:59:25', '2012-03-24 19:31:51', NULL, 0, 1, 1, NULL, '09:00:00', '17:00:00'),
+	(32, 'Mr', 'Alexa', 'Wilder', '1-727-307-1997', 'Johnson City', '16765', '2020-03-29 20:59:25', '2011-10-14 08:21:14', NULL, 0, 3, 2, NULL, '09:00:00', '17:00:00'),
+	(33, 'Ms', 'Rhonda', 'Harrell', '1-934-906-6474', 'Minnetonka', 'I2R 1H2', '2020-03-29 20:59:25', '2011-11-15 00:08:02', NULL, 1, 1, 3, NULL, '12:00:00', '00:00:00'),
+	(34, 'Mrs', 'Jocelyn', 'England', '1-826-860-7773', 'Chico', '71102', '2020-03-29 20:59:25', '2012-05-31 18:01:43', NULL, 1, 1, 4, NULL, '09:00:00', '17:00:00'),
+	(35, 'Dr', 'Vincent', 'Banks', '1-225-418-0941', 'Palo Alto', '03281', '2020-03-29 20:59:25', '2011-08-07 07:22:43', NULL, 0, 1, 5, NULL, '18:00:00', '02:00:00'),
+	(36, 'Mrs', 'Stewart', 'Chan', '1-781-793-2340', 'Grand Forks', 'L1U 3ED', '2020-03-29 20:59:25', '2012-11-01 23:14:44', NULL, 1, 6, 6, NULL, '08:00:00', '16:00:00');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
 
 -- Volcando estructura para disparador cervecero.info_AU
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
