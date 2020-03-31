@@ -31,6 +31,21 @@ REPLACE INTO `estados` (`id`, `estado`) VALUES
 	(3, 'Fallo');
 /*!40000 ALTER TABLE `estados` ENABLE KEYS */;
 
+-- Volcando estructura para tabla cervecero.firmwares
+CREATE TABLE IF NOT EXISTS `firmwares` (
+  `version` varchar(10) NOT NULL,
+  `fechaSalida` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`version`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Volcando datos para la tabla cervecero.firmwares: ~3 rows (aproximadamente)
+/*!40000 ALTER TABLE `firmwares` DISABLE KEYS */;
+REPLACE INTO `firmwares` (`version`, `fechaSalida`) VALUES
+	('1.0.0', '2020-03-28 17:44:39'),
+	('1.0.1', '2020-03-28 17:44:44'),
+	('1.0.2', '2020-03-28 23:51:53');
+/*!40000 ALTER TABLE `firmwares` ENABLE KEYS */;
+
 -- Volcando estructura para tabla cervecero.info
 CREATE TABLE IF NOT EXISTS `info` (
   `IDplaca` int(11) NOT NULL AUTO_INCREMENT,
@@ -45,15 +60,15 @@ CREATE TABLE IF NOT EXISTS `info` (
   KEY `FK_info_procesos` (`proceso`),
   KEY `FK_info_estados` (`estado`),
   CONSTRAINT `FK_info_estados` FOREIGN KEY (`estado`) REFERENCES `estados` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
-  CONSTRAINT `FK_info_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_info_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `FK_info_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `FK_info_recetas` FOREIGN KEY (`receta`) REFERENCES `recetas` (`ID`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4;
 
 -- Volcando datos para la tabla cervecero.info: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `info` DISABLE KEYS */;
 REPLACE INTO `info` (`IDplaca`, `receta`, `proceso`, `pasoProceso`, `estado`, `tiempoRestante`, `porcentaje`) VALUES
-	(1, 1, 2, 1, 2, -5, 100);
+	(1, 1, 1, 1, 2, 0, 100);
 /*!40000 ALTER TABLE `info` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.log
@@ -72,9 +87,9 @@ CREATE TABLE IF NOT EXISTS `log` (
   KEY `proceso` (`proceso`),
   KEY `placaID` (`IDplaca`) USING BTREE,
   CONSTRAINT `FK_log_estados` FOREIGN KEY (`estado`) REFERENCES `estados` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
-  CONSTRAINT `FK_log_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
+  CONSTRAINT `FK_log_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `FK_log_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=316 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=329 DEFAULT CHARSET=utf8mb4;
 
 -- Volcando datos para la tabla cervecero.log: ~304 rows (aproximadamente)
 /*!40000 ALTER TABLE `log` DISABLE KEYS */;
@@ -382,36 +397,71 @@ REPLACE INTO `log` (`ID`, `IDplaca`, `receta`, `time`, `proceso`, `pasoProceso`,
 	(312, 1, 1, '2020-03-27 00:03:11', 2, 1, 1, 17, 71),
 	(313, 1, 1, '2020-03-27 00:03:23', 2, 1, 1, 12, 80),
 	(314, 1, 1, '2020-03-27 00:03:29', 2, 1, 1, 1, 98),
-	(315, 1, 1, '2020-03-27 00:03:40', 2, 1, 2, -5, 100);
+	(315, 1, 1, '2020-03-27 00:03:40', 2, 1, 2, -5, 100),
+	(316, 1, 1, '2020-03-28 19:16:50', 1, 1, 1, 0, 0),
+	(317, 1, 1, '2020-03-28 19:16:57', 1, 1, 1, 55, 6),
+	(318, 1, 1, '2020-03-28 19:17:02', 1, 1, 1, 50, 16),
+	(319, 1, 1, '2020-03-28 19:17:07', 1, 1, 1, 45, 25),
+	(320, 1, 1, '2020-03-28 19:17:12', 1, 1, 1, 40, 33),
+	(321, 1, 1, '2020-03-28 19:17:18', 1, 1, 1, 35, 40),
+	(322, 1, 1, '2020-03-28 19:17:22', 1, 1, 1, 30, 50),
+	(323, 1, 1, '2020-03-28 19:17:27', 1, 1, 1, 25, 58),
+	(324, 1, 1, '2020-03-28 19:17:32', 1, 1, 1, 20, 66),
+	(325, 1, 1, '2020-03-28 19:17:36', 1, 1, 1, 15, 75),
+	(326, 1, 1, '2020-03-28 19:17:42', 1, 1, 1, 10, 81),
+	(327, 1, 1, '2020-03-28 19:17:47', 1, 1, 1, 5, 91),
+	(328, 1, 1, '2020-03-28 19:17:53', 1, 1, 2, 0, 100);
 /*!40000 ALTER TABLE `log` ENABLE KEYS */;
+
+-- Volcando estructura para tabla cervecero.log_updates
+CREATE TABLE IF NOT EXISTS `log_updates` (
+  `IDplaca` int(11) NOT NULL,
+  `fecha_update` timestamp NULL DEFAULT NULL,
+  `oldVersion` varchar(10) DEFAULT NULL,
+  `newVersion` varchar(10) DEFAULT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`),
+  KEY `version` (`oldVersion`) USING BTREE,
+  KEY `FK_log_updates_placas` (`IDplaca`),
+  CONSTRAINT `FK_log_updates_firmwares` FOREIGN KEY (`oldVersion`) REFERENCES `firmwares` (`version`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_log_updates_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4;
+
+-- Volcando datos para la tabla cervecero.log_updates: ~0 rows (aproximadamente)
+/*!40000 ALTER TABLE `log_updates` DISABLE KEYS */;
+REPLACE INTO `log_updates` (`IDplaca`, `fecha_update`, `oldVersion`, `newVersion`, `id`) VALUES
+	(1, '2020-03-29 00:15:58', '1.0.0', '1.0.2', 22);
+/*!40000 ALTER TABLE `log_updates` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.menu
 CREATE TABLE IF NOT EXISTS `menu` (
   `IDplaca` int(11) NOT NULL DEFAULT 0,
   `menu` int(11) NOT NULL DEFAULT 0,
   `fallo` int(11) NOT NULL DEFAULT 0,
+  `updateNextBoot` int(11) DEFAULT 0,
   PRIMARY KEY (`IDplaca`) USING BTREE,
-  CONSTRAINT `FK_menu_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `FK_menu_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Volcando datos para la tabla cervecero.menu: ~2 rows (aproximadamente)
 /*!40000 ALTER TABLE `menu` DISABLE KEYS */;
-REPLACE INTO `menu` (`IDplaca`, `menu`, `fallo`) VALUES
-	(1, 0, 0);
+REPLACE INTO `menu` (`IDplaca`, `menu`, `fallo`, `updateNextBoot`) VALUES
+	(1, 0, 0, 0);
 /*!40000 ALTER TABLE `menu` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.placas
 CREATE TABLE IF NOT EXISTS `placas` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `IDplaca` int(11) NOT NULL AUTO_INCREMENT,
   `mac` varchar(17) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `needUpdate` int(11) DEFAULT 0,
   `usuario` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
+  PRIMARY KEY (`IDplaca`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.placas: ~1 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.placas: ~2 rows (aproximadamente)
 /*!40000 ALTER TABLE `placas` DISABLE KEYS */;
-REPLACE INTO `placas` (`id`, `mac`, `usuario`) VALUES
-	(1, '84:0D:8E:B0:7C:53', NULL);
+REPLACE INTO `placas` (`IDplaca`, `mac`, `needUpdate`, `usuario`) VALUES
+	(1, '84:0D:8E:B0:7C:53', 0, NULL);
 /*!40000 ALTER TABLE `placas` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.procesos
@@ -449,6 +499,22 @@ REPLACE INTO `recetas` (`ID`, `nombre`, `tempMacer`, `tiempoMacer`, `tempCoc`, `
 	(1, 'Pinta', '0:54:78:89:34', '0:1:5:7:3', '0:30', '0:1', '0:42', '0:3');
 /*!40000 ALTER TABLE `recetas` ENABLE KEYS */;
 
+-- Volcando estructura para tabla cervecero.updates
+CREATE TABLE IF NOT EXISTS `updates` (
+  `IDplaca` int(11) NOT NULL,
+  `currentVersion` varchar(10) DEFAULT NULL,
+  PRIMARY KEY (`IDplaca`),
+  KEY `FK_updates_firmwares` (`currentVersion`) USING BTREE,
+  CONSTRAINT `FK_updates_firmwares` FOREIGN KEY (`currentVersion`) REFERENCES `firmwares` (`version`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_updates_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Volcando datos para la tabla cervecero.updates: ~0 rows (aproximadamente)
+/*!40000 ALTER TABLE `updates` DISABLE KEYS */;
+REPLACE INTO `updates` (`IDplaca`, `currentVersion`) VALUES
+	(1, '1.0.2');
+/*!40000 ALTER TABLE `updates` ENABLE KEYS */;
+
 -- Volcando estructura para disparador cervecero.info_AU
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
@@ -461,10 +527,19 @@ SET SQL_MODE=@OLDTMP_SQL_MODE;
 -- Volcando estructura para disparador cervecero.placas_AI
 SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
 DELIMITER //
-CREATE TRIGGER placas_AI AFTER INSERT ON placas 
-FOR EACH ROW BEGIN
+CREATE TRIGGER `placas_AI` AFTER INSERT ON `placas` FOR EACH ROW BEGIN
 	INSERT INTO menu (IDplaca) VALUES (NEW.id);
 	INSERT INTO info (IDplaca) VALUES (NEW.id);
+	INSERT INTO updates (IDplaca) VALUES (NEW.id);
+END//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
+
+-- Volcando estructura para disparador cervecero.updates_BU
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER `updates_BU` BEFORE UPDATE ON `updates` FOR EACH ROW BEGIN
+	INSERT INTO log_updates (IDplaca,fecha_update,oldVersion,newVersion) VALUES (NEW.IDplaca,NOW(),OLD.currentVersion,NEW.currentVersion);
 END//
 DELIMITER ;
 SET SQL_MODE=@OLDTMP_SQL_MODE;

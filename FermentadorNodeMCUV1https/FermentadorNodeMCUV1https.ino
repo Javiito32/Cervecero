@@ -145,6 +145,7 @@
   int recoveryProceso;
   int recoveryPasoProceso;
   int tiempoProcesoSeg;
+  String currentVersion = "1.0.4";
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
@@ -178,150 +179,67 @@ void setup(){
   pinMode(sensorLiquido,INPUT);
   pinMode(zumbador,OUTPUT);
 
+  digitalWrite(resis,LOW);
+  digitalWrite(bombaRecirculacion,LOW);
+  digitalWrite(bombaTrasvase,LOW);
+  digitalWrite(bombaFrio,LOW);
+  digitalWrite(peltier,LOW);
+
 
 if (drd.detectDoubleReset()) {
-    Serial.println("Double Reset Detected");
+    //Serial.println("Double Reset Detected");
     digitalWrite(2, LOW);
+    delay(200);
+    digitalWrite(2, HIGH);
+    delay(200);
+    digitalWrite(2, LOW);
+    delay(200);
+    digitalWrite(2, HIGH);
+    delay(200);
+    digitalWrite(2, LOW);
+    wifiManager.setConfigPortalTimeout(180);
     wifiManager.startConfigPortal("Cervecero_2.0");
-  } else {
+  } /*else {
     Serial.println("No Double Reset Detected");
-  }
+  }*/
   delay(2000);
   drd.stop();
   
 // Conectar con la red WiFi
-  //Serial.println("");
-  //Serial.print("Connecting");
-  /*WiFi.begin();
+/*do{
+  wifiManager.setConfigPortalTimeout(120);
+  wifiManager.autoConnect("Cervecero_2.0");
+}while (WiFi.status() != WL_CONNECTED);*/
+  digitalWrite(2, HIGH);
+  Serial.println("");
+  Serial.print("Connecting");
+  WiFi.begin();
 
   while (WiFi.status() != WL_CONNECTED) {       //Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
-  Serial.println("WiFi connected");*/
-  wifiManager.setConfigPortalTimeout(180);
-  wifiManager.autoConnect("Cervecero_2.0");
+  Serial.println("WiFi connected");
+  digitalWrite(2, LOW);
 
-  //Serial.print("IP: ");
-  //Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   mac = WiFi.macAddress();
 
-//Solicitud de Identificador de placa según la mac
-  while (true){
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/get_id.php?mac=";
-    consulta = consulta + mac;
-    //Serial.println(consulta);
-    http.begin(*client, consulta);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String stringIDplaca = http.getString();
-        http.end();
-        IDplaca = stringIDplaca.toInt();
-        Serial.println("------------------------------");
-        Serial.print("El ID de la placa es el: ");
-        Serial.println(IDplaca);
-        Serial.println("------------------------------");
-        break;
-      }else{
-        Serial.println("------------------------------");
-        Serial.println("No se pudo obtener el ID de placa");
-        Serial.println("------------------------------");
-      }
-  }
-
-
-  //Revisión de si hay algún procesos que recuperar que se ha quedado a medias
-  while (true){
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/recovery.php?IDplaca=";
-    consulta = consulta + IDplaca;
-    //Serial.println(consulta);
-    http.begin(*client, consulta);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String datos = http.getString();
-        Serial.println(datos);
-        http.end();
-        //Decode
-        int longitud = datos.length();
-        int pestado = datos.indexOf("estado=");
-        String sestado = "";
-        for (int i = pestado + 7; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else sestado += datos[i];
-        }
-        int estado = sestado.toInt();
-
-        if(estado == 1){
-          recovery = 1;
-          Serial.println("------------------------------");
-          Serial.println("Hay procesos pendiantes");
-          Serial.println("------------------------------");
-
-
-          int preceta = datos.indexOf("receta=");
-          String sreceta = "";
-          for (int i = preceta + 7; i < longitud; i ++){
-          if (datos[i] == ';') i = longitud;
-          else sreceta += datos[i];
-          }
-          IDreceta = sreceta.toInt();
-          
-
-          int ptiempoRestante = datos.indexOf("tiempoRestante=");
-          String stiempoRestante = "";
-          for (int i = ptiempoRestante + 15; i < longitud; i ++){
-          if (datos[i] == ';') i = longitud;
-          else stiempoRestante += datos[i];
-          }
-          recoveryTiempoRestante = stiempoRestante.toInt();
-
-
-
-          int pproceso = datos.indexOf("proceso=");
-          String sproceso = "";
-          for (int i = pproceso + 8; i < longitud; i ++){
-          if (datos[i] == ';') i = longitud;
-          else sproceso += datos[i];
-          }
-          recoveryProceso = sproceso.toInt();
-
-
-
-          int ppasoProceso = datos.indexOf("pasoProceso=");
-          String spasoProceso = "";
-          for (int i = ppasoProceso + 12; i < longitud; i ++){
-          if (datos[i] == ';') i = longitud;
-          else spasoProceso += datos[i];
-          }
-          recoveryPasoProceso = spasoProceso.toInt();
-
-        Serial.print("Receta a recuperar: ");
-        Serial.println(IDreceta);
-        Serial.print("Tiempo que le falta: ");
-        Serial.println(recoveryTiempoRestante);
-        Serial.print("Proceso que estaba: ");
-        Serial.println(recoveryProceso);
-        Serial.print("Paso del proceso que estaba: ");
-        Serial.println(recoveryPasoProceso);
-        
-     
-        }break;
-      }else{
-        Serial.println("------------------------------");
-        Serial.println("Error de conexión con el servidor");
-        Serial.println("------------------------------");
-        break;
-      }
-  }
+  Serial.println("++++++++++++++++++++++++++++++++");
+  Serial.println(         "Cervecero 2.0");
+  Serial.println(         "Version:" + currentVersion);
+  Serial.println("++++++++++++++++++++++++++++++++");
+  
+  getID();
+  checkrecovery();
+  checkforUpdates();
+  startUpdate();
+  
+  
   if (recovery == 1){
     leerReceta();
     pasoProceso = recoveryPasoProceso;

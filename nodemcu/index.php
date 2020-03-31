@@ -15,5 +15,7 @@ if (isset($_GET['error'])) {
 </form>
 <form action="cancelar.php" method="post" id="cancelar"></form>
 <input type="button" value="Cancelar Proceso" onclick="document.getElementById('cancelar').submit()">
+<form action="update.php" method="post" id="update"></form>
+<input type="button" value="Actualizar firmware" onclick="document.getElementById('update').submit()">
 </body>
 </html>
