@@ -145,7 +145,7 @@
   int recoveryProceso;
   int recoveryPasoProceso;
   int tiempoProcesoSeg;
-  String currentVersion = "1.0.2";
+  String currentVersion = "1.0.4";
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
@@ -179,6 +179,12 @@ void setup(){
   pinMode(sensorLiquido,INPUT);
   pinMode(zumbador,OUTPUT);
 
+  digitalWrite(resis,LOW);
+  digitalWrite(bombaRecirculacion,LOW);
+  digitalWrite(bombaTrasvase,LOW);
+  digitalWrite(bombaFrio,LOW);
+  digitalWrite(peltier,LOW);
+
 
 if (drd.detectDoubleReset()) {
     //Serial.println("Double Reset Detected");
@@ -204,7 +210,7 @@ if (drd.detectDoubleReset()) {
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.autoConnect("Cervecero_2.0");
 }while (WiFi.status() != WL_CONNECTED);*/
-
+  digitalWrite(2, HIGH);
   Serial.println("");
   Serial.print("Connecting");
   WiFi.begin();
@@ -215,6 +221,7 @@ if (drd.detectDoubleReset()) {
   }
   Serial.println("");
   Serial.println("WiFi connected");
+  digitalWrite(2, LOW);
 
   Serial.print("IP: ");
   Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
