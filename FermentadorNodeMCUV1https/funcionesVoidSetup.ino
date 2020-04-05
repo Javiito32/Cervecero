@@ -4,7 +4,7 @@ void getID(){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/get_id.php?mac=";
+    String consulta = host + "get_id.php?mac=";
     consulta = consulta + mac;
     //Serial.println(consulta);
     http.begin(*client, consulta);  // Request destination.
@@ -34,7 +34,7 @@ void checkrecovery(){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/recovery.php?IDplaca=";
+    String consulta = host + "recovery.php?IDplaca=";
     consulta = consulta + IDplaca;
     //Serial.println(consulta);
     http.begin(*client, consulta);  // Request destination.
@@ -121,7 +121,7 @@ bool checkforUpdates(){
   std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/checkforUpdates.php?IDplaca=";
+    String consulta = host + "checkforUpdates.php?IDplaca=";
     consulta = consulta + IDplaca;
     consulta = consulta + "&currentVersion=";
     consulta = consulta + currentVersion;
@@ -146,7 +146,7 @@ void startUpdate(){
   std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/startUpdate.php?IDplaca=";
+    String consulta = host + "startUpdate.php?IDplaca=";
     consulta = consulta + IDplaca;
     //Serial.println(consulta);
     http.begin(*client, consulta);  // Request destination.
@@ -158,7 +158,7 @@ void startUpdate(){
         int n = datos.toInt();
         if (n == 1){
           Serial.println("Comenzando proceso de actualización");
-          ESPhttpUpdate.update("192.168.1.150", 80, "/firmware/arduino.bin");
+          ESPhttpUpdate.update(updatesServer, 80, "/firmware/arduino.bin");
           Serial.println("-----------------------------------");
         }
       }

@@ -10,7 +10,7 @@
 void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
     
-    String peticion = "https://192.168.1.150/arduino/pedirdatos.php?id=";
+    String peticion = host + "pedirdatos.php?id=";
     peticion = peticion + IDreceta;
     Serial.println("------------------------------");
     Serial.print("Petición al servidor: ");

@@ -57,17 +57,13 @@ void ajustes(){
   else Serial.println("La accion deseada no existe");
 }
 
-void pruebas(){
-  ESPhttpUpdate.update("192.168.1.150", 80, "/update/arduino.bin");
-}
+
 
 void tonos(){
   Serial.println("------------------------------");
   Serial.println("Selecciona Música: ");
   Serial.println("------------------------------");
   pregunta();
-       if (dato==1) { cancion2(); }
-  else if (dato==2) { cancion1();}
-  else if (dato==3) { c_nokia_c();}
+      if (dato==1) { c_nokia_c();}
   else Serial.println("La canción no existe");
 }

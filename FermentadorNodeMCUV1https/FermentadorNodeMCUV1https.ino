@@ -84,6 +84,7 @@
  * PINES Y VARIABLES
  */
   #include <Arduino.h>
+  #include <ArduinoJson.h>
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
   #include <WiFiClientSecureBearSSL.h>
@@ -118,8 +119,6 @@
   const int retrasoBombas = 1000;             //Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
-  //const char* ssid = "";                      //Nombre de la red WiFi a la que se va a conectar
-  //const char* password = "";                  //Contraseña de la red WiFi a la que se va a conectar
   int dato;                                   //Dato leido para entrar el menu
   unsigned long tiempoi;                      //Tiempo inicial para los procesos en seg
   unsigned long tiempof;                      //Tiempo final para los procesos en seg
@@ -145,7 +144,9 @@
   int recoveryProceso;
   int recoveryPasoProceso;
   int tiempoProcesoSeg;
-  String currentVersion = "1.0.4";
+  String currentVersion = "1.0.5";
+  String host = "https://192.168.1.150/php/arduino/";
+  String updatesServer = "192.168.1.150";
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
@@ -170,7 +171,7 @@ void setup(){
   Wire.begin(D2,D1);
 
 //Configuracion de pines
-  pinMode(2, OUTPUT);
+  //pinMode(2, OUTPUT);
   pinMode(resis,OUTPUT);
   pinMode(bombaRecirculacion,OUTPUT);
   pinMode(bombaTrasvase,OUTPUT);
@@ -188,7 +189,7 @@ void setup(){
 
 if (drd.detectDoubleReset()) {
     //Serial.println("Double Reset Detected");
-    digitalWrite(2, LOW);
+    /*digitalWrite(2, LOW);
     delay(200);
     digitalWrite(2, HIGH);
     delay(200);
@@ -196,7 +197,7 @@ if (drd.detectDoubleReset()) {
     delay(200);
     digitalWrite(2, HIGH);
     delay(200);
-    digitalWrite(2, LOW);
+    digitalWrite(2, LOW);*/
     wifiManager.setConfigPortalTimeout(180);
     wifiManager.startConfigPortal("Cervecero_2.0");
   } /*else {
@@ -210,7 +211,7 @@ if (drd.detectDoubleReset()) {
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.autoConnect("Cervecero_2.0");
 }while (WiFi.status() != WL_CONNECTED);*/
-  digitalWrite(2, HIGH);
+  //digitalWrite(2, HIGH);
   Serial.println("");
   Serial.print("Connecting");
   WiFi.begin();
@@ -221,7 +222,7 @@ if (drd.detectDoubleReset()) {
   }
   Serial.println("");
   Serial.println("WiFi connected");
-  digitalWrite(2, LOW);
+  //digitalWrite(2, LOW);
 
   Serial.print("IP: ");
   Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
@@ -254,13 +255,5 @@ if (drd.detectDoubleReset()) {
 */
 
 void loop(){
-
-
-  
-//Mensaje inicial
-  Serial.println("------------------------------");
-  Serial.println("Ready");
-  Serial.println("------------------------------");
-  pregunta();
-  menuinicio(dato);
+  inicio();
 }

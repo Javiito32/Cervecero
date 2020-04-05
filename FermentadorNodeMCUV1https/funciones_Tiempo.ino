@@ -27,7 +27,7 @@ void time_set (){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    http.begin("https://192.168.1.150/arduino/time.php");  // Request destination.
+    http.begin(host + "time.php");  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
         String stringtime = http.getString();

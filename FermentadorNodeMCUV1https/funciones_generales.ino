@@ -5,7 +5,7 @@ void pregunta(){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?menu=1&IDplaca=";
+    String consulta = host + "menu.php?menu=1&IDplaca=";
     consulta = consulta + IDplaca;
     http.begin(*client, consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
@@ -15,7 +15,7 @@ void pregunta(){
         dato = datoString.toInt();
         //Serial.println(dato);
         if (dato != 0){
-          String consulta = "https://192.168.1.150/arduino/menu.php?resetmenu=1&IDplaca=";
+          String consulta = host + "menu.php?resetmenu=1&IDplaca=";
           consulta = consulta + IDplaca;
           http.begin(*client, consulta);
           http.GET();

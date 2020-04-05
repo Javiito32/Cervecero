@@ -4,8 +4,9 @@ void comprobarCancelar() {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?fallo=1&IDplaca=";
+    String consulta = host + "menu.php?fallo=1&IDplaca=";
     consulta = consulta + IDplaca;
+    //Serial.println(consulta);
     http.begin(*client,consulta);  // Request destination.
     int httpCode = http.GET(); // Send the request.
       if (httpCode == 200 || httpCode == 201) {
@@ -16,7 +17,7 @@ void comprobarCancelar() {
           http.end();
         }
     }else{
-      Serial.println("El servidor no responde");
+      Serial.println("No se pudo comprobar la cancelación del proceso");
     }
    }
 }
