@@ -156,7 +156,7 @@
   RTC_DS3231 rtc;                                     // Objeto para la clase RTC_DS3231.
   Separador s;                                        // Objeto para la clase Separador.
   WiFiManager wifiManager;                            // Objeto para la clase WiFiManager.
-  LiquidCrystal_I2C lcd(0x27,16,2);  // set the LCD address to 0x27 for a 16 chars and 2 line display
+  LiquidCrystal_I2C lcd(0x27,16,2);                   // set the LCD address to 0x27 for a 16 chars and 2 line display
 
 /*
  * CICLO DE ARRANQUE
