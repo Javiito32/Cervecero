@@ -52,7 +52,7 @@ void finProceso (int proceso,bool error){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String consulta = "https://192.168.1.150/arduino/menu.php?resetfallo=1&IDplaca=";
+    String consulta = host + "resetCancelar.php?IDplaca=";
     consulta = consulta + IDplaca;
     http.begin(*client, consulta);
     http.GET();
@@ -65,11 +65,12 @@ void finProceso (int proceso,bool error){
 }
 
 void sendInfo(int proceso,byte pasoProceso) {
+  Serial.println("Log");
   if (WiFi.status() == WL_CONNECTED) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-  //client->setFingerprint(fingerprint);
+    //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String peticion = "https://192.168.1.150/arduino/info.php?IDplaca=";
+    String peticion = host + "info.php?IDplaca=";
     peticion = peticion + IDplaca;
     peticion = peticion + "&receta=";
     peticion = peticion + IDreceta;
@@ -84,7 +85,7 @@ void sendInfo(int proceso,byte pasoProceso) {
     peticion = peticion + "&porcentaje=";
     peticion = peticion + porcentaje;
     http.begin(*client, peticion);
-    //Serial.println(peticion);
+    Serial.println(peticion);
     http.GET();
     http.end();
   }
@@ -96,4 +97,29 @@ int count(String str){
       if (str[i] == ':') {a = a + 1;}
   }
   return a;
+}
+
+
+
+void comprobarCancelar() {
+  if (WiFi.status() == WL_CONNECTED){
+    //Serial.println("Comprobación de cancelación");
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    //client->setFingerprint(fingerprint);
+    client->setInsecure();
+    String datos_enviar = "?IDplaca=" + IDplaca;
+    //Serial.println(consulta);
+    http.begin(*client,host + "checkCancel.php");  // Request destination.
+    int httpCode = http.POST(datos_enviar); // Send the request.
+      if (httpCode == 200 || httpCode == 201) {
+        String stringcancelar = http.getString();
+        int cancelar = stringcancelar.toInt();
+        if (cancelar == 1){
+          falloProceso = 1;
+          http.end();
+        }
+    }else{
+      Serial.println("No se pudo comprobar la cancelación del proceso");
+    }
+   }
 }

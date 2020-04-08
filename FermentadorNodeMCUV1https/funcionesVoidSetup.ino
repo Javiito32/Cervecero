@@ -30,6 +30,7 @@ void getID(){
 
 //Revisión de si hay algún procesos que recuperar que se ha quedado a medias
 void checkrecovery(){
+  Serial.println("Comprobando Recovery");
   while (true){
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
