@@ -91,3 +91,45 @@ void recircular(){
   digitalWrite(peltier,LOW);
   digitalWrite(bombaFrio,LOW);
 }
+
+void comprobarCancelar() {
+  if (WiFi.status() == WL_CONNECTED){
+    String datos_Enviar = "IDplaca=";
+    datos_Enviar.concat(IDplaca);
+    String datos = peticion("checkCancel.php",datos_Enviar);
+      if (datos != "fallo") {
+        int cancelar = datos.toInt();
+        if (cancelar == 1){
+          falloProceso = 1;
+        }
+    }else{
+      Serial.println("No se pudo comprobar la cancelación del proceso");
+    }
+   }
+}
+
+/*
+ * Metodo para enviar el final del proceso con errores.
+ * Envia un mensaje a la Rasberry con los errores del proceso.
+ * 
+ * Parametros: dato  Representa el numero de proceso
+ *             error Representa el numero de error (0 si no hay)
+ * No devuelve nada
+ */
+void finProceso (int proceso,bool error){
+//Variables locales
+  String mensaje = "Proceso ";
+//Conversion a String
+  mensaje.concat(proceso);
+  mensaje.concat(" Fallo ");
+  mensaje.concat(error);
+
+  if (falloProceso){
+    if (WiFi.status() == WL_CONNECTED) {
+      peticion("resetCancelar.php","IDplaca=" + IDplaca);
+      falloProceso = 0;
+    }
+  }
+//Envia el string por a la Raspberry
+  Serial.println(mensaje);
+}

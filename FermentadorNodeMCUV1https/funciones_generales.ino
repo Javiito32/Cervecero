@@ -31,63 +31,26 @@ void pregunta(){
 }
 
 
-/*
- * Metodo para enviar el final del proceso con errores.
- * Envia un mensaje a la Rasberry con los errores del proceso.
- * 
- * Parametros: dato  Representa el numero de proceso
- *             error Representa el numero de error (0 si no hay)
- * No devuelve nada
- */
-void finProceso (int proceso,bool error){
-//Variables locales
-  String mensaje = "Proceso ";
-//Conversion a String
-  mensaje.concat(proceso);
-  mensaje.concat(" Fallo ");
-  mensaje.concat(error);
 
-  if (falloProceso){
-    if (WiFi.status() == WL_CONNECTED) {
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = host + "resetCancelar.php?IDplaca=";
-    consulta = consulta + IDplaca;
-    http.begin(*client, consulta);
-    http.GET();
-    http.end();
-    falloProceso = 0;
-  }
-  }
-//Envia el string por a la Raspberry
-  Serial.println(mensaje);
-}
 
 void sendInfo(int proceso,byte pasoProceso) {
   Serial.println("Log");
   if (WiFi.status() == WL_CONNECTED) {
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String peticion = host + "info.php?IDplaca=";
-    peticion = peticion + IDplaca;
-    peticion = peticion + "&receta=";
-    peticion = peticion + IDreceta;
-    peticion = peticion + "&proceso=";
-    peticion = peticion + proceso;
-    peticion = peticion + "&pasoProceso=";
-    peticion = peticion + pasoProceso;
-    peticion = peticion + "&estado=";
-    peticion = peticion + estado;
-    peticion = peticion + "&tiempoRestante=";
-    peticion = peticion + tiempoRestante;
-    peticion = peticion + "&porcentaje=";
-    peticion = peticion + porcentaje;
-    http.begin(*client, peticion);
-    Serial.println(peticion);
-    http.GET();
-    http.end();
+    String datos_Enviar = "IDplaca=";
+    datos_Enviar.concat(IDplaca);
+    datos_Enviar.concat("&receta=");
+    datos_Enviar.concat(IDreceta);
+    datos_Enviar.concat("&proceso=");
+    datos_Enviar.concat(proceso);
+    datos_Enviar.concat("&pasoProceso=");
+    datos_Enviar.concat(pasoProceso);
+    datos_Enviar.concat("&estado=");
+    datos_Enviar.concat(estado);
+    datos_Enviar.concat("&tiempoRestante=");
+    datos_Enviar.concat(tiempoRestante);
+    datos_Enviar.concat("&porcentaje="); 
+    datos_Enviar.concat(porcentaje);
+    peticion("info.php",datos_Enviar);
   }
 }
 
@@ -100,26 +63,19 @@ int count(String str){
 }
 
 
-
-void comprobarCancelar() {
-  if (WiFi.status() == WL_CONNECTED){
-    //Serial.println("Comprobación de cancelación");
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+String peticion(String php, String datos_Enviar){
+  std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     //client->setFingerprint(fingerprint);
     client->setInsecure();
-    String datos_enviar = "?IDplaca=" + IDplaca;
-    //Serial.println(consulta);
-    http.begin(*client,host + "checkCancel.php");  // Request destination.
-    int httpCode = http.POST(datos_enviar); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String stringcancelar = http.getString();
-        int cancelar = stringcancelar.toInt();
-        if (cancelar == 1){
-          falloProceso = 1;
-          http.end();
-        }
+    http.begin(*client,host+php);
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    int httpCode = http.POST(datos_Enviar);
+    if (httpCode == 200 || httpCode == 201) {
+      String datos = http.getString();
+      http.end();
+      return datos;
     }else{
-      Serial.println("No se pudo comprobar la cancelación del proceso");
+      http.end();
+      return "fallo";
     }
-   }
 }

@@ -200,8 +200,6 @@ if (drd.detectDoubleReset()) {
   } /*else {
     Serial.println("No Double Reset Detected");
   }*/
-  delay(2000);
-  drd.stop();
   
 // Conectar con la red WiFi
 /*do{
@@ -238,7 +236,7 @@ if (drd.detectDoubleReset()) {
   getID();
   checkrecovery();
   checkforUpdates();
-  startUpdate();
+  //startUpdate();
   
   
   if (recovery == 1){
@@ -255,5 +253,6 @@ if (drd.detectDoubleReset()) {
 */
 
 void loop(){
+  drd.stop();
   inicio();
 }

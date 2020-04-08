@@ -25,11 +25,21 @@ void maceracion (){
   }else{
 //Confirmacion del inicio de proceso de maceracion
   Serial.println("O1");
+  
 //Configuracion del proceso
   procesoActual = 1;
   estado = 1;
   porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  String lcd1 = "Maceracion: " + pasoProceso;
+  lcd.print(lcd1);
+  lcd.setCursor(0,1);
+  String lcd2 = "Porcentaje: ";
+  lcd2.concat(porcentaje);
+  lcd2.concat("%");
+  lcd.print(lcd2);
 }
 //LECTURA DE VARIABLES
   float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso

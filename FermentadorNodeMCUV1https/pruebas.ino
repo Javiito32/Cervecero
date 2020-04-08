@@ -57,7 +57,7 @@ menuPruebas(menu,dato1,dato2);
 
 void menuPruebas(int menu, int dato1, int dato2){
   Serial.println("menuPruebas");
-       if (menu==1) { IDreceta = dato; leerReceta();}
+       if (menu==1) { IDreceta = dato1; leerReceta();}
   else if (menu==2) { lanzar_Procesos(dato1,dato2);}
   else if (menu==4) { trasvase();}
   

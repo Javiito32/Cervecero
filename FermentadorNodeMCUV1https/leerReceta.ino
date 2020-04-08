@@ -7,43 +7,13 @@
  * Asigna los valores oportunos a las variables de cotrol (tmperatura y tiempo de cada proceso).
  */
 
-String peticion(String php, String datos_Enviar){
-  std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    http.begin(*client,host+php);
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    int httpCode = http.POST(datos_Enviar);
-    if (httpCode == 200 || httpCode == 201) {
-      String datos = http.getString();
-      http.end();
-      return datos;
-    }else{
-      return "fallo";
-    }
-}
-
 void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
-    String datos_Enviar = "IDreceta=1";
+    String datos_Enviar = "IDreceta=";
+    datos_Enviar.concat(IDreceta);
     Serial.println(datos_Enviar);
     String datos = peticion("pedirdatosPost.php",datos_Enviar);
-    /*String peticion = host + "pedirdatos.php?id=";
-    peticion = peticion + IDreceta;
-    Serial.println("------------------------------");
-    Serial.print("Petición al servidor: ");
-    Serial.println(peticion);*/
-    /*std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    http.begin(*client,host+"pedirdatosPost.php");  // Request destination.
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded"); //Preparamos el header text/plain si solo vamos a enviar texto plano sin un paradigma llave:valor.
-    String datosEnviar = "IDreceta=1";
-    int httpCode = http.POST(datosEnviar); // Send the request.
-    Serial.println(httpCode);*/
-    if (datos != "fallo") { //Check the returning code
-      //String datos = http.getString(); 
-      //http.end();   //Close connection
+    if (datos != "fallo") {
       Serial.println("------------------------------");                           // Obtiene la string
       Serial.print("String recibida: ");
       Serial.println(datos);
