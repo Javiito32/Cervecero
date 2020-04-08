@@ -193,7 +193,7 @@ if (drd.detectDoubleReset()) {
   lcd.setCursor(0,0);
   lcd.print("----  Modo  ----");
   lcd.setCursor(0,1);
-  lcd.print("Configuracion");
+  lcd.print(" Configuracion");
   //Serial.println("Double Reset Detected");
   wifiManager.setConfigPortalTimeout(180);
   wifiManager.startConfigPortal("Cervecero_2.0");
