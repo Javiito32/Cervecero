@@ -234,7 +234,7 @@ if (drd.detectDoubleReset()) {
   
   
   if (recovery == 1){                                   // Si hay procesos pendientes hara lo siguiente
-    leerReceta();
+    leerReceta();                                       // Leer la receta
     pasoProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó
   }

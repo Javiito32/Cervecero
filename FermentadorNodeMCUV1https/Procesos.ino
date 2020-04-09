@@ -1,18 +1,11 @@
 /*  
  *  Funcion para realizar MACERACION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
- *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
- *  del proceso en segundos, acabando la consigna en "."
- *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
- *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
- *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
- *  del tiempo restante del proceso.
- *  Una vez alcanzado el tiempo envia mensaje de fin.  
+ *  Primero se comprueba si el proceso se tiene que recuperar o no.
+ *  Después, se cogen las variables de la temperatura y el tiempo del proceso.
+ *  Se pone en modo recirculacion y realiza el ciclo de calentamiento manteniendo la tempetatura durante el tiempo del proceso 
+ *  Cada cierto tiempo se envia información a la base de datos para el seguimiento del proceso.
+ *  Además se comprueba si se ha cancelado el proceso por parte del usuario
  *  
- *  Parametros: No lleva parametros
- *  No devuelve nada
  */
 
   
@@ -257,7 +250,6 @@ void fermentacion(){
     lcd2.concat("%");
     lcd.print(lcd2);
   }else{
-//Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
   procesoActual = 4;
   estado = 1;
@@ -310,7 +302,7 @@ void fermentacion(){
   long tiempoCancelacion = tiempoActual + 5;
   int tiempoPorcentaje = tiempoActual + 2;
   do{
-    gettime();
+    gettime();                                            // Obtiene el tiempo para usarlo en la función
     tiempoRestante = tiempof - tiempoActual;
     if (tiempoActual >= tiempoCancelacion){
       tiempoCancelacion = tiempoActual + 5;
