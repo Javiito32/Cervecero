@@ -170,6 +170,7 @@ void setup(){
   Wire.begin(D2,D1);
   lcd.begin();
   delay(10);
+  m_Iniciando();
   
 //Configuracion de pines
   //pinMode(2, OUTPUT);
@@ -189,6 +190,7 @@ void setup(){
 
 //Detectamos si se ha pulsado el reset 2 veces para entrar en la configuracion del WiFi
 if (drd.detectDoubleReset()) {
+  m_Config();
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("----  Modo  ----");

@@ -117,7 +117,7 @@ bool checkforUpdates(){
     datos_Enviar.concat(IDplaca);
     datos_Enviar.concat("&currentVersion=" + currentVersion);
     String datos = peticion("checkforUpdates.php",datos_Enviar);
-    Serial.println(datos_Enviar);
+    //Serial.println(datos_Enviar);
       if (datos != "fallo") {
         Serial.println(datos);
         int n = s.separa(datos, ':', 0).toInt();

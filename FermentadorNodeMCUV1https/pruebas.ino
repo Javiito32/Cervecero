@@ -7,18 +7,11 @@ void pruebas(){
   while(true){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    String consulta = host + "json.php?IDplaca=";
-    consulta = consulta + IDplaca;
-    http.begin(*client, consulta);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String datosString = http.getString();
+    String datos_Enviar = "IDplaca=";
+    datos_Enviar.concat(IDplaca);
+    String datosString = peticion("json.php",datos_Enviar);
+      if (datosString != "fallo") {
         const char * datos = datosString.c_str();
-        //Serial.println(datosString);
-        http.end();
         
         const size_t capacity = JSON_OBJECT_SIZE(3) + 30;
         DynamicJsonDocument doc(capacity);
@@ -34,11 +27,10 @@ void pruebas(){
   
         //Serial.println(dato);
         if (menu != 0){
-          String consulta = host + "json.php?reset=1&IDplaca=";
-          consulta = consulta + IDplaca;
-          http.begin(*client, consulta);
-          http.GET();
-          http.end();
+          String datos_Enviar = "IDplaca=";
+          datos_Enviar.concat(IDplaca);
+          datos_Enviar.concat("&reset=1");
+          peticion("json.php",datos_Enviar);
           Serial.println(menu);
           Serial.println(dato1);
           Serial.println(dato2);
