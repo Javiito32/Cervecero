@@ -33,17 +33,10 @@ void c_nokia_c(){
     delay(913.04325);
   }
 
-void m_Iniciando(){
+void beep(byte n){
+  for (int i; i < n; i ++){
   tone(zumbador, 1318, 124.99996875);
   delay(1000);
   noTone(zumbador);
-}
-
-void m_Config(){
-  tone(zumbador, 1318, 124.99996875);
-  delay(1000);
-  noTone(zumbador);
-  tone(zumbador, 1318, 124.99996875);
-  delay(1000);
-  noTone(zumbador);
+  }
 }

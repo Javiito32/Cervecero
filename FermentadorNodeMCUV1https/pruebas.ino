@@ -1,6 +1,6 @@
 
 
-void pruebas(){
+void menu2(){
   int menu;
   int dato1;
   int dato2;

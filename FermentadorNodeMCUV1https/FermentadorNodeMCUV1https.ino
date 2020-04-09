@@ -101,16 +101,16 @@
   
   
 //LAYOUT Pines
-  #define pinSonda A0                    // Sonda de la temperatura
-  #define resis D0                       // Resistencia para calentar               
-  #define bombaRecirculacion D3          // Bomba de recirculacion 230V
-  #define bombaTrasvase D4               // Bomba trasvase 230V
-  #define bombaFrio D5                   // Bomba refrigeracion 230V
-  #define peltier D6                     // Celulas Peltier
-  #define sensorLiquido D7               // Sensor de liquido en tubo
-  #define zumbador D8                    // Zumbador para reproducir canciones
-  #define DRD_TIMEOUT 2                  // El tiempo en segundos que va a esperar para el doble reset "esta hecho con un delay y esto no se utiliza"
-  #define DRD_ADDRESS 0                  // RTC Memory Address for the DoubleResetDetector to use
+  #define pinSonda A0                         // Sonda de la temperatura
+  #define resis D0                            // Resistencia para calentar               
+  #define bombaRecirculacion D3               // Bomba de recirculacion 230V
+  #define bombaTrasvase D4                    // Bomba trasvase 230V
+  #define bombaFrio D5                        // Bomba refrigeracion 230V
+  #define peltier D6                          // Celulas Peltier
+  #define sensorLiquido D7                    // Sensor de liquido en tubo
+  #define zumbador D8                         // Zumbador para reproducir canciones
+  #define DRD_TIMEOUT 2                       // El tiempo en segundos que va a esperar para el doble reset "esta hecho con un delay y esto no se utiliza"
+  #define DRD_ADDRESS 0                       // RTC Memory Address for the DoubleResetDetector to use
 
   
 //Variables configurables
@@ -156,24 +156,19 @@
   RTC_DS3231 rtc;                                     // Objeto para la clase RTC_DS3231.
   Separador s;                                        // Objeto para la clase Separador.
   WiFiManager wifiManager;                            // Objeto para la clase WiFiManager.
-  LiquidCrystal_I2C lcd(0x27,16,2);                   // set the LCD address to 0x27 for a 16 chars and 2 line display
+  LiquidCrystal_I2C lcd(0x27,16,2);                   // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address 0x27
 
-/*
- * CICLO DE ARRANQUE
- * Configuramos los pines. Puesta a cero inicial.
- */
 void setup(){
   
 //Inicializamos las cosas
-  Serial.begin(115200);
-  WiFi.begin();
-  Wire.begin(D2,D1);
-  lcd.begin();
+  Serial.begin(115200);                               // Iniciamos el serial
+  WiFi.begin();                                       // Iniciamos WiFi
+  Wire.begin(D2,D1);                                  // Iniciamos las conexiones Wire
+  lcd.begin();                                        // Iniciamos la lcd
   delay(10);
-  m_Iniciando();
+  beep(1);                                            // Hacemos un pitido
   
 //Configuracion de pines
-  //pinMode(2, OUTPUT);
   pinMode(resis,OUTPUT);
   pinMode(bombaRecirculacion,OUTPUT);
   pinMode(bombaTrasvase,OUTPUT);
@@ -182,23 +177,23 @@ void setup(){
   pinMode(sensorLiquido,INPUT);
   pinMode(zumbador,OUTPUT);
 
+//Seteamos pines a LOW
   digitalWrite(resis,LOW);
   digitalWrite(bombaRecirculacion,LOW);
   digitalWrite(bombaTrasvase,LOW);
   digitalWrite(bombaFrio,LOW);
   digitalWrite(peltier,LOW);
 
-//Detectamos si se ha pulsado el reset 2 veces para entrar en la configuracion del WiFi
+//Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 if (drd.detectDoubleReset()) {
-  m_Config();
-  lcd.clear();
-  lcd.setCursor(0,0);
+  beep(2);                                              // Hacemos 2 pitidos
+  lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("----  Modo  ----");
-  lcd.setCursor(0,1);
+  lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
   lcd.print(" Configuracion");
-  //Serial.println("Double Reset Detected");
-  wifiManager.setConfigPortalTimeout(180);
-  wifiManager.startConfigPortal("Cervecero_2.0");
+  wifiManager.setConfigPortalTimeout(180);              // Si en 2 minutos no se ha conectado ningún dispositivo para configurar el wifi, se cierra
+  wifiManager.startConfigPortal("Cervecero_2.0");       // Se inicia el portal cautivo para la configuración
   } /*else {
     Serial.println("No Double Reset Detected");
   }*/
@@ -208,53 +203,59 @@ if (drd.detectDoubleReset()) {
   wifiManager.setConfigPortalTimeout(120);
   wifiManager.autoConnect("Cervecero_2.0");
 }while (WiFi.status() != WL_CONNECTED);*/
-  //digitalWrite(2, HIGH);
   Serial.println("");
   Serial.print("Connecting");
   
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("Iniciando...");
+  lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+  lcd.print("Iniciando...");                            
   
 
-  while (WiFi.status() != WL_CONNECTED) {       //Mostrar ... mientras se conacta al WiFi
+  while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi connected");
-  //digitalWrite(2, LOW);
 
   Serial.print("IP: ");
-  Serial.println(WiFi.localIP());               //Mostrar la IP que tiene el dispositivo
+  Serial.println(WiFi.localIP());                       // Mostrar la IP que tiene el dispositivo
   Serial.print("MAC: ");
-  Serial.println(WiFi.macAddress());
+  Serial.println(WiFi.macAddress());                    // Mostramos la mac del dispositivo
   mac = WiFi.macAddress();
 
   Serial.println("++++++++++++++++++++++++++++++++");
   Serial.println(         "Cervecero 2.0");
   Serial.println(         "Version: " + currentVersion);
   Serial.println("++++++++++++++++++++++++++++++++");
-  getID();
-  checkrecovery();
-  checkforUpdates();
-  //startUpdate();
+  getID();                                              // Obtenemos el id de placa ligado a la mac
+  checkrecovery();                                      // Comprobamos si hay procesos pendientes
+  checkforUpdates();                                    // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
   
   
-  if (recovery == 1){
+  if (recovery == 1){                                   // Si hay procesos pendientes hara lo siguiente
     leerReceta();
     pasoProceso = recoveryPasoProceso;
-    recoveryProcesos(recoveryProceso);
+    recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó
   }
   
 }
-/*
- * CICLO PRINCIPAL
- * Indicamos a la Raspberry que hemos arrancado. 
- * Leemos datos en bucle hasta entrar en un proceso.
-*/
+
+
 
 void loop(){
-  drd.stop();
-  inicio();
+  drd.stop();                                           // Dejamos de detectar el reset de la placa para entrar en el modo configuracion ya que si llegamos a este punto significa que ya tenemos FiFi
+
+  lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+  lcd.print("Cervecero v" + currentVersion);
+  lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
+  lcd.print("     Ready");
+  Serial.println("------------------------------");
+  Serial.println("Ready");
+  Serial.println("------------------------------");
+  menu2();
+  
+  //pregunta();
+  //menuinicio(dato);
 }

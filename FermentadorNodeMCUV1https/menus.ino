@@ -52,7 +52,6 @@ void ajustes(){
        if (dato==1) { time_set();}
   else if (dato==2) { showtime();}
   else if (dato==3) { tonos();}
-  else if (dato==4) { pruebas();}
   
   else Serial.println("La accion deseada no existe");
 }
