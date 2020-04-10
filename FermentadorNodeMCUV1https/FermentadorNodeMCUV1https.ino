@@ -206,15 +206,16 @@ if (drd.detectDoubleReset()) {
   Serial.println("");
   Serial.print("Connecting");
   
-  lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
+  lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  lcd.print("Iniciando...");                            
+  lcd.print("Conectando WiFi");                            
   
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
   }
+  drd.stop();                                           // Dejamos de detectar el reset de la placa para entrar en el modo configuracion ya que si llegamos a este punto significa que ya tenemos WiFi
   Serial.println("");
   Serial.println("WiFi connected");
 
@@ -228,6 +229,9 @@ if (drd.detectDoubleReset()) {
   Serial.println(         "Cervecero 2.0");
   Serial.println(         "Version: " + currentVersion);
   Serial.println("++++++++++++++++++++++++++++++++");
+  lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+  lcd.print("Iniciando...");                            
   getID();                                              // Obtenemos el id de placa ligado a la mac
   checkrecovery();                                      // Comprobamos si hay procesos pendientes
   checkforUpdates();                                    // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
@@ -244,9 +248,7 @@ if (drd.detectDoubleReset()) {
 
 
 void loop(){
-  drd.stop();                                           // Dejamos de detectar el reset de la placa para entrar en el modo configuracion ya que si llegamos a este punto significa que ya tenemos FiFi
-
-  lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
+  lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("Cervecero v" + currentVersion);
   lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
