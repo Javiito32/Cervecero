@@ -14,12 +14,12 @@ void maceracion (){
   if(recovery == 1){
     procesoActual = 1;
     estado = 1;
-    lcd.clear();
-    lcd.setCursor(0,0);
+    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
+    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     String lcd1 = "Maceracion: ";
     lcd1.concat(pasoProceso);
     lcd.print(lcd1);
-    lcd.setCursor(0,1);
+    lcd.setCursor(0,1);                        // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
     String lcd2 = "Porcentaje: ";
     lcd2.concat(porcentaje);
     lcd2.concat("%");
@@ -33,21 +33,21 @@ void maceracion (){
   procesoActual = 1;
   estado = 1;
   porcentaje = 0;
-  sendInfo(procesoActual,pasoProceso);
-  lcd.clear();
-  lcd.setCursor(0,0);
+  sendInfo(procesoActual,pasoProceso);        // Mandamos la informacion a la BDD a la tabla info
+  lcd.clear();                                // Limpia lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                         // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   String lcd1 = "Maceracion: ";
   lcd1.concat(pasoProceso);
   lcd.print(lcd1);
-  lcd.setCursor(0,1);
+  lcd.setCursor(0,1);                         // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
   String lcd2 = "Porcentaje: ";
   lcd2.concat(porcentaje);
   lcd2.concat("%");
   lcd.print(lcd2);
 }
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
+  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           // Pasa la variable de temperatura de una String a un Float
+  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  // Pasa la variable de tiempo de una String a un Int
 //MODO RECIRCULACION
   recircular();
 //CICLO DE CALENTAMIENTO
@@ -63,8 +63,8 @@ void maceracion (){
   if (falloProceso) {estado = 3; porcentaje = 100;}
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso);
-  finProceso(procesoActual,falloProceso);
+  sendInfo(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
+  finProceso(procesoActual,falloProceso);                                   
   
 }
 
@@ -90,12 +90,12 @@ void coccion (){
   if(recovery == 1){
     procesoActual = 2;
     estado = 1;
-    lcd.clear();
-    lcd.setCursor(0,0);
+    lcd.clear();                                                        // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                                 // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     String lcd1 = "Coccion: ";
     lcd1.concat(pasoProceso);
     lcd.print(lcd1);
-    lcd.setCursor(0,1);
+    lcd.setCursor(0,1);                                                 // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
     String lcd2 = "Porcentaje: ";
     lcd2.concat(porcentaje);
     lcd2.concat("%");
@@ -109,20 +109,20 @@ void coccion (){
   estado = 1;
   porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
-  lcd.clear();
-  lcd.setCursor(0,0);
+  lcd.clear();                                                          // Limpia lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   String lcd1 = "Coccion: ";
   lcd1.concat(pasoProceso);
-  lcd.print(lcd1);
-  lcd.setCursor(0,1);
+  lcd.print(lcd1);  
+  lcd.setCursor(0,1);                                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
   String lcd2 = "Porcentaje: ";
   lcd2.concat(porcentaje);
   lcd2.concat("%");
   lcd.print(lcd2);
 } 
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
-  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  //Variable del tiempo del proceso en minutos
+  float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           // Pasa la variable de temperatura de una String a un Float
+  int tiempoMaceracion = tiempoMacer[pasoProceso].toInt();                  // Pasa la variable de tiempo de una String a un Int
 //MODO RECIRCULACION
   recircular();
   
@@ -139,7 +139,7 @@ void coccion (){
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   lcd_Porcentaje();
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso);
+  sendInfo(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
   finProceso(procesoActual,falloProceso);
 }
 
@@ -164,10 +164,10 @@ void trasvase(){
     tiempoRestante = 0;
     porcentaje = 0;
     sendInfo(procesoActual,0);
-    lcd.clear();
-    lcd.setCursor(0,0);
+    lcd.clear();                                                      // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                               // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     lcd.print("Trasvasando... ");
-    lcd.setCursor(0,1);
+    lcd.setCursor(0,1);                                               // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
     lcd.print("Por favor espere");
     }else{
       procesoActual = 3;
@@ -192,7 +192,7 @@ void trasvase(){
     Serial.print("4");
     Serial.println(" Minutos");
     Serial.println("------------------------");
-    gettime();
+    gettime();                            
     tiempoi = tiempoActual;
     tiempof = tiempoi + (4 * 60);
     long tiempoCancelacion = tiempoActual + 5;
@@ -218,7 +218,7 @@ void trasvase(){
   if (falloProceso) {estado = 3; porcentaje = 100;}
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   recovery = 0;
-  sendInfo(procesoActual,0);
+  sendInfo(procesoActual,0);                                                     // Mandamos la informacion a la BDD a la tabla info
   finProceso(procesoActual,falloProceso);
 }
 
@@ -239,12 +239,12 @@ void fermentacion(){
   if (recovery == 1){
     procesoActual = 4;
     estado = 1;
-    lcd.clear();
-    lcd.setCursor(0,0);
+    lcd.clear();                                                                  // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                                           // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     String lcd1 = "Fermentacion: ";
     lcd1.concat(pasoProceso);
     lcd.print(lcd1);
-    lcd.setCursor(0,1);
+    lcd.setCursor(0,1);                                                           // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
     String lcd2 = "Porcentaje: ";
     lcd2.concat(porcentaje);
     lcd2.concat("%");
@@ -254,22 +254,22 @@ void fermentacion(){
   procesoActual = 4;
   estado = 1;
   porcentaje = 0;
-  lcd.clear();
-  lcd.setCursor(0,0);
+  lcd.clear();                                                                    // Limpia lo que hubiese escrito en la lcd
+  lcd.setCursor(0,0);                                                             // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   String lcd1 = "Fermentacion: ";
   lcd1.concat(pasoProceso);
   lcd.print(lcd1);
-  lcd.setCursor(0,1);
+  lcd.setCursor(0,1);                                                             // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
   String lcd2 = "Porcentaje: ";
   lcd2.concat(porcentaje);
   lcd2.concat("%");
   lcd.print(lcd2);
-  sendInfo(procesoActual,pasoProceso);
+  sendInfo(procesoActual,pasoProceso);                                            // Mandamos la informacion a la BDD a la tabla info
   }
   
 //LECTURA DE VARIABLES
-  float temperaturaFermentacion = tempFermen[pasoProceso].toFloat();
-  int tiempoFermentacion = tiempoFermen[pasoProceso].toInt();
+  float temperaturaFermentacion = tempFermen[pasoProceso].toFloat();              // Pasa la variable de temperatura de una String a un Float
+  int tiempoFermentacion = tiempoFermen[pasoProceso].toInt();                     // Pasa la variable de tiempo de una String a un Int
   if (recovery == 1){
     Serial.println("------------------------");
     Serial.print("El proceso dura: ");

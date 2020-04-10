@@ -111,11 +111,7 @@ void comprobarCancelar() {
 
 /*
  * Metodo para enviar el final del proceso con errores.
- * Envia un mensaje a la Rasberry con los errores del proceso.
- * 
- * Parametros: dato  Representa el numero de proceso
- *             error Representa el numero de error (0 si no hay)
- * No devuelve nada
+ * Envia un mensaje con la informacion final del proceso a la BDD
  */
 void finProceso (int proceso,bool error){
 //Variables locales
@@ -138,7 +134,7 @@ void finProceso (int proceso,bool error){
 }
 
 void lcd_Porcentaje(){
-  lcd.setCursor(12,1);
+  lcd.setCursor(12,1);                                      // Ponemos el cursor para empezar a escrivir en la linea 2 celda 12
   String lcd2 = ""; 
   lcd2.concat(porcentaje);
   lcd2.concat("%");
