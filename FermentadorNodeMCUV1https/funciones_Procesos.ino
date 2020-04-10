@@ -57,6 +57,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
         Serial.print(porcentaje);
         Serial.print("%");
         Serial.println(" completado");
+        lcd_Porcentaje();
       }
       
   //Tratamiento de la temperatura
@@ -126,10 +127,20 @@ void finProceso (int proceso,bool error){
 
   if (falloProceso){
     if (WiFi.status() == WL_CONNECTED) {
-      peticion("resetCancelar.php","IDplaca=" + IDplaca);
+      String datos_Enviar = "IDplaca=";
+      datos_Enviar.concat(IDplaca);
+      peticion("resetCancelar.php",datos_Enviar);
       falloProceso = 0;
     }
   }
 //Envia el string por a la Raspberry
   Serial.println(mensaje);
+}
+
+void lcd_Porcentaje(){
+  lcd.setCursor(12,1);
+  String lcd2 = ""; 
+  lcd2.concat(porcentaje);
+  lcd2.concat("%");
+  lcd.print(lcd2);
 }

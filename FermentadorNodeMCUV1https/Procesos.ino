@@ -1,18 +1,11 @@
 /*  
  *  Funcion para realizar MACERACION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
- *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
- *  del proceso en segundos, acabando la consigna en "."
- *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
- *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
- *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
- *  del tiempo restante del proceso.
- *  Una vez alcanzado el tiempo envia mensaje de fin.  
+ *  Primero se comprueba si el proceso se tiene que recuperar o no.
+ *  Después, se cogen las variables de la temperatura y el tiempo del proceso.
+ *  Se pone en modo recirculacion y realiza el ciclo de calentamiento manteniendo la tempetatura durante el tiempo del proceso 
+ *  Cada cierto tiempo se envia información a la base de datos para el seguimiento del proceso.
+ *  Además se comprueba si se ha cancelado el proceso por parte del usuario
  *  
- *  Parametros: No lleva parametros
- *  No devuelve nada
  */
 
   
@@ -21,6 +14,16 @@ void maceracion (){
   if(recovery == 1){
     procesoActual = 1;
     estado = 1;
+    lcd.clear();
+    lcd.setCursor(0,0);
+    String lcd1 = "Maceracion: ";
+    lcd1.concat(pasoProceso);
+    lcd.print(lcd1);
+    lcd.setCursor(0,1);
+    String lcd2 = "Porcentaje: ";
+    lcd2.concat(porcentaje);
+    lcd2.concat("%");
+    lcd.print(lcd2);
   
   }else{
 //Confirmacion del inicio de proceso de maceracion
@@ -33,7 +36,8 @@ void maceracion (){
   sendInfo(procesoActual,pasoProceso);
   lcd.clear();
   lcd.setCursor(0,0);
-  String lcd1 = "Maceracion: " + pasoProceso;
+  String lcd1 = "Maceracion: ";
+  lcd1.concat(pasoProceso);
   lcd.print(lcd1);
   lcd.setCursor(0,1);
   String lcd2 = "Porcentaje: ";
@@ -86,6 +90,16 @@ void coccion (){
   if(recovery == 1){
     procesoActual = 2;
     estado = 1;
+    lcd.clear();
+    lcd.setCursor(0,0);
+    String lcd1 = "Coccion: ";
+    lcd1.concat(pasoProceso);
+    lcd.print(lcd1);
+    lcd.setCursor(0,1);
+    String lcd2 = "Porcentaje: ";
+    lcd2.concat(porcentaje);
+    lcd2.concat("%");
+    lcd.print(lcd2);
   
   }else{
 //Confirmacion del inicio de proceso de maceracion
@@ -95,6 +109,16 @@ void coccion (){
   estado = 1;
   porcentaje = 0;
   sendInfo(procesoActual,pasoProceso);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  String lcd1 = "Coccion: ";
+  lcd1.concat(pasoProceso);
+  lcd.print(lcd1);
+  lcd.setCursor(0,1);
+  String lcd2 = "Porcentaje: ";
+  lcd2.concat(porcentaje);
+  lcd2.concat("%");
+  lcd.print(lcd2);
 } 
 //LECTURA DE VARIABLES
   float temperaturaMaceracion = tempMacer[pasoProceso].toFloat();           //Variable con la temperatura del proceso
@@ -113,6 +137,7 @@ void coccion (){
 //Envio mensaje de fin de proceso.
   if (falloProceso) {estado = 3; porcentaje = 100;}
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
+  lcd_Porcentaje();
   recovery = 0;
   sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
@@ -139,9 +164,19 @@ void trasvase(){
     tiempoRestante = 0;
     porcentaje = 0;
     sendInfo(procesoActual,0);
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Trasvasando... ");
+    lcd.setCursor(0,1);
+    lcd.print("Por favor espere");
     }else{
       procesoActual = 3;
       estado = 1;
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Trasvasando... ");
+      lcd.setCursor(0,1);
+      lcd.print("Por favor espere");
     }
    
 //Trasvase ON
@@ -167,7 +202,6 @@ void trasvase(){
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-        sendInfo(procesoActual,0);
         if (falloProceso){
           break;
         }
@@ -205,12 +239,31 @@ void fermentacion(){
   if (recovery == 1){
     procesoActual = 4;
     estado = 1;
+    lcd.clear();
+    lcd.setCursor(0,0);
+    String lcd1 = "Fermentacion: ";
+    lcd1.concat(pasoProceso);
+    lcd.print(lcd1);
+    lcd.setCursor(0,1);
+    String lcd2 = "Porcentaje: ";
+    lcd2.concat(porcentaje);
+    lcd2.concat("%");
+    lcd.print(lcd2);
   }else{
-//Confirmacion para RASPBERRY del inicio de proceso de fermentacion
   Serial.println("O4");
   procesoActual = 4;
   estado = 1;
   porcentaje = 0;
+  lcd.clear();
+  lcd.setCursor(0,0);
+  String lcd1 = "Fermentacion: ";
+  lcd1.concat(pasoProceso);
+  lcd.print(lcd1);
+  lcd.setCursor(0,1);
+  String lcd2 = "Porcentaje: ";
+  lcd2.concat(porcentaje);
+  lcd2.concat("%");
+  lcd.print(lcd2);
   sendInfo(procesoActual,pasoProceso);
   }
   
@@ -249,7 +302,7 @@ void fermentacion(){
   long tiempoCancelacion = tiempoActual + 5;
   int tiempoPorcentaje = tiempoActual + 2;
   do{
-    gettime();
+    gettime();                                            // Obtiene el tiempo para usarlo en la función
     tiempoRestante = tiempof - tiempoActual;
     if (tiempoActual >= tiempoCancelacion){
       tiempoCancelacion = tiempoActual + 5;
@@ -268,6 +321,7 @@ void fermentacion(){
         Serial.print(porcentaje);
         Serial.print("%");
         Serial.println(" completado");
+        lcd_Porcentaje();
       }
       delay(1000);
   }while(true);
@@ -275,6 +329,7 @@ void fermentacion(){
 //Envio mensaje de fin de proceso.
   if (falloProceso) {estado = 3; porcentaje = 100;}
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
+  lcd_Porcentaje();
   recovery = 0;
   sendInfo(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
