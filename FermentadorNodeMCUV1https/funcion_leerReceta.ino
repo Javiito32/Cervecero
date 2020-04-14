@@ -9,21 +9,11 @@
 
 void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
-    
-    String peticion = "https://192.168.1.150/arduino/pedirdatos.php?id=";
-    peticion = peticion + IDreceta;
-    Serial.println("------------------------------");
-    Serial.print("Petición al servidor: ");
-    Serial.println(peticion);
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    http.begin(*client,peticion);  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-    Serial.println(httpCode);
-    if (httpCode == 200 || httpCode == 201) { //Check the returning code
-      String datos = http.getString(); 
-      http.end();   //Close connection
+    String datos_Enviar = "IDreceta=";
+    datos_Enviar.concat(IDreceta);
+    Serial.println(datos_Enviar);
+    String datos = peticion("pedirdatosPost.php",datos_Enviar);
+    if (datos != "fallo") {
       Serial.println("------------------------------");                           // Obtiene la string
       Serial.print("String recibida: ");
       Serial.println(datos);

@@ -1,12 +1,3 @@
-void cancion2(){
-delay(100);
-  tone(zumbador,440,100);
-  tone(zumbador,587.33,100);
-  delay(100);  
-  delay(100);
-  tone(zumbador,293.66,200);
-}
-
 void c_nokia_c(){
     tone(zumbador, 1318, 124.99996875);
     delay(124.99996875);
@@ -36,93 +27,16 @@ void c_nokia_c(){
     tone(zumbador, 554, 315.2173125);
     delay(315.2173125);
     delay(5.43478125);
-    
     tone(zumbador, 659, 70.65215625);
     delay(70.65215625);
     tone(zumbador, 880, 913.04325);
     delay(913.04325);
   }
-void cancion1(){
-  
-  delay(100);
-  tone(zumbador,659.26);
-  delay(150);
+
+void beep(byte n){
+  for (int i; i < n; i ++){
+  tone(zumbador, 1318, 124.99996875);
+  delay(1000);
   noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,783.99);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,987.77);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1046.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1046.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1046.77);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,1174.66);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,987.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,987.77);
-  delay(900);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,783.99);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,783.99);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
-  tone(zumbador,880);
-  delay(150);
-  noTone(zumbador);
-  delay(100);
-  
+  }
 }

@@ -24,14 +24,8 @@ void gettime(){
 
 void time_set (){
   if (WiFi.status() == WL_CONNECTED){
-    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
-    client->setInsecure();
-    http.begin("https://192.168.1.150/arduino/time.php");  // Request destination.
-    int httpCode = http.GET(); // Send the request.
-      if (httpCode == 200 || httpCode == 201) {
-        String stringtime = http.getString();
-        http.end();
+    String stringtime = peticion("time.php","");
+      if (stringtime != "fallo") {
         unsigned long timeset = (long) strtol(stringtime.c_str(),NULL,0);
         rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
         DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato

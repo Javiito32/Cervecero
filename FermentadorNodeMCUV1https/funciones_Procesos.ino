@@ -57,6 +57,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
         Serial.print(porcentaje);
         Serial.print("%");
         Serial.println(" completado");
+        lcd_Porcentaje();
       }
       
   //Tratamiento de la temperatura
@@ -75,4 +76,67 @@ void calentar( int temperaturaProceso, long tiempoProceso){
   tiempoi = 0;
   tiempof = 0;
   tiempoActual = 0;
+}
+
+
+/*
+ * Metodo para recircular. 
+ * Sirve poner los reles y bombas en la posicion de recirculacion.
+ * 
+ * No tiene parametros
+ * No devuelve nada
+ */
+void recircular(){
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,LOW);
+  digitalWrite(peltier,LOW);
+  digitalWrite(bombaFrio,LOW);
+}
+
+void comprobarCancelar() {
+  if (WiFi.status() == WL_CONNECTED){
+    String datos_Enviar = "IDplaca=";
+    datos_Enviar.concat(IDplaca);
+    String datos = peticion("checkCancel.php",datos_Enviar);
+      if (datos != "fallo") {
+        int cancelar = datos.toInt();
+        if (cancelar == 1){
+          falloProceso = 1;
+        }
+    }else{
+      Serial.println("No se pudo comprobar la cancelación del proceso");
+    }
+   }
+}
+
+/*
+ * Metodo para enviar el final del proceso con errores.
+ * Envia un mensaje con la informacion final del proceso a la BDD
+ */
+void finProceso (int proceso,bool error){
+//Variables locales
+  String mensaje = "Proceso ";
+//Conversion a String
+  mensaje.concat(proceso);
+  mensaje.concat(" Fallo ");
+  mensaje.concat(error);
+
+  if (falloProceso){
+    if (WiFi.status() == WL_CONNECTED) {
+      String datos_Enviar = "IDplaca=";
+      datos_Enviar.concat(IDplaca);
+      peticion("resetCancelar.php",datos_Enviar);
+      falloProceso = 0;
+    }
+  }
+//Envia el string por a la Raspberry
+  Serial.println(mensaje);
+}
+
+void lcd_Porcentaje(){
+  lcd.setCursor(12,1);                                      // Ponemos el cursor para empezar a escrivir en la linea 2 celda 12
+  String lcd2 = ""; 
+  lcd2.concat(porcentaje);
+  lcd2.concat("%");
+  lcd.print(lcd2);
 }
