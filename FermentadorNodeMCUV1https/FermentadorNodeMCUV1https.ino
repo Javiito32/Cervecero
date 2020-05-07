@@ -1,76 +1,5 @@
 /*
- * PROGRAMA PARA EL MANEJO DE UN FERMENTADOR
- * 
- * Notas de la version 2:
- *  - Estructura del programa.
- *  - Funcion triaje() para diferenciar procesos.
- *  - Programacion de la maceracion.
- *  - Establecimiento de la consigna de comunicacion.
- * 
- * Notas de la version 3:
- *  - Cambio en la consigna de comunicacion.
- *  - Modificar los pines del arduino y las variables configurables a const 
- *    (constantes durante todo el programa) para dar mas robustez al codigo.
- *  - Añadir comentarios en el setup.
- *  - Añadir puesta a cero inicial de las variables de trabajo.
- *  - Incluir y comentar el metodo leer().
- *  - Incluir y comentar el metodo desencriptarTemperatura().
- *  - Incluir y comentar el metodo desencriptarTiempo().
- * Notas de la version 4:
- *  - Cambio y comentarios en los pines.
- *  - Cambio de las variables de tiempo a float.
- *  - Modificacion del metodo de maceracion. Acabado completamente.
- *  - Programacion del metodo de coccion. Acabado completamente.
- *  - Metodo enviarTiempo(). Acabado completamente.
- *  - Metodo finProceso(). Acabadocompletamente.
- *  
- *  Notas de la version 4.1:
- *  - Hemos añadido los pines de reserva en el LAYOUT de pines.
- *  
- *  Notas de la version 5:
- *  - Metodo menu(). Acabado completamente.
- *  - Metodo recircular(). Acabado completamente.
- *  - Metodo calentar(). Acabado completamente.
- *  - Metodo trasvase(). Acabado completamente.
- *  - Metodo fermentacion(). Falta programarlo.
- *  - Modificacion desencriptarTemperatura(). Daba fallo y 
- *    se han modificado los indices del substring.
- *  - Modificacion desencriptarTiempo(). Daba fallo y 
- *    se han modificado los indices del substring.
- *    
- *  Notas de la version 5.1:
- *  - Creacion de variables cronometro para contar segundos.
- *  - Metodo fermentacion(). Acabado completamente.
- *  - Metodo trasvase(). Añadimos tiempo maximo de seguridad.
- *  
- *  Notas de la version 6:
- *  - Comentar todos los metodos completamente.
- *  - Modificacion desencriptarTemperatura(). Daba fallo y 
- *    se han modificado los indices del substring.
- *    (Han dado varios fallos, si da un fallo en todos los procesos puede venir de aqui)
- *  - Modificacion desencriptarTiempo(). Daba fallo y 
- *    se han modificado los indices del substring.
- *    (Han dado varios fallos, si da un fallo en todos los procesos puede venir de aqui)
- *  - Retraso en el arranque de las bombas para el trasvase.
- *  - Añadir pin para el zumbador
- *  
- *  Notas para la version 7: 
- *  - Metodo cancion1(zumbador). Cancion de piratas del caribe.
- *    Para añadir mas canciones usar la misma estructura: Funcion con la cancion cuyo 
- *    parametro sea el pin del zumbador para facilitar la modificacion de pines en un futuro.
- *    FALTA AÑADIR LA CANCION DESPUES DE LOS PROCESOS QUE SE QUIERA.
- *  - Se ajusta el tiempo de trasvase a 3 minutos y medio segun prueba en maqueta
- *  
- *  Notas de la version 7.1:
- *  - Eliminacion de la variable tsensor
- *  - Modificacion desencriptarTemperatura(). Daba fallo y 
- *    se han modificado los indices del substring.
- *    (Han dado varios fallos depende del sistema operativo o versiones del programa)
- *  - Modificacion desencriptarTiempo(). Daba fallo y 
- *    se han modificado los indices del substring.
- *    (Han dado varios fallos depende del sistema operativo o versiones del programa)
- *
- *  Notas de la version 8:
+ *  Notas de la version 1.0.6:
  *  - Actualizacion de pines para el NodeMCU.
  *  - Eliminacion de electrovalvulas y bomba principal, por Bomba Recirculacion y por
  *    Bomba Trasvase.
@@ -97,7 +26,7 @@
   #include <DoubleResetDetector.h>            // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
   #include <ESP8266httpUpdate.h>              // Para las actualizaciones de firmware
   #include <PubSubClient.h>                   // Para las comunicaciones MQTT
-  #include <LiquidCrystal_I2C.h>
+  #include <LiquidCrystal_I2C.h>              // Para el control de la pantalla LCD
   
   
 //LAYOUT Pines
@@ -242,8 +171,8 @@ if (drd.detectDoubleReset()) {
     pasoProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó
   }
-  
 }
+  
 
 
 

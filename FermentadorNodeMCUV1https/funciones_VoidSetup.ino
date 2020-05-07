@@ -19,6 +19,7 @@ void getID(){
         lcd.print("Error al obtener");
         lcd.setCursor(0,1);
         lcd.print("el ID de placa");
+        delay(10);
       }
   }
 }
@@ -132,7 +133,7 @@ bool checkforUpdates(){
             lcd.setCursor(0,1);
             lcd.print("---No apagar---");
             Serial.println("Comenzando proceso de actualización");
-            //ESPhttpUpdate.update(updatesServer, 80, "/firmware/arduino.bin");
+            ESPhttpUpdate.update(updatesServer, 80, "/firmware/arduino.bin");
             Serial.println("-----------------------------------");
           }
           Serial.println("Actualización disponible");
