@@ -24,7 +24,7 @@ void receta(){
 }
 
 void procesos(){
-  if (tempMacer == 0){
+  if (IDreceta == 0){
     Serial.println("Primero selecciona una receta");
     return;
   }

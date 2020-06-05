@@ -66,7 +66,7 @@
   int estado;
   String mac;
   int IDplaca;
-  int IDreceta;
+  int IDreceta = 0;
   byte porcentaje;
   bool recovery;
   int recoveryTiempoRestante;

@@ -10,6 +10,14 @@
 
   
 void maceracion (){
+  if(IDreceta == 0){                           // Comprueba si hay una receta cargada
+    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
+    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    String lcd1 = "No hay receta";
+    lcd.print(lcd1);
+    delay(2000);
+    return;
+  }
 
   if(recovery == 1){
     procesoActual = 1;
@@ -87,6 +95,24 @@ void maceracion (){
  *  No devuelve nada
  */
 void coccion (){ 
+  if(IDreceta == 0){                           // Comprueba si hay una receta cargada
+    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
+    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    String lcd1 = "No hay receta";
+    lcd.print(lcd1);
+    delay(2000);
+    return;
+  }
+  
+  if(IDreceta == 0){                           // Comprueba si hay una receta cargada
+    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
+    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    String lcd1 = "No hay receta";
+    lcd.print(lcd1);
+    delay(2000);
+    return;
+  }
+  
   if(recovery == 1){
     procesoActual = 2;
     estado = 1;
@@ -156,6 +182,7 @@ void coccion (){
  *  No devuelve nada
  */
 void trasvase(){
+  
   if (recovery != 1){
 //Confirmacion del inicio de proceso de trasvase
     Serial.println("O3");
@@ -236,6 +263,15 @@ void trasvase(){
  *  No devuelve nada
  */
 void fermentacion(){
+  if(IDreceta == 0){                           // Comprueba si hay una receta cargada
+    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
+    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    String lcd1 = "No hay receta";
+    lcd.print(lcd1);
+    delay(2000);
+    return;
+  }
+  
   if (recovery == 1){
     procesoActual = 4;
     estado = 1;
