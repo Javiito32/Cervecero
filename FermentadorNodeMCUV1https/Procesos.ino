@@ -68,8 +68,8 @@ void maceracion (){
   digitalWrite(peltier,LOW);
   
 //Envio mensaje de fin de proceso.
-  if (falloProceso) {estado = 3; porcentaje = 100;}
-  else {estado = 2; c_nokia_c(); porcentaje = 100;};
+  if (falloProceso) {estado = 3;}
+  else {estado = 2; c_nokia_c();}
   recovery = 0;
   sendInfo(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
   finProceso(procesoActual,falloProceso);                                   

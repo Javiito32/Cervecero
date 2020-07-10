@@ -204,7 +204,7 @@ void loop(){
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("Cervecero v" + currentVersion);
   lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-  lcd.print("     Ready");
+  lcd.print(" Ready");
   Serial.println("------------------------------");
   Serial.println("Ready");
   Serial.println("------------------------------");

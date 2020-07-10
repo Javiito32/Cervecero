@@ -46,7 +46,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       }
       gettime();
       tiempoRestante = tiempof - tiempoActual;
-      if (tiempoRestante <= 0) {break; porcentaje = 100;}
+      if (tiempoRestante <= 0) {porcentaje = 100; lcd_Porcentaje(); break; }
       if (tiempoActual >= tiempoPorcentaje){
         tiempoPorcentaje = tiempoActual + 2;
         int timepoIncremental = tiempoProcesoSeg - tiempoRestante;

@@ -11,6 +11,8 @@ void json_menu(){
   while(true){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
+    lcd.setCursor(0,1);
+    lcd.print(" Ready   Online");
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
     String datosString = peticion("json.php",datos_Enviar);
@@ -47,7 +49,7 @@ void json_menu(){
           Serial.println("El servidor no responde");
         }
         
-      }
+      }else{lcd.setCursor(0,1);lcd.print("    Offline     "); }
    }
 //Despues del while
 menuPruebas(menu,dato1,dato2);
