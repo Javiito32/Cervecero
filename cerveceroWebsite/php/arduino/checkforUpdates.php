@@ -15,7 +15,7 @@ if (isset($_POST['currentVersion'])) {
         if ($version == $valores['version']) {
             $sql = $conn->query("UPDATE placas SET needUpdate=0 WHERE IDplaca=$IDplaca");
             $sql = $conn->query("UPDATE menu SET updateNextBoot=0 WHERE IDplaca=$IDplaca");
-            echo "0";
+            echo "0:0";
             //echo "El fimware está actualizado";
         }else{
             $sql = $conn->query("SELECT updateNextBoot FROM menu WHERE IDplaca=$IDplaca");
