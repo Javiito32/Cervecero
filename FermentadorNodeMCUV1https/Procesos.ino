@@ -1,7 +1,7 @@
 /*  
  *  Funcion para realizar MACERACION.
- *  Primero se comprueba si el proceso se tiene que recuperar o no.
- *  Después, se cogen las variables de la temperatura y el tiempo del proceso.
+ *  Primero se comprueba si el proceso se quedase a mitad en caso de corte eléctrico, en caso verdadero, reanudará el proceso.
+ *  Después, se recuperan las variables de la temperatura y el tiempo del proceso.
  *  Se pone en modo recirculacion y realiza el ciclo de calentamiento manteniendo la tempetatura durante el tiempo del proceso 
  *  Cada cierto tiempo se envia información a la base de datos para el seguimiento del proceso.
  *  Además se comprueba si se ha cancelado el proceso por parte del usuario
@@ -80,13 +80,10 @@ void maceracion (){
 
 /*
  *  Funcion para realizar COCCION.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
- *  Recibe una consigna y la desencripta volcando la temperatura y el tiempo en variables.
- *  La consigna empieza por "T", seguida de cuatro numeros (centenas de temperatura, decenas de 
- *  temperatura, unidades de temperatura y decimas de temperatura), seguidas por "S" y el tiempo
- *  del proceso en segundos, acabando la consigna en "."
+ *  Primero se comprueba si el proceso se quedase a mitad en caso de corte eléctrico, en caso verdadero, reanudará el proceso.
+ *  Después, se recuperan las variables de la temperatura y el tiempo del proceso.
  *  Se pone en modo recirculacion y realiza el ciclo de calentamiento hasta la temperatura 
- *  recibida durante el tiempo recibido con un rango de temperatura especificado en la constante.
+ *  recibida durante el tiempo recibido con un rango de temperatura especificado en la variable rangoTemp.
  *  Encripta las variables y las envia constantemente para que la Raspberry tenga la informacion 
  *  del tiempo restante del proceso.
  *  Una vez alcanzado el tiempo envia mensaje de fin.  
@@ -340,7 +337,7 @@ void fermentacion(){
   do{
     gettime();                                            // Obtiene el tiempo para usarlo en la función
     tiempoRestante = tiempof - tiempoActual;
-    if (tiempoActual >= tiempoCancelacion){
+    if (tiempoActual >= tiempoCancelacion){               // Comprueba si han pasado 5 seg, y ejecuta
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
       sendInfo(procesoActual,pasoProceso);
@@ -348,8 +345,8 @@ void fermentacion(){
         break;
       }
     }
-    if (tiempoRestante <= 0) {break; porcentaje = 100;}
-      if (tiempoActual >= tiempoPorcentaje){
+    if (tiempoRestante <= 0) {break; porcentaje = 100;}   // Comprueba si el tiempo del proceso es 0, es decir, ha acabado
+      if (tiempoActual >= tiempoPorcentaje){              // Comprueba si han pasado 2 seg, y ejecuta
         tiempoPorcentaje = tiempoActual + 2;
         int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
         porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;

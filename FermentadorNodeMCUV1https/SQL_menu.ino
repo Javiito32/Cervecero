@@ -1,9 +1,13 @@
-void recoveryProcesos(int proceso){
-       if (proceso==1) { maceracion(); }
-  else if (proceso==2) { coccion();}
-  else if (proceso==3) { trasvase();}
-  else if (proceso==4) { fermentacion();}
-  else Serial.println("Proceso no existente");
+void SQL_menu(){
+  while(true){
+  delay(100);
+  if (WiFi.status() == WL_CONNECTED){
+    String datos_Enviar = "menu=";
+    datos_Enviar.concat("1&IDplaca=");
+    datos_Enviar.concat(IDplaca);
+    peticion("menu.php",datos_Enviar);    
+    }
+  }
 }
 
 void menuinicio(int n){ 
@@ -18,7 +22,7 @@ void receta(){
   Serial.println("------------------------------");
   Serial.println("Selecciona receta: ");
   Serial.println("------------------------------");
-  pregunta();
+  SQL_menu();
   IDreceta = dato;
   leerReceta();
 }
@@ -29,11 +33,11 @@ void procesos(){
     return;
   }
   Serial.println("Selecciona proceso: ");
-  pregunta();
-       if (dato==1) { pregunta(); pasoProceso = dato; maceracion(); }
-  else if (dato==2) { pregunta(); pasoProceso = dato; coccion();}
+  SQL_menu();
+       if (dato==1) { SQL_menu(); pasoProceso = dato; maceracion(); }
+  else if (dato==2) { SQL_menu(); pasoProceso = dato; coccion();}
   else if (dato==3) { trasvase();}
-  else if (dato==4) { pregunta(); pasoProceso = dato; fermentacion();}
+  else if (dato==4) { SQL_menu(); pasoProceso = dato; fermentacion();}
   else Serial.println("Proceso no existente");
 }
 
@@ -48,7 +52,7 @@ void limpieza(){
 
 void ajustes(){
   Serial.println("Ajustes");
-  pregunta();
+  SQL_menu();
        if (dato==1) { time_set();}
   else if (dato==2) { showtime();}
   else if (dato==3) { tonos();}
@@ -62,7 +66,7 @@ void tonos(){
   Serial.println("------------------------------");
   Serial.println("Selecciona Música: ");
   Serial.println("------------------------------");
-  pregunta();
+  SQL_menu();
       if (dato==1) { c_nokia_c();}
   else Serial.println("La canción no existe");
 }

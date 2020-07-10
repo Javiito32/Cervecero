@@ -1,10 +1,9 @@
 /*
  *  Notas de la version 1.0.6:
  *  - Actualizacion de pines para el NodeMCU.
- *  - Eliminacion de electrovalvulas y bomba principal, por Bomba Recirculacion y por
- *    Bomba Trasvase.
- *  - Se ha renombrado el pin reserva1 por peltier, para las Celulas Peltier.
- *  - Se ha renombrado el pin reserva2 por reserva, para tener un pin de reserva.
+ *  - Sustitución de las funciones que controlaban el tiempo de los procesos por 
+ *    el tiempo con un modulo a tiempo real RTC.
+ *  - Se han añadido las librerias pertinentes para el correcto funcionameinto.
  *  - En la ecuacion de temperatura hemos cambiado el valor del voltaje de referencia
  *    de 5000mV (Arduino) a 3300mV (NodeMCU).
  */
@@ -16,7 +15,7 @@
   #include <ESP8266WiFi.h>                    // Para el modulo ESP8266
   #include <ESP8266HTTPClient.h>              // ESP como cliente
   #include <WiFiClientSecureBearSSL.h>        // ESP como cliente seguro https
-  #include <Wire.h>                           // Para interfaz I2C para comunicaciones de dispositivos por direcciones
+  #include <Wire.h>                           // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
   #include <RTClib.h>                         // Para el manejo del modulo RTC
   #include <TimeLib.h>                        // Libreria para gestionar las conversiones de tiempo
   #include <Separador.h>                      // Como su propio nombre indica separa cadenas de datos
@@ -43,7 +42,7 @@
 
   
 //Variables configurables
-  const float anchoVentana = 1;               // Rango para la temperatura
+  const float rangoTemp = 1;                  // Rango para la temperatura
   const float tiempoTrasvase = 210000;        // Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
   const int retrasoBombas = 1000;             // Tiempo de retraso entre el arranque de la bomba frio y el resto
 
@@ -73,7 +72,7 @@
   int recoveryProceso;
   int recoveryPasoProceso;
   int tiempoProcesoSeg;
-  String currentVersion = "1.0.6";
+  String currentVersion = "1.0.7";
   String host = "https://192.168.1.150/php/arduino/";
   String updatesServer = "192.168.1.150";
   
@@ -85,7 +84,7 @@
   RTC_DS3231 rtc;                                     // Objeto para la clase RTC_DS3231.
   Separador s;                                        // Objeto para la clase Separador.
   WiFiManager wifiManager;                            // Objeto para la clase WiFiManager.
-  LiquidCrystal_I2C lcd(0x27,16,2);                   // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address 0x27
+  LiquidCrystal_I2C lcd(0x27,16,2);                   // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
 
 void setup(){
   
@@ -160,16 +159,40 @@ if (drd.detectDoubleReset()) {
   Serial.println("++++++++++++++++++++++++++++++++");
   lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  lcd.print("Iniciando...");                            
-  getID();                                              // Obtenemos el id de placa ligado a la mac
+  lcd.print("Iniciando...");
+  /*                          
+   * Obtenemos el ID de placa asociado a la MAC
+   */
+  while (true){
+    String datos = peticion("get_id.php","mac=" + mac);
+      if (datos != "fallo") {
+        //Serial.println(stringIDplaca);
+        IDplaca = datos.toInt();
+        Serial.println("------------------------------");
+        Serial.print("El ID de la placa es el: ");
+        Serial.println(IDplaca);
+        Serial.println("------------------------------");
+        break;
+      }else{
+        Serial.println("------------------------------");
+        Serial.println("No se pudo obtener el ID de placa");
+        Serial.println("------------------------------");
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Error al obtener");
+        lcd.setCursor(0,1);
+        lcd.print("el ID de placa");
+        delay(10);
+      }
+  }
+
   checkrecovery();                                      // Comprobamos si hay procesos pendientes
-  checkforUpdates();                                    // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
-  
+  if (recovery != 1) { checkforUpdates();}              // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
   
   if (recovery == 1){                                   // Si hay procesos pendientes hara lo siguiente
     leerReceta();                                       // Leer la receta
     pasoProceso = recoveryPasoProceso;
-    recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó
+    recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó en caso de que lo hubiese
   }
 }
   
@@ -185,8 +208,10 @@ void loop(){
   Serial.println("------------------------------");
   Serial.println("Ready");
   Serial.println("------------------------------");
-  menu2();
-  
-  //pregunta();
+/* Menus de prueba  
+ *  
+ */
+  json_menu();
+  //SQL_menu();
   //menuinicio(dato);
 }

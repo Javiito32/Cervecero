@@ -1,6 +1,10 @@
+/* El json_menu lo que hace es comprobar si esta conectado a internet y luego recoge datos en formato json,
+ * los datos son 3 variables, después resetea los valores que ha cogido de la BDD, por último, ejecuta 
+ * la función menu pruebas con los datos recogidos por el json.
+ */
 
-
-void menu2(){
+// 01
+void json_menu(){
   int menu;
   int dato1;
   int dato2;
@@ -10,13 +14,14 @@ void menu2(){
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
     String datosString = peticion("json.php",datos_Enviar);
+// 02
       if (datosString != "fallo") {
         const char * datos = datosString.c_str();
         
         const size_t capacity = JSON_OBJECT_SIZE(3) + 30;
         DynamicJsonDocument doc(capacity);
 
-        //const char* json = "{\"menu\":\"1\",\"dato1\":\"1\",\"dato2\":\"1\"}";
+        //const char* json = "{\"menu\":\"1\",\"dato1\":\"1\",\"dato2\":\"1\"}";        //Para testear la decodificación de las variables
         
         deserializeJson(doc, datos);
 
@@ -26,6 +31,8 @@ void menu2(){
         
   
         //Serial.println(dato);
+
+// 03
         if (menu != 0){
           String datos_Enviar = "IDplaca=";
           datos_Enviar.concat(IDplaca);

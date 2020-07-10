@@ -1,9 +1,7 @@
 /*
  * Metodo calentar. 
- * Sirve realizar un ciclo de calentamiento hasta la temperatura alcanzar la temperatura pasada como parametro
- * Parametros: tiempo del proceso en segundos
- *             temperatura del proceso en grados
- * No devuelve nada
+ * Calienta a la temperatura indicada +- "rangoTemp".
+ * Si tenia un proceso pendiente debido a un fallo eléctrico, lo restaurará
  */
 void calentar( int temperaturaProceso, long tiempoProceso){
 
@@ -35,8 +33,8 @@ void calentar( int temperaturaProceso, long tiempoProceso){
     long tiempoCancelacion = tiempoActual + 5;
     int tiempoPorcentaje = tiempoActual + 2;
 
-    int tmax = temperaturaProceso+anchoVentana;
-    int tmin = temperaturaProceso-anchoVentana;
+    int tmax = temperaturaProceso+rangoTemp;
+    int tmin = temperaturaProceso-rangoTemp;
     do{
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
