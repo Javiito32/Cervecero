@@ -41,7 +41,7 @@ void maceracion (){
   procesoActual = 1;
   estado = 1;
   porcentaje = 0;
-  sendInfo(procesoActual,pasoProceso);        // Mandamos la informacion a la BDD a la tabla info
+  Log(procesoActual,pasoProceso);        // Mandamos la informacion a la BDD a la tabla info
   lcd.clear();                                // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                         // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   String lcd1 = "Maceracion: ";
@@ -71,7 +71,7 @@ void maceracion (){
   if (falloProceso) {estado = 3;}
   else {estado = 2; c_nokia_c();}
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
+  Log(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
   finProceso(procesoActual,falloProceso);                                   
   
 }
@@ -131,7 +131,7 @@ void coccion (){
   procesoActual = 2;
   estado = 1;
   porcentaje = 0;
-  sendInfo(procesoActual,pasoProceso);
+  Log(procesoActual,pasoProceso);
   lcd.clear();                                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   String lcd1 = "Coccion: ";
@@ -162,7 +162,7 @@ void coccion (){
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   lcd_Porcentaje();
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
+  Log(procesoActual,pasoProceso);                                      // Mandamos la informacion a la BDD a la tabla info
   finProceso(procesoActual,falloProceso);
 }
 
@@ -187,7 +187,7 @@ void trasvase(){
     estado = 1;
     tiempoRestante = 0;
     porcentaje = 0;
-    sendInfo(procesoActual,0);
+    Log(procesoActual,0);
     lcd.clear();                                                      // Limpia lo que hubiese escrito en la lcd
     lcd.setCursor(0,0);                                               // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     lcd.print("Trasvasando... ");
@@ -242,7 +242,7 @@ void trasvase(){
   if (falloProceso) {estado = 3; porcentaje = 100;}
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   recovery = 0;
-  sendInfo(procesoActual,0);                                                     // Mandamos la informacion a la BDD a la tabla info
+  Log(procesoActual,0);                                                     // Mandamos la informacion a la BDD a la tabla info
   finProceso(procesoActual,falloProceso);
 }
 
@@ -297,7 +297,7 @@ void fermentacion(){
   lcd2.concat(porcentaje);
   lcd2.concat("%");
   lcd.print(lcd2);
-  sendInfo(procesoActual,pasoProceso);                                            // Mandamos la informacion a la BDD a la tabla info
+  Log(procesoActual,pasoProceso);                                            // Mandamos la informacion a la BDD a la tabla info
   }
   
 //LECTURA DE VARIABLES
@@ -340,7 +340,7 @@ void fermentacion(){
     if (tiempoActual >= tiempoCancelacion){               // Comprueba si han pasado 5 seg, y ejecuta
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
-      sendInfo(procesoActual,pasoProceso);
+      Log(procesoActual,pasoProceso);
       if (falloProceso){
         break;
       }
@@ -364,6 +364,6 @@ void fermentacion(){
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   lcd_Porcentaje();
   recovery = 0;
-  sendInfo(procesoActual,pasoProceso);
+  Log(procesoActual,pasoProceso);
   finProceso(procesoActual,falloProceso);
 }

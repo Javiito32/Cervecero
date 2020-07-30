@@ -11,90 +11,90 @@
 /*
  * PINES Y VARIABLES
  */                    
-  #include <ArduinoJson.h>                    // Para los datos JSON
-  #include <ESP8266WiFi.h>                    // Para el modulo ESP8266
-  #include <ESP8266HTTPClient.h>              // ESP como cliente
-  #include <WiFiClientSecureBearSSL.h>        // ESP como cliente seguro https
-  #include <Wire.h>                           // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
-  #include <RTClib.h>                         // Para el manejo del modulo RTC
-  #include <TimeLib.h>                        // Libreria para gestionar las conversiones de tiempo
-  #include <Separador.h>                      // Como su propio nombre indica separa cadenas de datos
-  #include <RunningMedian.h>                  // Hace una lectura precisa de los sensores
-  #include <WiFiManager.h>                    // Interfaz para conectar el modulo a una red WiFi
-  #include <DNSServer.h>                      // Va con la libreria de arriba
-  #include <DoubleResetDetector.h>            // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
-  #include <ESP8266httpUpdate.h>              // Para las actualizaciones de firmware
-  #include <PubSubClient.h>                   // Para las comunicaciones MQTT
-  #include <LiquidCrystal_I2C.h>              // Para el control de la pantalla LCD
+  #include <ArduinoJson.h>                              // Para los datos JSON
+  #include <ESP8266WiFi.h>                              // Para el modulo ESP8266
+  #include <ESP8266HTTPClient.h>                        // ESP como cliente
+  #include <WiFiClientSecureBearSSL.h>                  // ESP como cliente seguro https
+  #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
+  #include <RTClib.h>                                   // Para el manejo del modulo RTC
+  #include <TimeLib.h>                                  // Libreria para gestionar las conversiones de tiempo
+  #include <Separador.h>                                // Como su propio nombre indica separa cadenas de datos
+  #include <RunningMedian.h>                            // Hace una lectura precisa de los sensores
+  #include <WiFiManager.h>                              // Interfaz para conectar el modulo a una red WiFi
+  #include <DNSServer.h>                                // Va con la libreria de arriba
+  #include <DoubleResetDetector.h>                      // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
+  #include <ESP8266httpUpdate.h>                        // Para las actualizaciones de firmware
+  #include <PubSubClient.h>                             // Para las comunicaciones MQTT
+  #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
   
   
 //LAYOUT Pines
-  #define pinSonda A0                         // Sonda de la temperatura
-  #define resis D0                            // Resistencia para calentar               
-  #define bombaRecirculacion D3               // Bomba de recirculacion 230V
-  #define bombaTrasvase D4                    // Bomba trasvase 230V
-  #define bombaFrio D5                        // Bomba refrigeracion 230V
-  #define peltier D6                          // Celulas Peltier
-  #define sensorLiquido D7                    // Sensor de liquido en tubo
-  #define zumbador D8                         // Zumbador para reproducir canciones
-  #define DRD_TIMEOUT 2                       // El tiempo en segundos que va a esperar para el doble reset "esta hecho con un delay y esto no se utiliza"
-  #define DRD_ADDRESS 0                       // RTC Memory Address for the DoubleResetDetector to use
+  #define pinSonda A0                                   // Sonda de la temperatura
+  #define resis D0                                      // Resistencia para calentar               
+  #define bombaRecirculacion D3                         // Bomba de recirculacion 230V
+  #define bombaTrasvase D4                              // Bomba trasvase 230V
+  #define bombaFrio D5                                  // Bomba refrigeracion 230V
+  #define peltier D6                                    // Celulas Peltier
+  #define sensorLiquido D7                              // Sensor de liquido en tubo
+  #define zumbador D8                                   // Zumbador para reproducir canciones
+  #define DRD_TIMEOUT 2                                 // El tiempo en segundos que va a esperar para el doble reset "esta hecho con un delay y esto no se utiliza"
+  #define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use
 
   
 //Variables configurables
-  const float rangoTemp = 1;                  // Rango para la temperatura
-  const float tiempoTrasvase = 210000;        // Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
-  const int retrasoBombas = 1000;             // Tiempo de retraso entre el arranque de la bomba frio y el resto
+  const float rangoTemp = 1;                            // Rango para la temperatura
+  const float tiempoTrasvase = 210000;                  // Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
+  const int retrasoBombas = 1000;                       // Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
-  int dato;                                   // Dato leido para entrar el menu
-  unsigned long tiempoi;                      // Tiempo inicial para los procesos en seg
-  unsigned long tiempof;                      // Tiempo final para los procesos en seg
-  unsigned long tiempoActual;                 // Tiempo actual del proceso en seg
-  long tiempoRestante;                        // Tiempo que falta para el final de los procesos en seg
-  String tempMacer[10];                       // Temperatura de maceración de la receta seleccionada
-  String tiempoMacer[10];                     // Tiempo maceración de la recta selecionada
-  String tempCoc[10];                         // Temperatura de cocción de la receta seleccionada
-  String tiempoCoc[10];                       // Tiempo cocción de la recta selecionada
-  unsigned long tiempoTrans;                  // Tiempo transvase de la recta selecionada
-  String tempFermen[10];                      // Temperatura de fermentación de la receta seleccionada
-  String tiempoFermen[10];                    // Tiempo fermentación de la recta selecionada
-  bool falloProceso = 0;                      // Guarda si falla el tiempo
-  int procesoActual;
-  int pasoProceso;
-  int estado;
-  String mac;
-  int IDplaca;
-  int IDreceta = 0;
-  byte porcentaje;
-  bool recovery;
-  int recoveryTiempoRestante;
-  int recoveryProceso;
-  int recoveryPasoProceso;
-  int tiempoProcesoSeg;
-  String currentVersion = "1.0.7";
-  String host = "https://192.168.1.150/php/arduino/";
-  String updatesServer = "192.168.1.150";
+  int dato;                                             // Dato leido para entrar el menu
+  unsigned long tiempoi;                                // Tiempo inicial para los procesos en seg
+  unsigned long tiempof;                                // Tiempo final para los procesos en seg
+  unsigned long tiempoActual;                           // Tiempo actual del proceso en seg
+  long tiempoRestante;                                  // Tiempo que falta para el final de los procesos en seg
+  String tempMacer[10];                                 // Temperatura de maceración de la receta seleccionada
+  String tiempoMacer[10];                               // Tiempo maceración de la recta selecionada
+  String tempCoc[10];                                   // Temperatura de cocción de la receta seleccionada
+  String tiempoCoc[10];                                 // Tiempo cocción de la recta selecionada
+  unsigned long tiempoTrans;                            // Tiempo transvase de la recta selecionada
+  String tempFermen[10];                                // Temperatura de fermentación de la receta seleccionada
+  String tiempoFermen[10];                              // Tiempo fermentación de la recta selecionada
+  bool falloProceso = 0;                                // Guarda si falla el tiempo
+  int procesoActual;                                    // El proceso que se esta ejecutando
+  int pasoProceso;                                      // El paso del proceso que se esta ejecutando
+  int estado;                                           // 1 - Iniciado, 2 - Finalizado, 3 - Cancelado
+  String mac;                                           // La direccion MAC de el WiFi
+  int IDplaca;                                          // Identificador unico de la placa, es un número
+  int IDreceta = 0;                                     // El ID de la receta de la BDD
+  byte porcentaje;                                      // Porcentaje completado del proceso
+  bool recovery;                                        // 0 - Nada que recuperar, 1 - Recupera el proceso que estubiera haciendo
+  int recoveryTiempoRestante;                           // Variable de recovery
+  int recoveryProceso;                                  // Variable de recovery
+  int recoveryPasoProceso;                              // Variable de recovery
+  int tiempoProcesoSeg;                                 // El tiempo del proceso en segundos
+  String currentVersion = "1.0.7";                      // Versión del Firmware
+  String host = "https://192.168.1.150/php/arduino/";   // Servidor de PHP donde manda y recibe información
+  String updatesServer = "192.168.1.150";               // Servidor de actualizaciones
   
   //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
     
 //Objetos
-  HTTPClient http;                                    // Objeto para la clase HTTPClient.
-  DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);  // Objeto para la clase DoubleResetDetector.
-  RTC_DS3231 rtc;                                     // Objeto para la clase RTC_DS3231.
-  Separador s;                                        // Objeto para la clase Separador.
-  WiFiManager wifiManager;                            // Objeto para la clase WiFiManager.
-  LiquidCrystal_I2C lcd(0x27,16,2);                   // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
+  HTTPClient http;                                      // Objeto para la clase HTTPClient.
+  DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);    // Objeto para la clase DoubleResetDetector.
+  RTC_DS3231 rtc;                                       // Objeto para la clase RTC_DS3231.
+  Separador s;                                          // Objeto para la clase Separador.
+  WiFiManager wifiManager;                              // Objeto para la clase WiFiManager.
+  LiquidCrystal_I2C lcd(0x27,16,2);                     // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
 
 void setup(){
   
 //Inicializamos las cosas
-  Serial.begin(115200);                               // Iniciamos el serial
-  WiFi.begin();                                       // Iniciamos WiFi
-  Wire.begin(D2,D1);                                  // Iniciamos las conexiones Wire
-  lcd.begin();                                        // Iniciamos la lcd
+  Serial.begin(115200);                                 // Iniciamos el serial
+  WiFi.begin();                                         // Iniciamos WiFi
+  Wire.begin(D2,D1);                                    // Iniciamos las conexiones Wire
+  lcd.begin();                                          // Iniciamos la lcd
   delay(10);
-  beep(1);                                            // Hacemos un pitido
+  beep(1);                                              // Hacemos un pitido
   
 //Configuracion de pines
   pinMode(resis,OUTPUT);
@@ -208,10 +208,14 @@ void loop(){
   Serial.println("------------------------------");
   Serial.println("Ready");
   Serial.println("------------------------------");
-/* Menus de prueba  
- *  
- */
+
+ /* 
+  * Menu de consultas con PHP MySQL en formato JSON 
+  */
   json_menu();
+ /*
+  * Menu de consultas PHP con MySQL
+  */
   //SQL_menu();
   //menuinicio(dato);
 }
