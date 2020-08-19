@@ -18,13 +18,19 @@ void menuinicio(int n){
   else if (n==2) { procesos();}
   else if (n==3) { ajustes();}
   else if (n==4) { limpieza();}
-  else Serial.println("La accion deseada no existe");
+  else {
+    #ifdef debug
+    Serial.println("La accion deseada no existe");
+    #endif
+  }
 }
 
 void receta(){
+  #ifdef debug
   Serial.println("------------------------------");
   Serial.println("Selecciona receta: ");
   Serial.println("------------------------------");
+  #endif
   SQL_menu();
   IDreceta = dato;
   leerReceta();
@@ -32,46 +38,68 @@ void receta(){
 
 void procesos(){
   if (IDreceta == 0){
+    #ifdef debug
     Serial.println("Primero selecciona una receta");
+    #endif
     return;
   }
+  #ifdef debug
   Serial.println("Selecciona proceso: ");
+  #endif
   SQL_menu();
-       if (dato==1) { SQL_menu(); pasoProceso = dato; maceracion(); }
-  else if (dato==2) { SQL_menu(); pasoProceso = dato; coccion();}
+       if (dato==1) { SQL_menu(); faseProceso = dato; maceracion(); }
+  else if (dato==2) { SQL_menu(); faseProceso = dato; coccion();}
   else if (dato==3) { trasvase();}
-  else if (dato==4) { SQL_menu(); pasoProceso = dato; fermentacion();}
-  else Serial.println("Proceso no existente");
+  else if (dato==4) { SQL_menu(); faseProceso = dato; fermentacion();}
+  else {
+    #ifdef debug
+    Serial.println("Proceso no existente");
+    #endif
+  }
 }
 
 
 void limpieza(){
+  #ifdef debug
     Serial.println("------------------------");
     Serial.println("Se ha iniciado la limpieza");
     Serial.println("    Por favor, espere");
     Serial.println("------------------------");
+  #endif
     trasvase();
 }
 
 void ajustes(){
+  #ifdef debug
   Serial.println("Ajustes");
+  #endif
   SQL_menu();
        if (dato==1) { time_set();}
   else if (dato==2) { showtime();}
   else if (dato==3) { tonos();}
   
-  else Serial.println("La accion deseada no existe");
+  else {
+    #ifdef debug
+    Serial.println("La accion deseada no existe");
+    #endif
+  }
 }
 
 
 
 void tonos(){
+  #ifdef debug
   Serial.println("------------------------------");
   Serial.println("Selecciona Música: ");
   Serial.println("------------------------------");
+  #endif
   SQL_menu();
       if (dato==1) { c_nokia_c();}
-  else Serial.println("La canción no existe");
+  else {
+    #ifdef debug
+    Serial.println("La canción no existe");
+    #endif
+  }
 }
 
 /* 
@@ -88,8 +116,10 @@ void json_menu(){
   while(true){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
+    #ifdef pantallaLCD
     lcd.setCursor(0,1);
     lcd.print(" Ready   Online");
+    #endif
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
     String datosString = peticion("json.php",datos_Enviar);
@@ -117,16 +147,25 @@ void json_menu(){
           datos_Enviar.concat(IDplaca);
           datos_Enviar.concat("&reset=1");
           peticion("json.php",datos_Enviar);
+          #ifdef debug
           Serial.println(menu);
           Serial.println(dato1);
           Serial.println(dato2);
+          #endif
           break;
         }
         }else{
+          #ifdef debug
           Serial.println("El servidor no responde");
+          #endif
         }
         
-      }else{lcd.setCursor(0,1);lcd.print("    Offline     "); }
+      }else {
+        #ifdef pantallaLCD
+        lcd.setCursor(0,1);
+        lcd.print("    Offline     ");
+        #endif
+        }
    }
 //Despues del while
 menuPruebas(menu,dato1,dato2);
@@ -134,17 +173,27 @@ menuPruebas(menu,dato1,dato2);
 }
 
 void menuPruebas(int menu, int dato1, int dato2){
+  #ifdef debug
   Serial.println("menuPruebas");
+  #endif
        if (menu==1) { IDreceta = dato1; leerReceta();}
   else if (menu==2) { lanzar_Procesos(dato1,dato2);}
   else if (menu==4) { trasvase();}
   
-  else Serial.println("La accion deseada no existe-> menuPruebas");
+  else {
+    #ifdef debug
+    Serial.println("La accion deseada no existe-> menuPruebas");
+    #endif
+  }
 }
 
 void lanzar_Procesos(int proceso, int paso){
-       if (proceso==1) { pasoProceso = paso; maceracion();}
-  else if (proceso==2) { pasoProceso = paso; coccion();}
-  else if (proceso==3) { pasoProceso = paso; fermentacion();}
-  else Serial.println("La accion deseada no existe-> lanzar_Procesos");
+       if (proceso==1) { faseProceso = paso; maceracion();}
+  else if (proceso==2) { faseProceso = paso; coccion();}
+  else if (proceso==3) { faseProceso = paso; fermentacion();}
+  else {
+    #ifdef debug
+    Serial.println("La accion deseada no existe-> lanzar_Procesos");
+    #endif
+  }
 }

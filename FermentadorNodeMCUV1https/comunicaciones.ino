@@ -3,19 +3,23 @@
  */
 String peticion(String php, String datos_Enviar){
   std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
-    //client->setFingerprint(fingerprint);
+  #ifdef https
+    client->setFingerprint(fingerprint);
+  #endif
+  #ifndef https
     client->setInsecure();
-    http.begin(*client,host+php);
-    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    int httpCode = http.POST(datos_Enviar);
-    if (httpCode == 200 || httpCode == 201) {
-      String datos = http.getString();
-      http.end();
-      return datos;
-    }else{
-      http.end();
-      return "fallo";
-    }
+  #endif
+  http.begin(*client,host+php);
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  int httpCode = http.POST(datos_Enviar);
+  if (httpCode == 200 || httpCode == 201) {
+    String datos = http.getString();
+    http.end();
+    return datos;
+  }else{
+    http.end();
+    return "fallo";
+  }
 }
 /*
  * Hace el log en la BBDD con los datos del proceso
@@ -38,6 +42,8 @@ void Log(int proceso,byte pasoProceso) {
     datos_Enviar.concat("&porcentaje="); 
     datos_Enviar.concat(porcentaje);
     peticion("log.php",datos_Enviar);
+    #ifdef debug
     Serial.println("Log");
+    #endif
   }
 }

@@ -1,9 +1,10 @@
 void showtime(){
   DateTime now = rtc.now();
   tiempoActual = now.unixtime();
-  Serial.println(tiempoActual);
   DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
             // DateTime y asigna a variable fecha
+        #ifdef debug
+        Serial.println(tiempoActual);
         Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
         Serial.print("/");       // caracter barra como separador
         Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
@@ -15,6 +16,7 @@ void showtime(){
         Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
         Serial.print(":");       // caracter dos puntos como separador
         Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
+        #endif
 }
 
 void gettime(){
@@ -30,6 +32,7 @@ void time_set (){
         rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
         DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
             // DateTime y asigna a variable fecha
+        #ifdef debug
         Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
         Serial.print("/");       // caracter barra como separador
         Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
@@ -41,6 +44,7 @@ void time_set (){
         Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
         Serial.print(":");       // caracter dos puntos como separador
         Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
+        #endif
       }
   }
  }

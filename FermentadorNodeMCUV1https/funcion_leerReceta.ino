@@ -11,14 +11,16 @@ void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
     String datos_Enviar = "IDreceta=";
     datos_Enviar.concat(IDreceta);
-    Serial.println(datos_Enviar);
     String datos = peticion("pedirdatosPost.php",datos_Enviar);
     if (datos != "fallo") {
+      #ifdef debug
+      Serial.println(datos_Enviar);
       Serial.println("------------------------------");                           // Obtiene la string
       Serial.print("String recibida: ");
       Serial.println(datos);
-      int longitud = datos.length();
       Serial.println("------------------------------");
+      #endif
+      int longitud = datos.length();
 
     //Procesar datos nombre Receta
       int pnombre = datos.indexOf("nombre=");
@@ -113,7 +115,7 @@ void leerReceta(){
         tiempoFermen[i] = s.separa(stiempoFermen, ':', i);
       }
       
-
+#ifdef debug
     //Mostrar información de la receta por Serial
   if (tempMacer[0] != 0){
       //Nombre de la cerveza
@@ -137,10 +139,9 @@ void leerReceta(){
     }else{
       Serial.println("La receta no existe");
     }
+    #endif
     }else{
-
       Serial.println("El servidor no responde");
-
     }
 
   }

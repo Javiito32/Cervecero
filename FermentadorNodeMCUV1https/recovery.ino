@@ -2,7 +2,9 @@
  * Revisión de si hay algún procesos que se ha quedado a medias
  */
 void checkrecovery(){
+  #ifdef debug
   Serial.println("Comprobando Recovery");
+  #endif
   while (true){
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
@@ -22,9 +24,11 @@ void checkrecovery(){
 
         if(estado == 1){
           recovery = 1;
+          #ifdef debug
           Serial.println("------------------------------");
           Serial.println("Hay procesos pendiantes");
           Serial.println("------------------------------");
+          #endif
 
 
           int preceta = datos.indexOf("receta=");
@@ -63,7 +67,8 @@ void checkrecovery(){
           else spasoProceso += datos[i];
           }
           recoveryPasoProceso = spasoProceso.toInt();
-
+          
+        #ifdef debug
         Serial.print("Receta a recuperar: ");
         Serial.println(IDreceta);
         Serial.print("Tiempo que le falta: ");
@@ -72,18 +77,23 @@ void checkrecovery(){
         Serial.println(recoveryProceso);
         Serial.print("Paso del proceso que estaba: ");
         Serial.println(recoveryPasoProceso);
+        #endif
         break;
      
         }else{break;}
       }else{
+        #ifdef debug
         Serial.println("------------------------------");
         Serial.println("Error de conexión con el servidor");
         Serial.println("------------------------------");
+        #endif
+        #ifdef pantallaLCD
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print("Error al obtener");
         lcd.setCursor(0,1);
         lcd.print("el Recovery");
+        #endif
       }
   }
 }
@@ -95,5 +105,9 @@ void recoveryProcesos(int proceso){
   else if (proceso==2) { coccion();}
   else if (proceso==3) { trasvase();}
   else if (proceso==4) { fermentacion();}
-  else Serial.println("Proceso no existente");
+  else {
+    #ifdef debug
+    Serial.println("Proceso no existente");
+    #endif
+  }
 }

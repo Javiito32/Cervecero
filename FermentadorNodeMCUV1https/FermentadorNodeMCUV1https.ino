@@ -8,6 +8,10 @@
  *    de 5000mV (Arduino) a 3300mV (NodeMCU).
  */
 
+ 
+  #include "config.h"                                   // Archivo de configuración
+ 
+
 /*
  * PINES Y VARIABLES
  */                    
@@ -24,8 +28,10 @@
   #include <DNSServer.h>                                // Va con la libreria de arriba
   #include <DoubleResetDetector.h>                      // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
   #include <ESP8266httpUpdate.h>                        // Para las actualizaciones de firmware
-  #include <PubSubClient.h>                             // Para las comunicaciones MQTT
+  //#include <PubSubClient.h>                             // Para las comunicaciones MQTT
+  #ifdef pantallaLCD
   #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
+  #endif
   
   
 //LAYOUT Pines
@@ -37,14 +43,8 @@
   #define peltier D6                                    // Celulas Peltier
   #define sensorLiquido D7                              // Sensor de liquido en tubo
   #define zumbador D8                                   // Zumbador para reproducir canciones
-  #define DRD_TIMEOUT 2                                 // El tiempo en segundos que va a esperar para el doble reset "esta hecho con un delay y esto no se utiliza"
+  #define DRD_TIMEOUT 2                                 // El tiempo en segundos que va a esperar para el doble reset
   #define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use
-
-  
-//Variables configurables
-  const float rangoTemp = 1;                            // Rango para la temperatura
-  const float tiempoTrasvase = 210000;                  // Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
-  const int retrasoBombas = 1000;                       // Tiempo de retraso entre el arranque de la bomba frio y el resto
 
 //Variables globales
   int dato;                                             // Dato leido para entrar el menu
@@ -60,23 +60,25 @@
   String tempFermen[10];                                // Temperatura de fermentación de la receta seleccionada
   String tiempoFermen[10];                              // Tiempo fermentación de la recta selecionada
   bool falloProceso = 0;                                // Guarda si falla el tiempo
-  int procesoActual;                                    // El proceso que se esta ejecutando
-  int pasoProceso;                                      // El paso del proceso que se esta ejecutando
-  int estado;                                           // 1 - Iniciado, 2 - Finalizado, 3 - Cancelado
+  byte procesoActual;                                    // El proceso que se esta ejecutando
+  byte faseProceso;                                      // El paso del proceso que se esta ejecutando
+  byte estado;                                           // 1 - Iniciado, 2 - Finalizado, 3 - Cancelado
   String mac;                                           // La direccion MAC de el WiFi
   int IDplaca;                                          // Identificador unico de la placa, es un número
   int IDreceta = 0;                                     // El ID de la receta de la BDD
   byte porcentaje;                                      // Porcentaje completado del proceso
   bool recovery;                                        // 0 - Nada que recuperar, 1 - Recupera el proceso que estubiera haciendo
   int recoveryTiempoRestante;                           // Variable de recovery
-  int recoveryProceso;                                  // Variable de recovery
-  int recoveryPasoProceso;                              // Variable de recovery
+  byte recoveryProceso;                                  // Variable de recovery
+  byte recoveryPasoProceso;                              // Variable de recovery
   int tiempoProcesoSeg;                                 // El tiempo del proceso en segundos
   String currentVersion = "1.0.7";                      // Versión del Firmware
   String host = "https://192.168.1.150/php/arduino/";   // Servidor de PHP donde manda y recibe información
   String updatesServer = "192.168.1.150";               // Servidor de actualizaciones
-  
-  //const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
+
+  #ifdef https
+    const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
+  #endif
     
 //Objetos
   HTTPClient http;                                      // Objeto para la clase HTTPClient.
@@ -84,15 +86,18 @@
   RTC_DS3231 rtc;                                       // Objeto para la clase RTC_DS3231.
   Separador s;                                          // Objeto para la clase Separador.
   WiFiManager wifiManager;                              // Objeto para la clase WiFiManager.
+  #ifdef pantallaLCD
   LiquidCrystal_I2C lcd(0x27,16,2);                     // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
-
+  #endif
 void setup(){
   
 //Inicializamos las cosas
   Serial.begin(115200);                                 // Iniciamos el serial
   WiFi.begin();                                         // Iniciamos WiFi
   Wire.begin(D2,D1);                                    // Iniciamos las conexiones Wire
+  #ifdef pantallaLCD
   lcd.begin();                                          // Iniciamos la lcd
+  #endif
   delay(10);
   beep(1);                                              // Hacemos un pitido
   
@@ -115,35 +120,43 @@ void setup(){
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 if (drd.detectDoubleReset()) {
   beep(2);                                              // Hacemos 2 pitidos
+  #ifdef pantallaLCD
   lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("----  Modo  ----");
   lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
   lcd.print(" Configuracion");
+  #endif
   wifiManager.setConfigPortalTimeout(180);              // Si en 2 minutos no se ha conectado ningún dispositivo para configurar el wifi, se cierra
   wifiManager.startConfigPortal("Cervecero_2.0");       // Se inicia el portal cautivo para la configuración
-  } /*else {
+  } else {
+    #ifdef debug
     Serial.println("No Double Reset Detected");
-  }*/
+    #endif
+  }
   
 // Conectar con la red WiFi
-/*do{
-  wifiManager.setConfigPortalTimeout(120);
-  wifiManager.autoConnect("Cervecero_2.0");
-}while (WiFi.status() != WL_CONNECTED);*/
+  #ifdef debug
   Serial.println("");
   Serial.print("Connecting");
-  
+  #endif
+
+  #ifdef pantallaLCD
   lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("Conectando WiFi");                            
+  #endif
   
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
     delay(500);
+    #ifdef debug
     Serial.print(".");
+    #endif
   }
   drd.stop();                                           // Dejamos de detectar el reset de la placa para entrar en el modo configuracion ya que si llegamos a este punto significa que ya tenemos WiFi
+  mac = WiFi.macAddress();
+  #ifdef debug
   Serial.println("");
   Serial.println("WiFi connected");
 
@@ -151,37 +164,45 @@ if (drd.detectDoubleReset()) {
   Serial.println(WiFi.localIP());                       // Mostrar la IP que tiene el dispositivo
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());                    // Mostramos la mac del dispositivo
-  mac = WiFi.macAddress();
 
   Serial.println("++++++++++++++++++++++++++++++++");
   Serial.println(         "Cervecero 2.0");
   Serial.println(         "Version: " + currentVersion);
   Serial.println("++++++++++++++++++++++++++++++++");
+  #endif
+  #ifdef pantallaLCD
   lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("Iniciando...");
+  #endif
+  
   /*                          
    * Obtenemos el ID de placa asociado a la MAC
    */
   while (true){
     String datos = peticion("get_id.php","mac=" + mac);
       if (datos != "fallo") {
-        //Serial.println(stringIDplaca);
         IDplaca = datos.toInt();
+        #ifdef debug
         Serial.println("------------------------------");
         Serial.print("El ID de la placa es el: ");
         Serial.println(IDplaca);
         Serial.println("------------------------------");
+        #endif
         break;
       }else{
+        #ifdef debug
         Serial.println("------------------------------");
         Serial.println("No se pudo obtener el ID de placa");
         Serial.println("------------------------------");
+        #endif
+        #ifdef pantallaLCD
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print("Error al obtener");
         lcd.setCursor(0,1);
         lcd.print("el ID de placa");
+        #endif
         delay(10);
       }
   }
@@ -191,7 +212,7 @@ if (drd.detectDoubleReset()) {
   
   if (recovery == 1){                                   // Si hay procesos pendientes hara lo siguiente
     leerReceta();                                       // Leer la receta
-    pasoProceso = recoveryPasoProceso;
+    faseProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó en caso de que lo hubiese
   }
 }
@@ -200,22 +221,30 @@ if (drd.detectDoubleReset()) {
 
 
 void loop(){
+  #ifdef pantallaLCD
   lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
   lcd.print("Cervecero v" + currentVersion);
   lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
   lcd.print(" Ready");
+  #endif
+  #ifdef debug
   Serial.println("------------------------------");
   Serial.println("Ready");
   Serial.println("------------------------------");
+  #endif
 
  /* 
   * Menu de consultas con PHP MySQL en formato JSON 
   */
+  #ifdef new_menu
   json_menu();
+  #endif
  /*
   * Menu de consultas PHP con MySQL
   */
-  //SQL_menu();
-  //menuinicio(dato);
+  #ifdef old_menu
+  SQL_menu();
+  menuinicio(dato);
+  #endif
 }
