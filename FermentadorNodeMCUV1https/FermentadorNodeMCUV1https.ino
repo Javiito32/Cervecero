@@ -30,7 +30,7 @@
   #include <ESP8266httpUpdate.h>                        // Para las actualizaciones de firmware
   //#include <PubSubClient.h>                             // Para las comunicaciones MQTT
   #ifdef pantallaLCD
-  #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
+    #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
   #endif
   
   

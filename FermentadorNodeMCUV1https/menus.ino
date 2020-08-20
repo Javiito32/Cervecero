@@ -71,34 +71,25 @@ void limpieza(){
 
 void ajustes(){
   #ifdef debug
-  Serial.println("Ajustes");
+    Serial.println("Ajustes");
   #endif
+
   SQL_menu();
-       if (dato==1) { time_set();}
-  else if (dato==2) { showtime();}
-  else if (dato==3) { tonos();}
-  
-  else {
-    #ifdef debug
-    Serial.println("La accion deseada no existe");
-    #endif
-  }
-}
 
+  switch (dato) {
+    case 1:
+      time_set();
+    break;
 
+    case 2:
+      printTime();
+    break;
 
-void tonos(){
-  #ifdef debug
-  Serial.println("------------------------------");
-  Serial.println("Selecciona Música: ");
-  Serial.println("------------------------------");
-  #endif
-  SQL_menu();
-      if (dato==1) { c_nokia_c();}
-  else {
-    #ifdef debug
-    Serial.println("La canción no existe");
-    #endif
+    default:
+      #ifdef debug
+        Serial.println("La accion deseada no existe");
+      #endif
+    break;
   }
 }
 
@@ -117,8 +108,8 @@ void json_menu(){
   delay(100);
   if (WiFi.status() == WL_CONNECTED){
     #ifdef pantallaLCD
-    lcd.setCursor(0,1);
-    lcd.print(" Ready   Online");
+      lcd.setCursor(0,1);
+      lcd.print(" Ready   Online");
     #endif
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
@@ -147,23 +138,23 @@ void json_menu(){
           datos_Enviar.concat(IDplaca);
           datos_Enviar.concat("&reset=1");
           peticion("json.php",datos_Enviar);
-          #ifdef debug
-          Serial.println(menu);
-          Serial.println(dato1);
-          Serial.println(dato2);
-          #endif
+            #ifdef debug
+              Serial.println(menu);
+              Serial.println(dato1);
+              Serial.println(dato2);
+            #endif
           break;
         }
         }else{
           #ifdef debug
-          Serial.println("El servidor no responde");
+            Serial.println("El servidor no responde");
           #endif
         }
         
       }else {
         #ifdef pantallaLCD
-        lcd.setCursor(0,1);
-        lcd.print("    Offline     ");
+          lcd.setCursor(0,1);
+          lcd.print("    Offline     ");
         #endif
         }
    }
@@ -176,24 +167,67 @@ void menuPruebas(int menu, int dato1, int dato2){
   #ifdef debug
   Serial.println("menuPruebas");
   #endif
-       if (menu==1) { IDreceta = dato1; leerReceta();}
-  else if (menu==2) { lanzar_Procesos(dato1,dato2);}
-  else if (menu==4) { trasvase();}
-  
-  else {
-    #ifdef debug
-    Serial.println("La accion deseada no existe-> menuPruebas");
-    #endif
+  switch (menu) {
+    case 1:
+      IDreceta = dato1; 
+      leerReceta();
+    break;
+
+    case 2:
+      lanzar_Procesos(dato1,dato2);
+    break;
+
+    case 3:
+      switch (dato1) {
+        case 1:
+          time_set ();
+        break;
+
+        case 2:
+          printTime();
+        break;
+
+        default:
+          #ifdef debug
+            Serial.println("La accion no existe-> ajustes menupruebas");
+          #endif
+        break;
+      }
+    break;
+
+    default:
+      #ifdef debug
+        Serial.println("La accion deseada no existe-> menuPruebas");
+      #endif 
+    break;
   }
 }
 
 void lanzar_Procesos(int proceso, int paso){
-       if (proceso==1) { faseProceso = paso; maceracion();}
-  else if (proceso==2) { faseProceso = paso; coccion();}
-  else if (proceso==3) { faseProceso = paso; fermentacion();}
-  else {
-    #ifdef debug
-    Serial.println("La accion deseada no existe-> lanzar_Procesos");
-    #endif
+  switch (proceso) {
+    case 1:
+      faseProceso = paso;
+      maceracion();
+    break;
+
+    case 2:
+      faseProceso = paso;
+      coccion();
+    break;
+
+    case 3:
+      faseProceso = paso;
+      fermentacion();
+    break;
+
+    case 4:
+      trasvase();
+    break;
+
+    default:
+      #ifdef debug
+        Serial.println("La accion deseada no existe-> lanzar_Procesos");
+      #endif
+    break;
   }
 }

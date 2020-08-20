@@ -1,22 +1,20 @@
-void showtime(){
+void printTime(){
   DateTime now = rtc.now();
   tiempoActual = now.unixtime();
   DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
             // DateTime y asigna a variable fecha
-        #ifdef debug
         Serial.println(tiempoActual);
-        Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.year());      // funcion que obtiene el año de la fecha completa
-        Serial.print(" ");       // caracter espacio en blanco como separador
-        Serial.print(fecha.hour());      // funcion que obtiene la hora de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
-        #endif
+        Serial.print(fecha.day());        // Dia
+        Serial.print("/");
+        Serial.print(fecha.month());      // Meses
+        Serial.print("/");
+        Serial.print(fecha.year());       // Años
+        Serial.print(" ");
+        Serial.print(fecha.hour());       // Horas
+        Serial.print(":");
+        Serial.print(fecha.minute());     // Minutos
+        Serial.print(":");
+        Serial.println(fecha.second());   // Segundos 
 }
 
 void gettime(){
@@ -32,19 +30,17 @@ void time_set (){
         rtc.adjust(DateTime(year(timeset),month(timeset),day(timeset),hour(timeset),minute(timeset),second(timeset)));
         DateTime fecha = rtc.now();      // funcion que devuelve fecha y horario en formato
             // DateTime y asigna a variable fecha
-        #ifdef debug
-        Serial.print(fecha.day());     // funcion que obtiene el dia de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.month());     // funcion que obtiene el mes de la fecha completa
-        Serial.print("/");       // caracter barra como separador
-        Serial.print(fecha.year());      // funcion que obtiene el año de la fecha completa
-        Serial.print(" ");       // caracter espacio en blanco como separador
-        Serial.print(fecha.hour());      // funcion que obtiene la hora de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.print(fecha.minute());      // funcion que obtiene los minutos de la fecha completa
-        Serial.print(":");       // caracter dos puntos como separador
-        Serial.println(fecha.second());    // funcion que obtiene los segundos de la fecha completa
-        #endif
+        Serial.print(fecha.day());        // Dia
+        Serial.print("/");
+        Serial.print(fecha.month());      // Meses
+        Serial.print("/");
+        Serial.print(fecha.year());       // Años
+        Serial.print(" ");
+        Serial.print(fecha.hour());       // Horas
+        Serial.print(":");
+        Serial.print(fecha.minute());     // Minutos
+        Serial.print(":");
+        Serial.println(fecha.second());   // Segundos 
       }
   }
  }
