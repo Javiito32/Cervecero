@@ -43,7 +43,7 @@ void Log(int proceso,byte pasoProceso) {
     datos_Enviar.concat(porcentaje);
     peticion("log.php",datos_Enviar);
     #ifdef debug
-    Serial.println("Log");
+      Serial.println("Log");
     #endif
   }
 }

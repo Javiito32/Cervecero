@@ -1,4 +1,4 @@
 <?php
 $time=time();
-echo "$time";
+echo $time + 7200;
 ?>

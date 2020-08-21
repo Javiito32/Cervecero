@@ -1,3 +1,6 @@
+<?php
+  require './php/conexion.php';
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,10 +29,10 @@
           </div>
         <h1>Seleccionar receta</h1>
         <div class="input-group">
-      <select class="custom-select" id="receta">
-        <option selected>Choose...</option>
+        <select class="custom-select" id="receta">
+          <option selected>Choose...</option>
         <?php
-        require './php/conexion.php';
+        //require './php/conexion.php';
         $sql = $conn->query("SELECT ID, nombre FROM recetas");
         while ($valores = mysqli_fetch_array($sql)) {
             echo "<option value='$valores[ID]'>$valores[nombre]</option>";
@@ -56,7 +59,7 @@
       <select class="custom-select" id="proceso">
         <option selected>Choose...</option>
         <?php
-        require './php/conexion.php';
+        //require './php/conexion.php';
         $sql = $conn->query("SELECT id, proceso FROM procesos");
         while ($valores = mysqli_fetch_array($sql)) {
             echo "<option value='$valores[id]'>$valores[proceso]</option>";
@@ -86,13 +89,35 @@
             Error, no se pudo enviar
           </div>
     </div>
+
+
+    <h1>Ajustes</h1>
+        <div class="input-group">
+        <select class="custom-select" id="settings">
+          <option selected>Choose...</option>
+          <option value="1">Poner en hora modulo RTC</option>
+          <option value="2">Mostrar la hora del modulo RTC por serial</option>
+      </select>
+      <div class="input-group-append">
+        <button class="btn btn-outline-primary" type="button" id="sendSettings">Cargar</button>
+      </div>
     </div>
+      <div class="collapse multi-collapse" id="settingcollapseOkay">
+        <div class="alert alert-success">
+          Enviado correctamente.
+        </div>
+      </div>
+      <div class="collapse multi-collapse" id="settingcollapseFail">
+        <div class="alert alert-danger">
+          Error, no se pudo enviar
+        </div>
+      </div>
 
     <div class="modal fade" id="confirmacion" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Guardar cambios</h5>
+              <h5 class="modal-title">Cancelar proceso</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>

@@ -10,30 +10,17 @@
 
   
 void maceracion (){
-  if(checkLoadRecipe){return;};  
-
-  /*if(recovery == 1){
-    procesoActual = 1;
-    estado = 1;
-    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
-    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    String lcd1 = "Maceracion: ";
-    lcd1.concat(faseProceso);
-    lcd.print(lcd1);
-    lcd.setCursor(0,1);                        // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-    String lcd2 = "Porcentaje: ";
-    lcd2.concat(porcentaje);
-    lcd2.concat("%");
-    lcd.print(lcd2);
+  if(checkLoadRecipe()){return;};
   
-  }else{*/
   #ifdef debug
-  Serial.println("O1");
+    Serial.println("O1");
   #endif
   procesoActual = 1;
   estado = 1;
-  if(!recovery){porcentaje = 0;}  
-  Log(procesoActual,faseProceso);             // Mandamos la informacion a la BDD a la tabla info
+  if(!recovery){
+    porcentaje = 0;
+    Log(procesoActual,faseProceso);             // Mandamos la informacion a la BDD a la tabla info
+  }
   #ifdef pantallaLCD
   lcd.clear();                                // Limpia lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                         // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
@@ -81,41 +68,28 @@ void maceracion (){
  */
 void coccion (){ 
   
-  if(checkLoadRecipe){return;}; 
+  if(checkLoadRecipe()){return;}; 
   
-  /*if(recovery == 1){
-    procesoActual = 2;
-    estado = 1;
-    lcd.clear();                                                        // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                                 // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+  #ifdef debug
+    Serial.println("O2");
+  #endif
+  procesoActual = 2;
+  estado = 1;
+  if(!recovery){
+    porcentaje = 0;
+    Log(procesoActual,faseProceso);
+  }
+  #ifdef pantallaLCD
+    lcd.clear();                                                          // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     String lcd1 = "Coccion: ";
     lcd1.concat(faseProceso);
-    lcd.print(lcd1);
-    lcd.setCursor(0,1);                                                 // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
+    lcd.print(lcd1);  
+    lcd.setCursor(0,1);                                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
     String lcd2 = "Porcentaje: ";
     lcd2.concat(porcentaje);
     lcd2.concat("%");
     lcd.print(lcd2);
-  
-  }else{*/
-  #ifdef debug
-  Serial.println("O2");
-  #endif
-  procesoActual = 2;
-  estado = 1;
-  if(!recovery){porcentaje = 0;}
-  Log(procesoActual,faseProceso);
-  #ifdef pantallaLCD
-  lcd.clear();                                                          // Limpia lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  String lcd1 = "Coccion: ";
-  lcd1.concat(faseProceso);
-  lcd.print(lcd1);  
-  lcd.setCursor(0,1);                                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-  String lcd2 = "Porcentaje: ";
-  lcd2.concat(porcentaje);
-  lcd2.concat("%");
-  lcd.print(lcd2);
   #endif
 //} 
 //LECTURA DE VARIABLES
@@ -136,76 +110,6 @@ void coccion (){
 }
 
 
-
-/*
- *  Funcion para realizar TRASVASE.
- *  Avisar a la Raspberry de que esta preparado para empezar el proceso y activa las 
- *  bombas y reles necesarios.
- *  Se pone en modo trasvase hasta que recibe un mensaje de fin que viene dado por la 
- *  siguiente consigna: "T0000S0."
- *    
- *  Parametros: No lleva parametros
- *  No devuelve nada
- */
-void trasvase(){
-  
-    #ifdef debug
-    Serial.println("O3");
-    #endif
-    procesoActual = 3;
-    estado = 1;
-    tiempoRestante = 0;
-    if(!recovery){porcentaje = 0;}
-    Log(procesoActual,0);
-    #ifdef pantallaLCD
-    lcd.clear();                                                      // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                               // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    lcd.print("Trasvasando... ");
-    lcd.setCursor(0,1);                                               // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-    lcd.print("Por favor espere");
-    #endif
-   
-//Trasvase ON
-  digitalWrite(bombaFrio,HIGH);
-  delay(retrasoBombas);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(peltier,HIGH);
-
-//Control de tiempo y sensor de liquido
-    #ifdef debug
-    Serial.println("------------------------");
-    Serial.print("El tiempo de seguridad es de: ");
-    Serial.print("4");
-    Serial.println(" Minutos");
-    Serial.println("------------------------");
-    #endif
-    gettime();                            
-    tiempoi = tiempoActual;
-    tiempof = tiempoi + (4 * 60);
-    long tiempoCancelacion = tiempoActual + 5;
-    do{
-      gettime();
-      tiempoRestante = tiempof - tiempoActual;
-      if (tiempoActual >= tiempoCancelacion){
-        tiempoCancelacion = tiempoActual + 5;
-        comprobarCancelar();
-        if (falloProceso){
-          break;
-        }
-      }
-      if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
-    delay(1000);
-  }while(true);
-//Trasvase OFF  
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
-  finishProcess();
-}
-
-
-
 /*
  *  Funcion para realizar FERMENTACION.
  *  Avisar a la Raspberry de que esta preparado para empezar el proceso. 
@@ -219,40 +123,28 @@ void trasvase(){
  */
 void fermentacion(){
   
-  if(checkLoadRecipe){return;}; 
-  /*
-  if (recovery == 1){
-    procesoActual = 4;
-    estado = 1;
-    lcd.clear();                                                                  // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                                           // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+  if(checkLoadRecipe()){return;};
+  
+  #ifdef debug
+    Serial.println("O3");
+  #endif
+  procesoActual = 4;
+  estado = 1;
+  if(!recovery){
+    porcentaje = 0;
+    Log(procesoActual,faseProceso);
+  }
+  #ifdef pantallaLCD
+    lcd.clear();                                                                    // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                                             // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
     String lcd1 = "Fermentacion: ";
     lcd1.concat(faseProceso);
     lcd.print(lcd1);
-    lcd.setCursor(0,1);                                                           // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
+    lcd.setCursor(0,1);                                                             // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
     String lcd2 = "Porcentaje: ";
     lcd2.concat(porcentaje);
     lcd2.concat("%");
     lcd.print(lcd2);
-  }else{*/
-  #ifdef debug
-  Serial.println("O4");
-  #endif
-  procesoActual = 4;
-  estado = 1;
-  if(!recovery){porcentaje = 0;}
-  Log(procesoActual,faseProceso);                                            // Mandamos la informacion a la BDD a la tabla info
-  #ifdef pantallaLCD
-  lcd.clear();                                                                    // Limpia lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                                                             // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  String lcd1 = "Fermentacion: ";
-  lcd1.concat(faseProceso);
-  lcd.print(lcd1);
-  lcd.setCursor(0,1);                                                             // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-  String lcd2 = "Porcentaje: ";
-  lcd2.concat(porcentaje);
-  lcd2.concat("%");
-  lcd.print(lcd2);
   #endif
   //}
   
@@ -305,7 +197,7 @@ void fermentacion(){
         break;
       }
     }
-    if (tiempoRestante <= 0) {break; porcentaje = 100;}   // Comprueba si el tiempo del proceso es 0, es decir, ha acabado
+    if (tiempoRestante <= 0) {break;}   // Comprueba si el tiempo del proceso es 0, es decir, ha acabado
       if (tiempoActual >= tiempoPorcentaje){              // Comprueba si han pasado 2 seg, y ejecuta
         tiempoPorcentaje = tiempoActual + 2;
         int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
@@ -327,13 +219,82 @@ void fermentacion(){
 
 }
 
-bool checkLoadRecipe() {
-  if(IDreceta == 0){                           // Comprueba si hay una receta cargada
+
+/*
+ *  Funcion para realizar TRASVASE.
+ *  Avisar a la Raspberry de que esta preparado para empezar el proceso y activa las 
+ *  bombas y reles necesarios.
+ *  Se pone en modo trasvase hasta que recibe un mensaje de fin que viene dado por la 
+ *  siguiente consigna: "T0000S0."
+ *    
+ *  Parametros: No lleva parametros
+ *  No devuelve nada
+ */
+void trasvase(){
+  
+    #ifdef debug
+      Serial.println("O4");
+    #endif
+    procesoActual = 3;
+    estado = 1;
+    tiempoRestante = 0;
+    if(!recovery){
+      porcentaje = 0;
+      Log(procesoActual,0);
+    }
     #ifdef pantallaLCD
-    lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
-    lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    String lcd1 = "No hay receta";
-    lcd.print(lcd1);
+      lcd.clear();                                                      // Limpia lo que hubiese escrito en la lcd
+      lcd.setCursor(0,0);                                               // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+      lcd.print("Trasvasando... ");
+      lcd.setCursor(0,1);                                               // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
+      lcd.print("Por favor espere");
+    #endif
+   
+//Trasvase ON
+  digitalWrite(bombaFrio,HIGH);
+  delay(retrasoBombas);
+  digitalWrite(bombaRecirculacion,LOW);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(peltier,HIGH);
+
+//Control de tiempo y sensor de liquido
+    #ifdef debug
+      Serial.println("------------------------");
+      Serial.print("El tiempo de seguridad es de: ");
+      Serial.print("4");
+      Serial.println(" Minutos");
+      Serial.println("------------------------");
+    #endif
+    gettime();                            
+    tiempoi = tiempoActual;
+    tiempof = tiempoi + (4 * 60);
+    long tiempoCancelacion = tiempoActual + 5;
+    do{
+      gettime();
+      tiempoRestante = tiempof - tiempoActual;
+      if (tiempoActual >= tiempoCancelacion){
+        tiempoCancelacion = tiempoActual + 5;
+        comprobarCancelar();
+        if (falloProceso){
+          break;
+        }
+      }
+      if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
+    delay(1000);
+  }while(true);
+//Trasvase OFF  
+  digitalWrite(bombaTrasvase,LOW);
+  digitalWrite(peltier,LOW);
+  digitalWrite(bombaFrio,LOW);
+  finishProcess();
+}
+
+bool checkLoadRecipe() {
+  if(IDreceta == 0){                             // Comprueba si hay una receta cargada
+    #ifdef pantallaLCD
+      lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
+      lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+      lcd.print("No hay receta");
     #endif
     delay(2000);
     return true;
@@ -347,7 +308,7 @@ void finishProcess() {
   if (falloProceso) {estado = 3; porcentaje = 100;}
   else {estado = 2; c_nokia_c(); porcentaje = 100;};
   #ifdef pantallaLCD
-  lcd_Porcentaje();
+    lcd_Porcentaje();
   #endif
   recovery = 0;
   Log(procesoActual,faseProceso);
@@ -409,7 +370,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       if (tiempoRestante <= 0) {
         porcentaje = 100;
         #ifdef pantallaLCD
-        lcd_Porcentaje();
+          lcd_Porcentaje();
         #endif
         break; 
       }
@@ -418,13 +379,13 @@ void calentar( int temperaturaProceso, long tiempoProceso){
         int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
         porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;
         #ifdef debug
-        Serial.print("Leeva el ");
-        Serial.print(porcentaje);
-        Serial.print("%");
-        Serial.println(" completado");
+          Serial.print("Leeva el ");
+          Serial.print(porcentaje);
+          Serial.print("%");
+          Serial.println(" completado");
         #endif
         #ifdef pantallaLCD
-        lcd_Porcentaje();
+          lcd_Porcentaje();
         #endif
       }
       

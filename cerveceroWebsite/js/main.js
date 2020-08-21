@@ -90,3 +90,36 @@ $('#myModal').on('shown.bs.modal', function () {
       }
    });
  });
+
+ $("#sendSettings").click(function(){
+   setting = document.getElementById('settings').value;
+   const data = new URLSearchParams();
+   data.append('IDplaca', 1);
+   data.append('setting', setting);
+   fetch('./php/sendSettings.php', {
+      method: 'POST',
+      body: data
+   })
+   .then(function(response) {
+      if(response.ok) {
+          return response.text();
+      } else {
+          throw "Error en la llamada Ajax";
+      }
+ 
+   })
+   .then(function(texto) {
+      if (texto == "Okay") {
+         $('#settingcollapseOkay').collapse('show');
+         //console.log(texto);
+         setTimeout(function(){ $('#settingcollapseOkay').collapse('hide'); }, 2000);
+         
+      }else{
+         $('#settingcollapseFail').collapse('show');
+         //console.log(texto);
+         setTimeout(function(){ $('#settingcollapseFail').collapse('hide'); }, 2000);
+ 
+      }
+   });
+ });
+

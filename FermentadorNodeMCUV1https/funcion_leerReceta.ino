@@ -41,7 +41,7 @@ void leerReceta(){
       //tempMacer = stempMacer.toFloat();
       int numParametros = count(stempMacer);
       for (int i = 0;i < numParametros;i ++){
-        tempMacer[i] = s.separa(stempMacer, ':', i);
+        tempMacer[++i] = s.separa(stempMacer, ':', --i);
       }
       
       
@@ -56,7 +56,7 @@ void leerReceta(){
       //tiempoMacer = stiempoMacer.toInt();
       numParametros = count(stiempoMacer);
       for (int i = 0;i < numParametros;i ++){
-        tiempoMacer[i] = s.separa(stiempoMacer, ':', i);
+        tiempoMacer[++i] = s.separa(stiempoMacer, ':', --i);
       }
       
 
@@ -70,7 +70,7 @@ void leerReceta(){
       //tempCoc = stempCoc.toFloat();
       numParametros = count(stempCoc);
       for (int i = 0;i < numParametros;i ++){
-        tempCoc[i] = s.separa(stempCoc, ':', i);
+        tempCoc[++i] = s.separa(stempCoc, ':', --i);
       }
       
 
@@ -84,7 +84,7 @@ void leerReceta(){
       //tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
       numParametros = count(stiempoCoc);
       for (int i = 0;i < numParametros;i ++){
-        tiempoCoc[i] = s.separa(stiempoCoc, ':', i);
+        tiempoCoc[++i] = s.separa(stiempoCoc, ':', --i);
       }
       
 
@@ -98,7 +98,7 @@ void leerReceta(){
       //tempFermen = stempFermen.toFloat();
       numParametros = count(stempFermen);
       for (int i = 0;i < numParametros;i ++){
-        tempFermen[i] = s.separa(stempFermen, ':', i);
+        tempFermen[++i] = s.separa(stempFermen, ':', --i);
       }
       
 
@@ -112,12 +112,12 @@ void leerReceta(){
       //tiempoFermen = stiempoFermen.toInt();
       numParametros = count(stiempoFermen);
       for (int i = 0;i < numParametros;i ++){
-        tiempoFermen[i] = s.separa(stiempoFermen, ':', i);
+        tiempoFermen[++i] = s.separa(stiempoFermen, ':', --i);
       }
       
 #ifdef debug
     //Mostrar información de la receta por Serial
-  if (tempMacer[0] != 0){
+  if (tempMacer[0] == 0){
       //Nombre de la cerveza
         Serial.print("Nombre de la cerveza= ");
         Serial.println(nombre);
@@ -132,16 +132,19 @@ void leerReceta(){
       //Tiempos en segundos
         Serial.print("Tiempo en Minutos del proceso Maceración= ");
         Serial.println(stiempoMacer);
-        Serial.print("Tiempo en Segundos del proceso Cocción= ");
+        Serial.print("Tiempo en Minutos del proceso Cocción= ");
         Serial.println(stiempoCoc);
         Serial.print("Tiempo en Meses del proceso Fermentación= ");
         Serial.println(stiempoFermen);
+       
     }else{
       Serial.println("La receta no existe");
     }
     #endif
     }else{
-      Serial.println("El servidor no responde");
+      #ifdef debug
+        Serial.println("El servidor no responde");
+      #endif
     }
 
   }

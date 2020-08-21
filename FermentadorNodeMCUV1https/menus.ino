@@ -174,6 +174,7 @@ void menuPruebas(int menu, int dato1, int dato2){
     break;
 
     case 2:
+      Serial.println("Lanzar Proceso");
       lanzar_Procesos(dato1,dato2);
     break;
 
@@ -207,6 +208,7 @@ void lanzar_Procesos(int proceso, int paso){
   switch (proceso) {
     case 1:
       faseProceso = paso;
+      Serial.println("Maceración");
       maceracion();
     break;
 

@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `firmwares` (
   PRIMARY KEY (`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.firmwares: ~9 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.firmwares: ~8 rows (aproximadamente)
 /*!40000 ALTER TABLE `firmwares` DISABLE KEYS */;
 REPLACE INTO `firmwares` (`version`, `fechaSalida`) VALUES
 	('1.0.0', '2020-03-28 17:44:39'),
@@ -51,7 +51,7 @@ REPLACE INTO `firmwares` (`version`, `fechaSalida`) VALUES
 	('1.0.4', '2020-03-29 15:26:33'),
 	('1.0.5', '2020-04-01 12:10:22'),
 	('1.0.6', '2020-04-06 17:01:33'),
-	('1.0.7', '2020-07-10 12:58:07');
+	('1.0.7', '2020-07-11 15:32:33');
 /*!40000 ALTER TABLE `firmwares` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.info
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `info` (
 -- Volcando datos para la tabla cervecero.info: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `info` DISABLE KEYS */;
 REPLACE INTO `info` (`IDplaca`, `receta`, `proceso`, `pasoProceso`, `estado`, `tiempoRestante`, `porcentaje`) VALUES
-	(1, 1, 1, 1, 3, 55, 100);
+	(1, 1, 1, 1, 2, 0, 100);
 /*!40000 ALTER TABLE `info` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.log
@@ -101,9 +101,9 @@ CREATE TABLE IF NOT EXISTS `log` (
   CONSTRAINT `FK_log_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `FK_log_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `FK_log_recetas` FOREIGN KEY (`receta`) REFERENCES `recetas` (`ID`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=614 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=726 DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.log: ~505 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.log: ~652 rows (aproximadamente)
 /*!40000 ALTER TABLE `log` DISABLE KEYS */;
 REPLACE INTO `log` (`ID`, `IDplaca`, `receta`, `time`, `proceso`, `pasoProceso`, `estado`, `tiempoRestante`, `porcentaje`) VALUES
 	(70, 1, 1, '2020-03-23 02:27:46', 1, 1, 1, 120, 0),
@@ -645,7 +645,119 @@ REPLACE INTO `log` (`ID`, `IDplaca`, `receta`, `time`, `proceso`, `pasoProceso`,
 	(610, 1, 1, '2020-07-10 14:20:58', 1, 1, 2, 0, 100),
 	(611, 1, 1, '2020-07-10 14:22:27', 1, 1, 1, 0, 0),
 	(612, 1, 1, '2020-07-10 14:22:35', 1, 1, 1, 55, 6),
-	(613, 1, 1, '2020-07-10 14:22:36', 1, 1, 3, 55, 100);
+	(613, 1, 1, '2020-07-10 14:22:36', 1, 1, 3, 55, 100),
+	(614, 1, 1, '2020-07-10 17:38:07', 1, 1, 1, 0, 0),
+	(615, 1, 1, '2020-07-10 17:38:15', 1, 1, 1, 55, 6),
+	(616, 1, 1, '2020-07-10 17:38:20', 1, 1, 1, 50, 16),
+	(617, 1, 1, '2020-07-10 17:38:26', 1, 1, 1, 45, 23),
+	(618, 1, 1, '2020-07-10 17:38:31', 1, 1, 1, 40, 33),
+	(619, 1, 1, '2020-07-10 17:38:35', 1, 1, 1, 35, 41),
+	(620, 1, 1, '2020-07-10 17:38:40', 1, 1, 1, 30, 50),
+	(621, 1, 1, '2020-07-10 17:38:45', 1, 1, 1, 25, 58),
+	(622, 1, 1, '2020-07-10 17:38:50', 1, 1, 1, 20, 66),
+	(623, 1, 1, '2020-07-10 17:38:55', 1, 1, 1, 15, 75),
+	(624, 1, 1, '2020-07-10 17:39:01', 1, 1, 1, 10, 81),
+	(625, 1, 1, '2020-07-10 17:39:06', 1, 1, 1, 5, 91),
+	(626, 1, 1, '2020-07-10 17:39:12', 1, 1, 2, 0, 100),
+	(627, 1, 1, '2020-07-10 17:41:05', 1, 1, 1, 0, 0),
+	(628, 1, 1, '2020-07-10 17:41:13', 1, 1, 1, 55, 6),
+	(629, 1, 1, '2020-07-10 17:41:18', 1, 1, 1, 50, 16),
+	(630, 1, 1, '2020-07-10 17:41:24', 1, 1, 1, 45, 23),
+	(631, 1, 1, '2020-07-10 17:41:29', 1, 1, 1, 40, 33),
+	(632, 1, 1, '2020-07-10 17:41:33', 1, 1, 1, 35, 41),
+	(633, 1, 1, '2020-07-10 17:41:46', 1, 1, 1, 30, 48),
+	(634, 1, 1, '2020-07-10 17:41:51', 1, 1, 1, 25, 58),
+	(635, 1, 1, '2020-07-10 17:41:57', 1, 1, 1, 20, 65),
+	(636, 1, 1, '2020-07-10 17:42:02', 1, 1, 1, 15, 75),
+	(637, 1, 1, '2020-07-10 17:42:06', 1, 1, 1, 10, 83),
+	(638, 1, 1, '2020-07-10 17:42:11', 1, 1, 1, 5, 91),
+	(639, 1, 1, '2020-07-10 17:42:17', 1, 1, 2, 0, 100),
+	(640, 1, 1, '2020-07-10 17:43:06', 1, 1, 1, 0, 0),
+	(641, 1, 1, '2020-07-10 17:44:05', 1, 1, 2, 0, 100),
+	(642, 1, 1, '2020-07-10 17:44:40', 1, 1, 1, 0, 0),
+	(643, 1, 1, '2020-07-10 17:44:48', 1, 1, 1, 55, 6),
+	(644, 1, 1, '2020-07-10 17:44:53', 1, 1, 1, 50, 16),
+	(645, 1, 1, '2020-07-10 17:46:10', 1, 1, 1, 45, 23),
+	(646, 1, 1, '2020-07-10 17:46:15', 1, 1, 1, 40, 33),
+	(647, 1, 1, '2020-07-10 17:46:20', 1, 1, 1, 35, 41),
+	(648, 1, 1, '2020-07-10 17:46:25', 1, 1, 1, 30, 50),
+	(649, 1, 1, '2020-07-10 17:46:30', 1, 1, 1, 25, 58),
+	(650, 1, 1, '2020-07-10 17:46:31', 1, 1, 3, 25, 58),
+	(651, 1, 1, '2020-08-20 21:58:05', 3, 0, 1, 0, 0),
+	(652, 1, 1, '2020-08-20 21:58:46', 3, 0, 1, 0, 0),
+	(653, 1, 1, '2020-08-20 21:58:58', 3, 0, 3, 230, 100),
+	(654, 1, 1, '2020-08-20 21:59:03', 1, 1, 1, 230, 0),
+	(655, 1, 1, '2020-08-20 21:59:11', 1, 1, 1, 55, 6),
+	(656, 1, 1, '2020-08-20 21:59:16', 1, 1, 1, 50, 16),
+	(657, 1, 1, '2020-08-20 21:59:21', 1, 1, 1, 45, 25),
+	(658, 1, 1, '2020-08-20 21:59:27', 1, 1, 1, 40, 31),
+	(659, 1, 1, '2020-08-20 21:59:32', 1, 1, 1, 0, 0),
+	(660, 1, 1, '2020-08-20 21:59:40', 1, 1, 1, 35, 40),
+	(661, 1, 1, '2020-08-20 21:59:45', 1, 1, 1, 30, 50),
+	(662, 1, 1, '2020-08-20 21:59:50', 1, 1, 1, 25, 58),
+	(663, 1, 1, '2020-08-20 21:59:56', 1, 1, 1, 20, 65),
+	(664, 1, 1, '2020-08-20 22:00:05', 1, 1, 1, 0, 0),
+	(665, 1, 1, '2020-08-20 22:00:13', 1, 1, 1, 15, 73),
+	(666, 1, 1, '2020-08-20 22:00:18', 1, 1, 1, 10, 83),
+	(667, 1, 1, '2020-08-20 22:00:23', 1, 1, 1, 5, 91),
+	(668, 1, 1, '2020-08-20 22:00:30', 1, 1, 2, 0, 100),
+	(669, 1, 1, '2020-08-20 22:02:34', 1, 1, 1, 0, 0),
+	(670, 1, 1, '2020-08-20 22:02:42', 1, 1, 1, 55, 6),
+	(671, 1, 1, '2020-08-20 22:02:47', 1, 1, 1, 50, 16),
+	(672, 1, 1, '2020-08-20 22:02:53', 1, 1, 1, 0, 0),
+	(673, 1, 1, '2020-08-20 22:03:00', 1, 1, 1, 45, 23),
+	(674, 1, 1, '2020-08-20 22:03:05', 1, 1, 1, 40, 33),
+	(675, 1, 1, '2020-08-20 22:03:10', 1, 1, 1, 35, 41),
+	(676, 1, 1, '2020-08-20 22:03:15', 1, 1, 1, 30, 50),
+	(677, 1, 1, '2020-08-20 22:03:20', 1, 1, 1, 25, 58),
+	(678, 1, 1, '2020-08-20 22:03:26', 1, 1, 1, 20, 65),
+	(679, 1, 1, '2020-08-20 22:03:31', 1, 1, 1, 15, 75),
+	(680, 1, 1, '2020-08-20 22:03:35', 1, 1, 1, 10, 83),
+	(681, 1, 1, '2020-08-20 22:03:40', 1, 1, 1, 5, 91),
+	(682, 1, 1, '2020-08-20 22:03:46', 1, 1, 2, 0, 100),
+	(683, 1, 1, '2020-08-20 22:09:09', 1, 1, 1, 0, 0),
+	(684, 1, 1, '2020-08-20 22:09:17', 1, 1, 1, 55, 6),
+	(685, 1, 1, '2020-08-20 22:09:18', 1, 1, 3, 55, 100),
+	(686, 1, 1, '2020-08-21 23:47:25', 1, 1, 1, 0, 0),
+	(687, 1, 1, '2020-08-21 23:47:29', 1, 1, 2, 0, 100),
+	(688, 1, 1, '2020-08-21 23:48:09', 1, 1, 1, 0, 0),
+	(689, 1, 1, '2020-08-21 23:48:13', 1, 1, 2, 0, 100),
+	(690, 1, 1, '2020-08-21 23:50:23', 1, 1, 1, 0, 0),
+	(691, 1, 1, '2020-08-21 23:50:27', 1, 1, 2, 0, 100),
+	(692, 1, 1, '2020-08-21 23:54:48', 1, 1, 1, 0, 0),
+	(693, 1, 1, '2020-08-21 23:54:56', 1, 1, 1, 175, 2),
+	(694, 1, 1, '2020-08-21 23:55:01', 1, 1, 1, 170, 5),
+	(695, 1, 1, '2020-08-21 23:55:02', 1, 1, 3, 170, 100),
+	(696, 1, 1, '2020-08-22 00:06:20', 1, 1, 1, 0, 0),
+	(697, 1, 1, '2020-08-22 00:06:28', 1, 1, 1, 55, 6),
+	(698, 1, 1, '2020-08-22 00:06:29', 1, 1, 3, 55, 100),
+	(699, 1, 1, '2020-08-22 00:10:59', 1, 1, 1, 0, 0),
+	(700, 1, 1, '2020-08-22 00:11:06', 1, 1, 1, 55, 6),
+	(701, 1, 1, '2020-08-22 00:11:11', 1, 1, 1, 50, 16),
+	(702, 1, 1, '2020-08-22 00:11:12', 1, 1, 3, 50, 100),
+	(703, 1, 1, '2020-08-22 00:11:37', 2, 1, 1, 50, 0),
+	(704, 1, 1, '2020-08-22 00:11:45', 2, 1, 1, 55, 6),
+	(705, 1, 1, '2020-08-22 00:11:46', 2, 1, 3, 55, 100),
+	(706, 1, 1, '2020-08-22 00:12:11', 4, 1, 1, 55, 0),
+	(707, 1, 1, '2020-08-22 00:12:18', 4, 1, 1, 7889245, 0),
+	(708, 1, 1, '2020-08-22 00:12:22', 4, 1, 1, 7889240, 0),
+	(709, 1, 1, '2020-08-22 00:12:27', 4, 1, 1, 7889235, 0),
+	(710, 1, 1, '2020-08-22 00:12:33', 4, 1, 1, 7889230, 0),
+	(711, 1, 1, '2020-08-22 00:12:38', 4, 1, 1, 7889225, 0),
+	(712, 1, 1, '2020-08-22 00:12:39', 4, 1, 3, 7889225, 100),
+	(713, 1, 1, '2020-08-22 00:20:14', 1, 1, 1, 7889225, 0),
+	(714, 1, 1, '2020-08-22 00:20:22', 1, 1, 1, 55, 6),
+	(715, 1, 1, '2020-08-22 00:20:27', 1, 1, 1, 50, 16),
+	(716, 1, 1, '2020-08-22 00:20:33', 1, 1, 1, 45, 23),
+	(717, 1, 1, '2020-08-22 00:20:38', 1, 1, 1, 40, 33),
+	(718, 1, 1, '2020-08-22 00:20:42', 1, 1, 1, 35, 41),
+	(719, 1, 1, '2020-08-22 00:20:47', 1, 1, 1, 30, 50),
+	(720, 1, 1, '2020-08-22 00:20:52', 1, 1, 1, 25, 58),
+	(721, 1, 1, '2020-08-22 00:20:57', 1, 1, 1, 20, 66),
+	(722, 1, 1, '2020-08-22 00:21:03', 1, 1, 1, 15, 73),
+	(723, 1, 1, '2020-08-22 00:21:08', 1, 1, 1, 10, 83),
+	(724, 1, 1, '2020-08-22 00:21:13', 1, 1, 1, 5, 91),
+	(725, 1, 1, '2020-08-22 00:21:19', 1, 1, 2, 0, 100);
 /*!40000 ALTER TABLE `log` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.log_updates
@@ -663,7 +775,7 @@ CREATE TABLE IF NOT EXISTS `log_updates` (
   CONSTRAINT `FK_log_updates_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.log_updates: ~9 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.log_updates: ~10 rows (aproximadamente)
 /*!40000 ALTER TABLE `log_updates` DISABLE KEYS */;
 REPLACE INTO `log_updates` (`IDplaca`, `fecha_update`, `oldVersion`, `newVersion`, `id`) VALUES
 	(1, '2020-03-29 00:15:58', '1.0.0', '1.0.2', 22),
@@ -692,7 +804,7 @@ CREATE TABLE IF NOT EXISTS `menu` (
   CONSTRAINT `FK_menu_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.menu: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.menu: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `menu` DISABLE KEYS */;
 REPLACE INTO `menu` (`IDplaca`, `menu`, `dato1`, `dato2`, `cancelar`, `updateNextBoot`, `continuar`) VALUES
 	(1, 0, 0, 0, 0, 0, 0);
@@ -739,7 +851,7 @@ CREATE TABLE IF NOT EXISTS `pruebas` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.pruebas: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.pruebas: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `pruebas` DISABLE KEYS */;
 REPLACE INTO `pruebas` (`id`, `json`) VALUES
 	(1, '{"Nombre":"Alcachofa","tempMacer":"0:54:78:89:34","timepoMacer":"0:1:5:7:3","tiempoCoc":"0:30","tiempoCoc":"0:1","tempFermen":"0:42","toempFermen":"0:3","procesosOrden":"0:1:2:3:4"}');
@@ -763,7 +875,7 @@ CREATE TABLE IF NOT EXISTS `recetas` (
 -- Volcando datos para la tabla cervecero.recetas: ~1 rows (aproximadamente)
 /*!40000 ALTER TABLE `recetas` DISABLE KEYS */;
 REPLACE INTO `recetas` (`ID`, `nombre`, `tempMacer`, `tiempoMacer`, `tempCoc`, `tiempoCoc`, `tempFermen`, `tiempoFermen`, `procesosOrden`) VALUES
-	(1, 'Pinta', '0:54:78:89:34', '0:1:5:7:3', '0:30', '0:1', '0:42', '0:3', '0:1:2:3:4');
+	(1, 'Pinta', '54:78:89:34', '1:5:7:3', '30', '1', '42', '3', '1:2:3:4');
 /*!40000 ALTER TABLE `recetas` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.updates
@@ -777,10 +889,8 @@ CREATE TABLE IF NOT EXISTS `updates` (
   CONSTRAINT `FK_updates_placas` FOREIGN KEY (`IDplaca`) REFERENCES `placas` (`IDplaca`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Volcando datos para la tabla cervecero.updates: ~1 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.updates: ~0 rows (aproximadamente)
 /*!40000 ALTER TABLE `updates` DISABLE KEYS */;
-REPLACE INTO `updates` (`IDplaca`, `currentVersion`) VALUES
-	(1, '1.0.7');
 /*!40000 ALTER TABLE `updates` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.users
