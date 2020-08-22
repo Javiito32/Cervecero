@@ -1,3 +1,4 @@
+
 /*
  *  Notas de la version 1.0.6:
  *  - Actualizacion de pines para el NodeMCU.
@@ -10,15 +11,20 @@
 
  
   #include "config.h"                                   // Archivo de configuración
- 
+  #define DOUBLERESETDETECTOR_DEBUG       false
+  #define ESP_DRD_USE_EEPROM      true
 
 /*
  * PINES Y VARIABLES
- */                    
+ */   
+               
   #include <ArduinoJson.h>                              // Para los datos JSON
-  #include <ESP8266WiFi.h>                              // Para el modulo ESP8266
-  #include <ESP8266HTTPClient.h>                        // ESP como cliente
-  #include <WiFiClientSecureBearSSL.h>                  // ESP como cliente seguro https
+  //#include <ESP8266WiFi.h>                              // Para el modulo ESP8266
+  #include <WiFi.h>
+  //#include <ESP8266HTTPClient.h>                        // ESP como cliente
+  #include <HTTPClient.h>
+  //#include <WiFiClientSecureBearSSL.h>                  // ESP como cliente seguro https
+  //#include <WiFiClientSecure.h>
   #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
   #include <RTClib.h>                                   // Para el manejo del modulo RTC
   #include <TimeLib.h>                                  // Libreria para gestionar las conversiones de tiempo
@@ -26,8 +32,9 @@
   #include <RunningMedian.h>                            // Hace una lectura precisa de los sensores
   #include <WiFiManager.h>                              // Interfaz para conectar el modulo a una red WiFi
   #include <DNSServer.h>                                // Va con la libreria de arriba
-  #include <DoubleResetDetector.h>                      // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
-  #include <ESP8266httpUpdate.h>                        // Para las actualizaciones de firmware
+  #include <ESP_DoubleResetDetector.h>                  // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
+  //#include <ESP8266httpUpdate.h>                        // Para las actualizaciones de firmware
+  #include <HTTPUpdate.h>
   //#include <PubSubClient.h>                             // Para las comunicaciones MQTT
   #ifdef pantallaLCD
     #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
@@ -35,15 +42,18 @@
   
   
 //LAYOUT Pines
-  #define pinSonda A0                                   // Sonda de la temperatura
-  #define resis D0                                      // Resistencia para calentar               
-  #define bombaRecirculacion D3                         // Bomba de recirculacion 230V
-  #define bombaTrasvase D4                              // Bomba trasvase 230V
-  #define bombaFrio D5                                  // Bomba refrigeracion 230V
-  #define peltier D6                                    // Celulas Peltier
-  #define sensorLiquido D7                              // Sensor de liquido en tubo
-  #define zumbador D8                                   // Zumbador para reproducir canciones
-  #define DRD_TIMEOUT 2                                 // El tiempo en segundos que va a esperar para el doble reset
+  #define LED_BUILTIN       25
+  #define pinSonda 13                                   // Sonda de la temperatura
+  #define resis 12                                      // Resistencia para calentar               
+  #define bombaRecirculacion 14                         // Bomba de recirculacion 230V
+  #define bombaTrasvase 27                              // Bomba trasvase 230V
+  #define bombaFrio 33                                  // Bomba refrigeracion 230V
+  #define peltier 32                                    // Celulas Peltier
+  #define sensorLiquido 35                              // Sensor de liquido en tubo
+  #define zumbador 34                                   // Zumbador para reproducir canciones
+
+  
+  #define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
   #define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use
 
 //Variables globales
@@ -73,21 +83,17 @@
   byte recoveryPasoProceso;                              // Variable de recovery
   int tiempoProcesoSeg;                                 // El tiempo del proceso en segundos
   String currentVersion = "1.0.7";                      // Versión del Firmware
-  String host = "https://192.168.1.150/php/arduino/";   // Servidor de PHP donde manda y recibe información
+  String host = "http://192.168.1.150/php/arduino/";   // Servidor de PHP donde manda y recibe información
   String updatesServer = "192.168.1.150";               // Servidor de actualizaciones
-
-  #ifdef https
-    const uint8_t fingerprint[20] = {0x5A, 0xCF, 0xFE, 0xF0, 0xF1, 0xA6, 0xF4, 0x5F, 0xD2, 0x11, 0x11, 0xC6, 0x1D, 0x2F, 0x0E, 0xBC, 0x39, 0x8D, 0x50, 0xE0};
-  #endif
     
 //Objetos
   HTTPClient http;                                      // Objeto para la clase HTTPClient.
-  DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);    // Objeto para la clase DoubleResetDetector.
+  DoubleResetDetector* drd;                             // Objeto para la clase DoubleResetDetector.
   RTC_DS3231 rtc;                                       // Objeto para la clase RTC_DS3231.
   Separador s;                                          // Objeto para la clase Separador.
   WiFiManager wifiManager;                              // Objeto para la clase WiFiManager.
   #ifdef pantallaLCD
-  LiquidCrystal_I2C lcd(0x27,16,2);                     // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
+    LiquidCrystal_I2C lcd(0x27,16,2);                     // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
   #endif
 void setup(){
   
@@ -96,11 +102,12 @@ void setup(){
   WiFi.begin();                                         // Iniciamos WiFi
   Wire.begin();                                    // Iniciamos las conexiones Wire
   #ifdef pantallaLCD
-  lcd.begin();                                          // Iniciamos la lcd
+    lcd.begin();                                          // Iniciamos la lcd
   #endif
   delay(10);
   
 //Configuracion de pines
+  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(resis,OUTPUT);
   pinMode(bombaRecirculacion,OUTPUT);
   pinMode(bombaTrasvase,OUTPUT);
@@ -117,61 +124,66 @@ void setup(){
   digitalWrite(peltier,LOW);
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
-if (drd.detectDoubleReset()) {                                             // Hacemos 2 pitidos
+
+drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+if (drd->detectDoubleReset()) {
+  digitalWrite(LED_BUILTIN, HIGH);
   #ifdef pantallaLCD
-  lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  lcd.print("----  Modo  ----");
-  lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-  lcd.print(" Configuracion");
+    lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    lcd.print("----  Modo  ----");
+    lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
+    lcd.print(" Configuracion");
   #endif
   wifiManager.setConfigPortalTimeout(180);              // Si en 2 minutos no se ha conectado ningún dispositivo para configurar el wifi, se cierra
   wifiManager.startConfigPortal("Cervecero_2.0");       // Se inicia el portal cautivo para la configuración
   } else {
+    digitalWrite(LED_BUILTIN, LOW);
     #ifdef debug
-    Serial.println("No Double Reset Detected");
+      Serial.println("No Double Reset Detected");
     #endif
   }
+  delay(2000);
+  drd->stop();
   
 // Conectar con la red WiFi
   #ifdef debug
-  Serial.println("");
-  Serial.print("Connecting");
+    Serial.println("");
+    Serial.print("Connecting");
   #endif
 
   #ifdef pantallaLCD
-  lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  lcd.print("Conectando WiFi");                            
+    lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    lcd.print("Conectando WiFi");                            
   #endif
   
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
     delay(500);
     #ifdef debug
-    Serial.print(".");
+      Serial.print(".");
     #endif
   }
-  drd.stop();                                           // Dejamos de detectar el reset de la placa para entrar en el modo configuracion ya que si llegamos a este punto significa que ya tenemos WiFi
   mac = WiFi.macAddress();
   #ifdef debug
-  Serial.println("");
-  Serial.println("WiFi connected");
+    Serial.println("");
+    Serial.println("WiFi connected");
 
-  Serial.print("IP: ");
-  Serial.println(WiFi.localIP());                       // Mostrar la IP que tiene el dispositivo
-  Serial.print("MAC: ");
-  Serial.println(WiFi.macAddress());                    // Mostramos la mac del dispositivo
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());                       // Mostrar la IP que tiene el dispositivo
+    Serial.print("MAC: ");
+    Serial.println(WiFi.macAddress());                    // Mostramos la mac del dispositivo
 
-  Serial.println("++++++++++++++++++++++++++++++++");
-  Serial.println(         "Cervecero 2.0");
-  Serial.println(         "Version: " + currentVersion);
-  Serial.println("++++++++++++++++++++++++++++++++");
+    Serial.println("++++++++++++++++++++++++++++++++");
+    Serial.println(         "Cervecero 2.0");
+    Serial.println(         "Version: " + currentVersion);
+    Serial.println("++++++++++++++++++++++++++++++++");
   #endif
   #ifdef pantallaLCD
-  lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  lcd.print("Iniciando...");
+    lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    lcd.print("Iniciando...");
   #endif
   
   /*                          
@@ -179,13 +191,13 @@ if (drd.detectDoubleReset()) {                                             // Ha
    */
   while (true){
     String datos = peticion("get_id.php","mac=" + mac);
-      if (datos != "fallo") {
+      if (datos != 0) {
         IDplaca = datos.toInt();
         #ifdef debug
-        Serial.println("------------------------------");
-        Serial.print("El ID de la placa es el: ");
-        Serial.println(IDplaca);
-        Serial.println("------------------------------");
+          Serial.println("------------------------------");
+          Serial.print("El ID de la placa es el: ");
+          Serial.println(IDplaca);
+          Serial.println("------------------------------");
         #endif
         break;
       }else{
@@ -206,9 +218,9 @@ if (drd.detectDoubleReset()) {                                             // Ha
   }
 
   checkrecovery();                                      // Comprobamos si hay procesos pendientes
-  if (recovery != 1) { checkforUpdates();}              // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
-  
-  if (recovery == 1){                                   // Si hay procesos pendientes hara lo siguiente
+  if (!recovery){                                       // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
+    checkforUpdates();
+  } else{                                               // Si hay procesos pendientes hara lo siguiente
     leerReceta();                                       // Leer la receta
     faseProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó en caso de que lo hubiese
@@ -220,29 +232,29 @@ if (drd.detectDoubleReset()) {                                             // Ha
 
 void loop(){
   #ifdef pantallaLCD
-  lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  lcd.print("Cervecero v" + currentVersion);
-  lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-  lcd.print(" Ready");
+    lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
+    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
+    lcd.print("Cervecero v" + currentVersion);
+    lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
+    lcd.print(" Ready");
   #endif
   #ifdef debug
-  Serial.println("------------------------------");
-  Serial.println("Ready");
-  Serial.println("------------------------------");
+    Serial.println("------------------------------");
+    Serial.println("Ready");
+    Serial.println("------------------------------");
   #endif
 
  /* 
   * Menu de consultas con PHP MySQL en formato JSON 
   */
   #ifdef new_menu
-  json_menu();
+    json_menu();
   #endif
  /*
   * Menu de consultas PHP con MySQL
   */
   #ifdef old_menu
-  SQL_menu();
-  menuinicio(dato);
+    SQL_menu();
+    menuinicio(dato);
   #endif
 }
