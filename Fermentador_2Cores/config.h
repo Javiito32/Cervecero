@@ -12,7 +12,7 @@
   #define debug
 
 //Activar la pantalla 16x2 LiquidCrystal
-  //#define pantallaLCD
+  #define pantallaLCD
 
 // Rango para la temperatura
   const float rangoTemp = 1;

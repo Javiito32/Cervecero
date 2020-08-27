@@ -14,6 +14,8 @@
   #define DOUBLERESETDETECTOR_DEBUG       false
   #define ESP_DRD_USE_EEPROM      true
 
+  TaskHandle_t Task1 = NULL;
+
 /*
  * PINES Y VARIABLES
  */   
@@ -96,11 +98,20 @@
     LiquidCrystal_I2C lcd(0x27,16,2);                     // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
   #endif
 void setup(){
+
+  xTaskCreatePinnedToCore(
+    uploadToLOG,      // Function that should be called
+    "LOG",            // Name of the task (for debugging)
+    1000,               // Stack size (bytes)
+    NULL,               // Parameter to pass
+    0,                  // Task priority
+    &Task1,               // Task handle
+    1);          // Core you want to run the task on (0 or 1)
   
 //Inicializamos las cosas
   Serial.begin(115200);                                 // Iniciamos el serial
   WiFi.begin();                                         // Iniciamos WiFi
-  Wire.begin();                                    // Iniciamos las conexiones Wire
+  Wire.begin(15, 4);                                    // Iniciamos las conexiones Wire
   #ifdef pantallaLCD
     lcd.begin();                                          // Iniciamos la lcd
   #endif
@@ -191,7 +202,7 @@ if (drd->detectDoubleReset()) {
    */
   while (true){
     String datos = peticion("get_id.php","mac=" + mac);
-      if (datos != 0) {
+      if (datos != "fallo") {
         IDplaca = datos.toInt();
         #ifdef debug
           Serial.println("------------------------------");

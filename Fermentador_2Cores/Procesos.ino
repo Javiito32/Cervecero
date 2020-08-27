@@ -19,7 +19,7 @@ void maceracion (){
   estado = 1;
   if(!recovery){
     porcentaje = 0;
-    Log(procesoActual,faseProceso);             // Mandamos la informacion a la BDD a la tabla info
+    Log();             // Mandamos la informacion a la BDD a la tabla info
   }
   #ifdef pantallaLCD
   lcd.clear();                                // Limpia lo que hubiese escrito en la lcd
@@ -77,7 +77,7 @@ void coccion (){
   estado = 1;
   if(!recovery){
     porcentaje = 0;
-    Log(procesoActual,faseProceso);
+    Log();
   }
   #ifdef pantallaLCD
     lcd.clear();                                                          // Limpia lo que hubiese escrito en la lcd
@@ -132,7 +132,7 @@ void fermentacion(){
   estado = 1;
   if(!recovery){
     porcentaje = 0;
-    Log(procesoActual,faseProceso);
+    Log();
   }
   #ifdef pantallaLCD
     lcd.clear();                                                                    // Limpia lo que hubiese escrito en la lcd
@@ -192,7 +192,7 @@ void fermentacion(){
     if (tiempoActual >= tiempoCancelacion){               // Comprueba si han pasado 5 seg, y ejecuta
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
-      Log(procesoActual,faseProceso);
+      Log();
       if (falloProceso){
         break;
       }
@@ -240,7 +240,7 @@ void trasvase(){
     tiempoRestante = 0;
     if(!recovery){
       porcentaje = 0;
-      Log(procesoActual,0);
+      Log();
     }
     #ifdef pantallaLCD
       lcd.clear();                                                      // Limpia lo que hubiese escrito en la lcd
@@ -305,14 +305,29 @@ bool checkLoadRecipe() {
 
 void finishProcess() {
   //Envio mensaje de fin de proceso.
-  if (falloProceso) {estado = 3; porcentaje = 100;}
+  if (falloProceso) {
+    estado = 3;
+    porcentaje = 100;
+    String mensaje = "Proceso ";
+    mensaje.concat(procesoActual);
+    mensaje.concat(" Fallo 1");
+    Serial.println(mensaje);
+  
+    if (falloProceso){
+      if (WiFi.status() == WL_CONNECTED) {
+        String datos_Enviar = "IDplaca=";
+        datos_Enviar.concat(IDplaca);
+        peticion("resetCancelar.php",datos_Enviar);
+        falloProceso = 0;
+        }
+    }
+  }
   else {estado = 2; porcentaje = 100;};
   #ifdef pantallaLCD
     lcd_Porcentaje();
   #endif
   recovery = 0;
-  Log(procesoActual,faseProceso);
-  finProceso(procesoActual,falloProceso);
+  Log();
 }
 
 /*
@@ -360,7 +375,8 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-        Log(procesoActual,faseProceso);
+        //Log();
+        uploadToLOG(execute);
         if (falloProceso){
           break;
         }
@@ -440,29 +456,6 @@ void comprobarCancelar() {
    }
 }
 
-/*
- * Metodo para enviar el final del proceso con errores.
- * Envia un mensaje con la informacion final del proceso a la BDD
- */
-void finProceso (int proceso,bool error){
-
-  #ifdef debug
-  String mensaje = "Proceso ";
-  mensaje.concat(proceso);
-  mensaje.concat(" Fallo ");
-  mensaje.concat(error);
-  Serial.println(mensaje);
-  #endif
-  
-  if (falloProceso){
-    if (WiFi.status() == WL_CONNECTED) {
-      String datos_Enviar = "IDplaca=";
-      datos_Enviar.concat(IDplaca);
-      peticion("resetCancelar.php",datos_Enviar);
-      falloProceso = 0;
-    }
-  }
-}
 #ifdef pantallaLCD
 void lcd_Porcentaje(){
   lcd.setCursor(12,1);                                      // Ponemos el cursor para empezar a escrivir en la linea 2 celda 12
