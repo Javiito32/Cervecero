@@ -375,8 +375,7 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-        //Log();
-        uploadToLOG(execute);
+        Log();
         if (falloProceso){
           break;
         }
