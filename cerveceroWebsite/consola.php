@@ -29,16 +29,16 @@
           </div>
         <h1>Seleccionar receta</h1>
         <div class="input-group">
-        <select class="custom-select" id="receta">
-          <option selected>Choose...</option>
-        <?php
-        //require './php/conexion.php';
-        $sql = $conn->query("SELECT ID, nombre FROM recetas");
-        while ($valores = mysqli_fetch_array($sql)) {
-            echo "<option value='$valores[ID]'>$valores[nombre]</option>";
-        }
-        ?>
-      </select>
+          <input class="form-control" type="text" id="idPlacaReceta" placeholder="ID de placa">
+          <select class="custom-select" id="receta">
+            <option selected>Choose...</option>
+          <?php
+          $sql = $conn->query("SELECT ID, nombre FROM recetas");
+          while ($valores = mysqli_fetch_array($sql)) {
+             echo "<option value='$valores[ID]'>$valores[nombre]</option>";
+          }
+          ?>
+        </select>
       <div class="input-group-append">
         <button class="btn btn-outline-primary" type="button" id="sendReceta">Cargar</button>
       </div>
@@ -56,10 +56,10 @@
     
     <h1>Ejecutar proceso</h1>
     <div class="input-group">
+      <input class="form-control" type="text" id="idPlacaProceso" placeholder="ID de placa">
       <select class="custom-select" id="proceso">
         <option selected>Choose...</option>
         <?php
-        //require './php/conexion.php';
         $sql = $conn->query("SELECT id, proceso FROM procesos");
         while ($valores = mysqli_fetch_array($sql)) {
             echo "<option value='$valores[id]'>$valores[proceso]</option>";
@@ -93,6 +93,7 @@
 
     <h1>Ajustes</h1>
         <div class="input-group">
+          <input class="form-control" type="text" id="idPlacaAjustes" placeholder="ID de placa">
         <select class="custom-select" id="settings">
           <option selected>Choose...</option>
           <option value="1">Poner en hora modulo RTC</option>
@@ -124,6 +125,7 @@
             </div>
             <div class="modal-body">
               <p>¿Estas seguro de que quieres cancelar el proceso?</p>
+              <input class="form-control" type="text" id="idPlacaCancelar" placeholder="ID de placa">
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Salir</button>

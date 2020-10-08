@@ -1,9 +1,9 @@
 <?php
 require 'conexion.php';
-$IDplaca = 1;
+$idPlaca = $_POST['idPlaca'];
 $receta = $_POST['receta'];
 
-$sql = "UPDATE menu SET menu = 1, dato1 = $receta WHERE IDplaca = $IDplaca";
+$sql = "UPDATE menu SET menu = 1, dato1 = $receta WHERE IDplaca = $idPlaca";
 if ($conn->query($sql)) {
     echo "Okay";
 
