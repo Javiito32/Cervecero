@@ -22,21 +22,15 @@ void maceracion (){
     Log();             // Mandamos la informacion a la BDD a la tabla info
   }
   #ifdef pantallaLCD
-  lcd.clear();                                // Limpia lo que hubiese escrito en la lcd
-  lcd.setCursor(0,0);                         // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-  String lcd1 = "Maceracion: ";
-  lcd1.concat(faseProceso);
-  lcd.print(lcd1);
-  lcd.setCursor(0,1);                         // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-  String lcd2 = "Porcentaje: ";
-  lcd2.concat(porcentaje);
-  lcd2.concat("%");
-  lcd.print(lcd2);
+    String lcd1 = "Porcentaje: ";
+    lcd1.concat(porcentaje);
+    lcd1.concat("%");
+    printLCD(0, 0, "Maceracion: " + faseProceso, 1, 0, lcd1);
   #endif
 //}
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[faseProceso].toFloat();           // Pasa la variable de temperatura de una String a un Float
-  int tiempoMaceracion = tiempoMacer[faseProceso].toInt();                  // Pasa la variable de tiempo de una String a un Int
+  float temperaturaMaceracion = tempMacer[faseProceso].toFloat();
+  int tiempoMaceracion = tiempoMacer[faseProceso].toInt();
 //MODO RECIRCULACION
   recircular();
 //CICLO DE CALENTAMIENTO
@@ -80,21 +74,15 @@ void coccion (){
     Log();
   }
   #ifdef pantallaLCD
-    lcd.clear();                                                          // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    String lcd1 = "Coccion: ";
-    lcd1.concat(faseProceso);
-    lcd.print(lcd1);  
-    lcd.setCursor(0,1);                                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-    String lcd2 = "Porcentaje: ";
-    lcd2.concat(porcentaje);
-    lcd2.concat("%");
-    lcd.print(lcd2);
+    String lcd1 = "Porcentaje: ";
+    lcd1.concat(porcentaje);
+    lcd1.concat("%");
+    printLCD(0, 0, "Coccion: " + faseProceso, 1, 0, lcd1);
   #endif
 //} 
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[faseProceso].toFloat();           // Pasa la variable de temperatura de una String a un Float
-  int tiempoMaceracion = tiempoMacer[faseProceso].toInt();                  // Pasa la variable de tiempo de una String a un Int
+  float temperaturaMaceracion = tempMacer[faseProceso].toFloat();
+  int tiempoMaceracion = tiempoMacer[faseProceso].toInt();
 //MODO RECIRCULACION
   recircular();
   
@@ -135,22 +123,16 @@ void fermentacion(){
     Log();
   }
   #ifdef pantallaLCD
-    lcd.clear();                                                                    // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                                             // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    String lcd1 = "Fermentacion: ";
-    lcd1.concat(faseProceso);
-    lcd.print(lcd1);
-    lcd.setCursor(0,1);                                                             // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-    String lcd2 = "Porcentaje: ";
-    lcd2.concat(porcentaje);
-    lcd2.concat("%");
-    lcd.print(lcd2);
+    String lcd1 = "Porcentaje: ";
+    lcd1.concat(porcentaje);
+    lcd1.concat("%");
+    printLCD(0, 0, "Fermentacion: + faseProceso", 1, 0, lcd1);
   #endif
   //}
   
 //LECTURA DE VARIABLES
-  float temperaturaFermentacion = tempFermen[faseProceso].toFloat();              // Pasa la variable de temperatura de una String a un Float
-  int tiempoFermentacion = tiempoFermen[faseProceso].toInt();                     // Pasa la variable de tiempo de una String a un Int
+  float temperaturaFermentacion = tempFermen[faseProceso].toFloat();
+  int tiempoFermentacion = tiempoFermen[faseProceso].toInt();
   if (recovery == 1){
     #ifdef debug
     Serial.println("------------------------");
@@ -203,13 +185,13 @@ void fermentacion(){
         int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
         porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;
         #ifdef debug
-        Serial.print("Leeva el ");
-        Serial.print(porcentaje);
-        Serial.print("%");
-        Serial.println(" completado");
+          Serial.print("Leeva el ");
+          Serial.print(porcentaje);
+          Serial.print("%");
+          Serial.println(" completado");
         #endif
         #ifdef pantallaLCD
-        lcd_Porcentaje();
+          lcd_Porcentaje();
         #endif
       }
       delay(1000);
@@ -243,11 +225,7 @@ void trasvase(){
       Log();
     }
     #ifdef pantallaLCD
-      lcd.clear();                                                      // Limpia lo que hubiese escrito en la lcd
-      lcd.setCursor(0,0);                                               // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-      lcd.print("Trasvasando... ");
-      lcd.setCursor(0,1);                                               // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-      lcd.print("Por favor espere");
+      printLCD(0, 0, "Trasvasando... ", 1, 0, "Por favor espere");
     #endif
    
 //Trasvase ON
@@ -292,9 +270,7 @@ void trasvase(){
 bool checkLoadRecipe() {
   if(IDreceta == 0){                             // Comprueba si hay una receta cargada
     #ifdef pantallaLCD
-      lcd.clear();                               // Limpia lo que hubiese escrito en la lcd     
-      lcd.setCursor(0,0);                        // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-      lcd.print("No hay receta");
+      printLCD(0, 0, "No hay receta", 1, 0, "");
     #endif
     delay(2000);
     return true;
@@ -457,10 +433,10 @@ void comprobarCancelar() {
 
 #ifdef pantallaLCD
 void lcd_Porcentaje(){
-  lcd.setCursor(12,1);                                      // Ponemos el cursor para empezar a escrivir en la linea 2 celda 12
-  String lcd2 = ""; 
-  lcd2.concat(porcentaje);
-  lcd2.concat("%");
-  lcd.print(lcd2);
+  lcd.setCursor(12,1);
+  String lcd1 = ""; 
+  lcd1.concat(porcentaje);
+  lcd1.concat("%");
+  lcd.print(lcd1);
 }
 #endif

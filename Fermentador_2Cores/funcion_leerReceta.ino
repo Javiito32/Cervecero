@@ -15,7 +15,7 @@ void leerReceta(){
     if (datos != "fallo") {
       #ifdef debug
       Serial.println(datos_Enviar);
-      Serial.println("------------------------------");                           // Obtiene la string
+      Serial.println("------------------------------");
       Serial.print("String recibida: ");
       Serial.println(datos);
       Serial.println("------------------------------");

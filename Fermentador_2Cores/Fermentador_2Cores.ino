@@ -21,12 +21,8 @@
  */   
                
   #include <ArduinoJson.h>                              // Para los datos JSON
-  //#include <ESP8266WiFi.h>                              // Para el modulo ESP8266
   #include <WiFi.h>
-  //#include <ESP8266HTTPClient.h>                        // ESP como cliente
   #include <HTTPClient.h>
-  //#include <WiFiClientSecureBearSSL.h>                  // ESP como cliente seguro https
-  //#include <WiFiClientSecure.h>
   #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
   #include <RTClib.h>                                   // Para el manejo del modulo RTC
   #include <TimeLib.h>                                  // Libreria para gestionar las conversiones de tiempo
@@ -35,9 +31,7 @@
   #include <WiFiManager.h>                              // Interfaz para conectar el modulo a una red WiFi
   #include <DNSServer.h>                                // Va con la libreria de arriba
   #include <ESP_DoubleResetDetector.h>                  // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
-  //#include <ESP8266httpUpdate.h>                        // Para las actualizaciones de firmware
   #include <HTTPUpdate.h>
-  //#include <PubSubClient.h>                             // Para las comunicaciones MQTT
   #ifdef pantallaLCD
     #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
   #endif
@@ -89,13 +83,13 @@
   String updatesServer = "192.168.1.150";               // Servidor de actualizaciones
     
 //Objetos
-  HTTPClient http;                                      // Objeto para la clase HTTPClient.
-  DoubleResetDetector* drd;                             // Objeto para la clase DoubleResetDetector.
-  RTC_DS3231 rtc;                                       // Objeto para la clase RTC_DS3231.
-  Separador s;                                          // Objeto para la clase Separador.
-  WiFiManager wifiManager;                              // Objeto para la clase WiFiManager.
+  HTTPClient http;
+  DoubleResetDetector* drd;
+  RTC_DS3231 rtc;
+  Separador s;
+  WiFiManager wifiManager;
   #ifdef pantallaLCD
-    LiquidCrystal_I2C lcd(0x27,16,2);                     // Objeto para la clase lcd, establecer el tipo de lcd que tenemos: en este caso una de 16x2 y la address (dirección) 0x27
+    LiquidCrystal_I2C lcd(0x27,16,2);
   #endif
 void setup(){
 
@@ -109,11 +103,11 @@ void setup(){
     1);          // Core you want to run the task on (0 or 1)
   
 //Inicializamos las cosas
-  Serial.begin(115200);                                 // Iniciamos el serial
-  WiFi.begin();                                         // Iniciamos WiFi
-  Wire.begin(15, 4);                                    // Iniciamos las conexiones Wire
+  Serial.begin(115200);
+  WiFi.begin();
+  Wire.begin(15, 4);
   #ifdef pantallaLCD
-    lcd.begin();                                          // Iniciamos la lcd
+    lcd.begin();
   #endif
   delay(10);
   
@@ -140,14 +134,10 @@ drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
 if (drd->detectDoubleReset()) {
   digitalWrite(LED_BUILTIN, HIGH);
   #ifdef pantallaLCD
-    lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    lcd.print("----  Modo  ----");
-    lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-    lcd.print(" Configuracion");
+    printLCD(0, 0, "----  Modo  ----", 1, 0, " Configuracion");
   #endif
-  wifiManager.setConfigPortalTimeout(180);              // Si en 2 minutos no se ha conectado ningún dispositivo para configurar el wifi, se cierra
-  wifiManager.startConfigPortal("Cervecero_2.0");       // Se inicia el portal cautivo para la configuración
+  wifiManager.setConfigPortalTimeout(180);
+  wifiManager.startConfigPortal("Cervecero_2.0");
   } else {
     digitalWrite(LED_BUILTIN, LOW);
     #ifdef debug
@@ -164,9 +154,7 @@ if (drd->detectDoubleReset()) {
   #endif
 
   #ifdef pantallaLCD
-    lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    lcd.print("Conectando WiFi");                            
+    printLCD(0, 0, "Conectando WiFi", 1, 0, "");                          
   #endif
   
 
@@ -182,9 +170,9 @@ if (drd->detectDoubleReset()) {
     Serial.println("WiFi connected");
 
     Serial.print("IP: ");
-    Serial.println(WiFi.localIP());                       // Mostrar la IP que tiene el dispositivo
+    Serial.println(WiFi.localIP());
     Serial.print("MAC: ");
-    Serial.println(WiFi.macAddress());                    // Mostramos la mac del dispositivo
+    Serial.println(WiFi.macAddress());
 
     Serial.println("++++++++++++++++++++++++++++++++");
     Serial.println(         "Cervecero 2.0");
@@ -192,9 +180,7 @@ if (drd->detectDoubleReset()) {
     Serial.println("++++++++++++++++++++++++++++++++");
   #endif
   #ifdef pantallaLCD
-    lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    lcd.print("Iniciando...");
+    printLCD(0, 0, "Iniciando...", 1, 0, "");
   #endif
   
   /*                          
@@ -218,23 +204,19 @@ if (drd->detectDoubleReset()) {
         Serial.println("------------------------------");
         #endif
         #ifdef pantallaLCD
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Error al obtener");
-        lcd.setCursor(0,1);
-        lcd.print("el ID de placa");
+          printLCD(0, 0, "Error al obtener", 1, 0, "el ID de placa");
         #endif
         delay(1000);
       }
   }
 
-  checkrecovery();                                      // Comprobamos si hay procesos pendientes
-  if (!recovery){                                       // Comprobamos si hay actualizaciones y si el usuario quiere actualizar
+  checkrecovery();
+  if (!recovery){
     checkforUpdates();
-  } else{                                               // Si hay procesos pendientes hara lo siguiente
-    leerReceta();                                       // Leer la receta
+  } else{
+    leerReceta();
     faseProceso = recoveryPasoProceso;
-    recoveryProcesos(recoveryProceso);                  // Esto arranca el proceso que haya que no se terminó en caso de que lo hubiese
+    recoveryProcesos(recoveryProceso);
   }
 }
   
@@ -243,11 +225,7 @@ if (drd->detectDoubleReset()) {
 
 void loop(){
   #ifdef pantallaLCD
-    lcd.clear();                                          // Limpia lo que hubiese escrito en la lcd
-    lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
-    lcd.print("Cervecero v" + currentVersion);
-    lcd.setCursor(0,1);                                   // Ponemos el cursor para empezar a escrivir en la linea 2 celda 0
-    lcd.print(" Ready");
+    printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
   #endif
   #ifdef debug
     Serial.println("------------------------------");

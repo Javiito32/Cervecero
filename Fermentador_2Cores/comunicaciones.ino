@@ -66,3 +66,13 @@ void uploadToLOG(void * parameter){
     // When you're done, call vTaskDelete. Don't forget this!
     vTaskDelete(Task1);
 }
+
+void printLCD(byte linea1, byte posicion1, String datosL1, byte linea2, byte posicion2, String datosL2) {
+
+  lcd.clear();
+  lcd.setCursor(posicion1,linea1);
+  lcd.print(datosL1);
+  lcd.setCursor(posicion2,linea2);
+  lcd.print(datosL2);
+  
+}
