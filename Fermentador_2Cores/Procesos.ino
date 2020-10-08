@@ -22,10 +22,12 @@ void maceracion (){
     Log();             // Mandamos la informacion a la BDD a la tabla info
   }
   #ifdef pantallaLCD
+    String lcd0 = "Maceracion: ";
+    lcd0.concat(faseProceso);
     String lcd1 = "Porcentaje: ";
     lcd1.concat(porcentaje);
     lcd1.concat("%");
-    printLCD(0, 0, "Maceracion: " + faseProceso, 1, 0, lcd1);
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 //}
 //LECTURA DE VARIABLES
@@ -74,10 +76,12 @@ void coccion (){
     Log();
   }
   #ifdef pantallaLCD
+    String lcd0 = "Coccion: ";
+    lcd0.concat(faseProceso);
     String lcd1 = "Porcentaje: ";
     lcd1.concat(porcentaje);
     lcd1.concat("%");
-    printLCD(0, 0, "Coccion: " + faseProceso, 1, 0, lcd1);
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 //} 
 //LECTURA DE VARIABLES
@@ -123,10 +127,12 @@ void fermentacion(){
     Log();
   }
   #ifdef pantallaLCD
+    String lcd0 = "Fermentacion: ";
+    lcd0.concat(faseProceso);
     String lcd1 = "Porcentaje: ";
     lcd1.concat(porcentaje);
     lcd1.concat("%");
-    printLCD(0, 0, "Fermentacion: + faseProceso", 1, 0, lcd1);
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
   //}
   

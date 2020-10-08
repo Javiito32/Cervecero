@@ -206,7 +206,7 @@ if (drd->detectDoubleReset()) {
         #ifdef pantallaLCD
           printLCD(0, 0, "Error al obtener", 1, 0, "el ID de placa");
         #endif
-        delay(1000);
+        delay(10000);
       }
   }
 
