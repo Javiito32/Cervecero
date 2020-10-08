@@ -94,12 +94,11 @@ void setup(){
 //Inicializamos las cosas
   Serial.begin(115200);                                 // Iniciamos el serial
   WiFi.begin();                                         // Iniciamos WiFi
-  Wire.begin(D2,D1);                                    // Iniciamos las conexiones Wire
+  Wire.begin();                                    // Iniciamos las conexiones Wire
   #ifdef pantallaLCD
   lcd.begin();                                          // Iniciamos la lcd
   #endif
   delay(10);
-  beep(1);                                              // Hacemos un pitido
   
 //Configuracion de pines
   pinMode(resis,OUTPUT);
@@ -118,8 +117,7 @@ void setup(){
   digitalWrite(peltier,LOW);
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
-if (drd.detectDoubleReset()) {
-  beep(2);                                              // Hacemos 2 pitidos
+if (drd.detectDoubleReset()) {                                             // Hacemos 2 pitidos
   #ifdef pantallaLCD
   lcd.clear();                                          // Limpiamos lo que hubiese escrito en la lcd
   lcd.setCursor(0,0);                                   // Ponemos el cursor para empezar a escrivir en la linea 1 celda 0
@@ -193,7 +191,7 @@ if (drd.detectDoubleReset()) {
       }else{
         #ifdef debug
         Serial.println("------------------------------");
-        Serial.println("No se pudo obtener el ID de placa");
+        Serial.println("No se pudo obtener el ID de placa o no está registrada");
         Serial.println("------------------------------");
         #endif
         #ifdef pantallaLCD
@@ -203,7 +201,7 @@ if (drd.detectDoubleReset()) {
         lcd.setCursor(0,1);
         lcd.print("el ID de placa");
         #endif
-        delay(10);
+        delay(1000);
       }
   }
 
