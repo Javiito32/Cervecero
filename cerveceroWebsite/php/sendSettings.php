@@ -1,6 +1,6 @@
 <?php
 require 'conexion.php';
-$IDplaca = 1;
+$IDplaca = $_POST['idPlaca'];
 $setting = $_POST['setting'];
 
 $sql = "UPDATE menu SET menu = 3, dato1 = $setting WHERE IDplaca = $IDplaca";
