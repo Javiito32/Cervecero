@@ -101,13 +101,35 @@ void checkrecovery(){
  * Lanza el proceso por el que iba en caso de no concluir
  */
 void recoveryProcesos(int proceso){
-       if (proceso==1) { maceracion(); }
-  else if (proceso==2) { coccion();}
-  else if (proceso==3) { trasvase();}
-  else if (proceso==4) { fermentacion();}
-  else {
+  switch (proceso){
+  case 1:
+
+    maceracion();
+    break;
+  
+  case 2:
+
+    coccion();
+    break;
+
+  case 3:
+
+    trasvase();
+    break;
+
+  case 4:
+
+    fermentacion();
+    break;
+  
+  default:
+
     #ifdef debug
-    Serial.println("Proceso no existente");
+      Serial.println("Proceso no existente");
     #endif
+    printLCD(0, 0, "    Proceso", 1, 0, "  no existente");
+    break;
+
   }
+
 }

@@ -1,6 +1,6 @@
 
 /*
- *  Notas de la version 1.0.6:
+ *  Notas de la version 1.0.7:
  *  - Actualizacion de pines para el NodeMCU.
  *  - Sustitución de las funciones que controlaban el tiempo de los procesos por 
  *    el tiempo con un modulo a tiempo real RTC.
@@ -11,10 +11,7 @@
 
  
   #include "config.h"                                   // Archivo de configuración
-  #define DOUBLERESETDETECTOR_DEBUG       false
-  #define ESP_DRD_USE_EEPROM      true
 
-  TaskHandle_t Task1 = NULL;
 
 /*
  * PINES Y VARIABLES
@@ -32,6 +29,7 @@
   #include <DNSServer.h>                                // Va con la libreria de arriba
   #include <ESP_DoubleResetDetector.h>                  // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
   #include <HTTPUpdate.h>
+  #include <PubSubClient.h>
   #ifdef pantallaLCD
     #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
   #endif
@@ -78,9 +76,6 @@
   byte recoveryProceso;                                  // Variable de recovery
   byte recoveryPasoProceso;                              // Variable de recovery
   int tiempoProcesoSeg;                                 // El tiempo del proceso en segundos
-  String currentVersion = "1.0.7";                      // Versión del Firmware
-  String host = "http://192.168.1.150/php/arduino/";   // Servidor de PHP donde manda y recibe información
-  String updatesServer = "192.168.1.150";               // Servidor de actualizaciones
     
 //Objetos
   HTTPClient http;
@@ -88,19 +83,25 @@
   RTC_DS3231 rtc;
   Separador s;
   WiFiManager wifiManager;
+  WiFiClient wifiClient;
+  PubSubClient mqttClient(wifiClient);
   #ifdef pantallaLCD
     LiquidCrystal_I2C lcd(0x27,16,2);
   #endif
+  
 void setup(){
 
-  xTaskCreatePinnedToCore(
+  mqttClient.setServer("192.168.1.150", 1883);
+  mqttClient.setCallback(callback);
+
+  /*xTaskCreatePinnedToCore(
     uploadToLOG,      // Function that should be called
     "LOG",            // Name of the task (for debugging)
     1000,               // Stack size (bytes)
     NULL,               // Parameter to pass
     0,                  // Task priority
     &Task1,               // Task handle
-    1);          // Core you want to run the task on (0 or 1)
+    1);          // Core you want to run the task on (0 or 1)*/
   
 //Inicializamos las cosas
   Serial.begin(115200);
@@ -130,22 +131,8 @@ void setup(){
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 
-drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
-if (drd->detectDoubleReset()) {
-  digitalWrite(LED_BUILTIN, HIGH);
-  #ifdef pantallaLCD
-    printLCD(0, 0, "----  Modo  ----", 1, 0, " Configuracion");
-  #endif
-  wifiManager.setConfigPortalTimeout(180);
-  wifiManager.startConfigPortal("Cervecero_2.0");
-  } else {
-    digitalWrite(LED_BUILTIN, LOW);
-    #ifdef debug
-      Serial.println("No Double Reset Detected");
-    #endif
-  }
-  delay(2000);
-  drd->stop();
+initResetDetector();
+checkReset();
   
 // Conectar con la red WiFi
   #ifdef debug
@@ -212,11 +199,15 @@ if (drd->detectDoubleReset()) {
 
   checkrecovery();
   if (!recovery){
+    
     checkforUpdates();
+    
   } else{
+    
     leerReceta();
     faseProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);
+    
   }
 }
   
@@ -224,20 +215,22 @@ if (drd->detectDoubleReset()) {
 
 
 void loop(){
-  #ifdef pantallaLCD
-    printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
-  #endif
-  #ifdef debug
-    Serial.println("------------------------------");
-    Serial.println("Ready");
-    Serial.println("------------------------------");
-  #endif
+  
 
  /* 
   * Menu de consultas con PHP MySQL en formato JSON 
   */
   #ifdef new_menu
+    #ifdef pantallaLCD
+      printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
+    #endif
+    #ifdef debug
+      Serial.println("------------------------------");
+      Serial.println("Ready");
+      Serial.println("------------------------------");
+  #endif
     json_menu();
+    
   #endif
  /*
   * Menu de consultas PHP con MySQL
@@ -245,5 +238,15 @@ void loop(){
   #ifdef old_menu
     SQL_menu();
     menuinicio(dato);
+  #endif
+
+  #ifdef json_mqtt_menu
+    if (!mqttClient.connected()) {
+      
+      reconnect();
+    
+    }
+    
+    mqttClient.loop();
   #endif
 }
