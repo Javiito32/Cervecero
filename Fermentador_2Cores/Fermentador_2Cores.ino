@@ -26,7 +26,7 @@
   #include <Separador.h>                                // Como su propio nombre indica separa cadenas de datos
   #include <RunningMedian.h>                            // Hace una lectura precisa de los sensores
   #include <WiFiManager.h>                              // Interfaz para conectar el modulo a una red WiFi
-  #include <DNSServer.h>                                // Va con la libreria de arriba
+  #include <DNSServer.h>                                // Va con la libreria de arribar
   #include <ESP_DoubleResetDetector.h>                  // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
   #include <HTTPUpdate.h>
   #include <PubSubClient.h>
