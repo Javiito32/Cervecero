@@ -18,15 +18,15 @@
  */   
                
   #include <ArduinoJson.h>                              // Para los datos JSON
-  #include <WiFi.h>
+  //#include <WiFi.h>
   #include <HTTPClient.h>
   #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
   #include <RTClib.h>                                   // Para el manejo del modulo RTC
   #include <TimeLib.h>                                  // Libreria para gestionar las conversiones de tiempo
   #include <Separador.h>                                // Como su propio nombre indica separa cadenas de datos
   #include <RunningMedian.h>                            // Hace una lectura precisa de los sensores
+  #include <DNSServer.h>                                // Va con la libreria de abajo
   #include <WiFiManager.h>                              // Interfaz para conectar el modulo a una red WiFi
-  #include <DNSServer.h>                                // Va con la libreria de arribar
   #include <ESP_DoubleResetDetector.h>                  // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
   #include <HTTPUpdate.h>
   #include <PubSubClient.h>
@@ -122,12 +122,12 @@ void setup(){
   pinMode(sensorLiquido,INPUT);
   pinMode(zumbador,OUTPUT);
 
-//Seteamos pines a LOW
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
+//Seteamos pines a HIGH
+  digitalWrite(resis,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(peltier,HIGH);
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 
@@ -209,14 +209,11 @@ checkReset();
     recoveryProcesos(recoveryProceso);
     
   }
+
 }
-  
-
-
 
 void loop(){
   
-
  /* 
   * Menu de consultas con PHP MySQL en formato JSON 
   */

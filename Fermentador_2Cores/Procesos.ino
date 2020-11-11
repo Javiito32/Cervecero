@@ -10,6 +10,7 @@
 
   
 void maceracion (){
+  
   if(checkLoadRecipe()){return;};
   
   #ifdef debug
@@ -38,11 +39,11 @@ void maceracion (){
 //CICLO DE CALENTAMIENTO
   calentar(temperaturaMaceracion,tiempoMaceracion);
 //APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
+  digitalWrite(resis,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(peltier,HIGH);
   finishProcess();
   
 }
@@ -93,11 +94,11 @@ void coccion (){
 //CICLO DE CALENTAMIENTO
   calentar(temperaturaMaceracion,tiempoMaceracion);
 //APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
+  digitalWrite(resis,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(peltier,HIGH);
   finishProcess();
 }
 
@@ -235,11 +236,11 @@ void trasvase(){
     #endif
    
 //Trasvase ON
-  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(bombaFrio,LOW);
   delay(retrasoBombas);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,LOW);
+  digitalWrite(peltier,LOW);
 
 //Control de tiempo y sensor de liquido
     #ifdef debug
@@ -267,9 +268,9 @@ void trasvase(){
     delay(1000);
   }while(true);
 //Trasvase OFF  
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaFrio,HIGH);
   finishProcess();
 }
 
@@ -387,12 +388,12 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       }
       
   //Tratamiento de la temperatura
-    int sensorTemperatura = analogRead(pinSonda);
+    int sensorTemperatura = 25;// analogRead(pinSonda);
     float milivoltios = (sensorTemperatura / 1023.0) * 3300;
     float celsius = milivoltios / 10;
   //Mantenimiento de la ventana de temperatura
-    if(celsius > tmax){digitalWrite(resis,LOW);}
-    if(celsius < tmin){digitalWrite(resis,HIGH);}
+    if(celsius > tmax){digitalWrite(resis,HIGH);}
+    if(celsius < tmin){digitalWrite(resis,LOW);}
     delay(1000);
   }while(true);
   
@@ -413,36 +414,49 @@ void calentar( int temperaturaProceso, long tiempoProceso){
  * No devuelve nada
  */
 void recircular(){
-  digitalWrite(bombaRecirculacion,HIGH);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
+  digitalWrite(bombaRecirculacion,LOW);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaFrio,HIGH);
 }
 
 void comprobarCancelar() {
+
   if (WiFi.status() == WL_CONNECTED){
+
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
     String datos = peticion("checkCancel.php",datos_Enviar);
+
       if (datos != "fallo") {
+
         int cancelar = datos.toInt();
+
         if (cancelar == 1){
+
           falloProceso = 1;
+
         }
+
     }else{
+
       #ifdef debug
       Serial.println("No se pudo comprobar la cancelación del proceso");
       #endif
+
     }
+
    }
 }
 
 #ifdef pantallaLCD
 void lcd_Porcentaje(){
+
   lcd.setCursor(12,1);
   String lcd1 = ""; 
   lcd1.concat(porcentaje);
   lcd1.concat("%");
   lcd.print(lcd1);
+
 }
 #endif
