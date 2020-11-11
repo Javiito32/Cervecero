@@ -17,8 +17,8 @@
  * PINES Y VARIABLES
  */   
                
+  #include <FS.h> //this needs to be first, or it all crashes and burns...
   #include <ArduinoJson.h>                              // Para los datos JSON
-  //#include <WiFi.h>
   #include <HTTPClient.h>
   #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
   #include <RTClib.h>                                   // Para el manejo del modulo RTC
@@ -76,6 +76,7 @@
   byte recoveryProceso;                                  // Variable de recovery
   byte recoveryPasoProceso;                              // Variable de recovery
   int tiempoProcesoSeg;                                 // El tiempo del proceso en segundos
+  String mqtt_server;
     
 //Objetos
   HTTPClient http;
