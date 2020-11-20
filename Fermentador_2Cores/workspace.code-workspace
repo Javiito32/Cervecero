@@ -5,8 +5,7 @@
 		}
 	],
 	"settings": {
-		//"arduino.path": "/home/kerjox/programas/arduino-1.8.13",
-		"arduino.path": "C:\\Program Files (x86)\\Arduino",
+		"arduino.path": "/home/kerjox/programas/arduino-1.8.13",
 		"arduino.logLevel": "info",
 		"arduino.enableUSBDetection": true,
 		"arduino.disableTestingOpen": false,
