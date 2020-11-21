@@ -9,64 +9,63 @@ void json_menu(){
 
   while(true){
 
-  delay(100);
-  if (WiFi.status() == WL_CONNECTED){
-    #ifdef pantallaLCD
-      lcd.setCursor(0,1);
-      lcd.print(" Ready   Online");
-    #endif
-    String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(IDplaca);
-    String datosString = peticion("json.php",datos_Enviar);
+    delay(100);
+    if (WiFi.status() == WL_CONNECTED){
+      #ifdef pantallaLCD
+        lcd.setCursor(0,1);
+        lcd.print(" Ready   Online");
+      #endif
+      String datos_Enviar = "IDplaca=";
+      datos_Enviar.concat(IDplaca);
+      String datosString = peticion("json.php",datos_Enviar);
 
-// 02
-  if (datosString == "fallo") {
-    
-    #ifdef debug
-        Serial.println("El servidor no responde");
-    #endif
-    
-    }else {
-
-      const char * datos = datosString.c_str();
-    
-      const size_t capacity = JSON_OBJECT_SIZE(3) + 30;
-      DynamicJsonDocument doc(capacity);
-
-      //const char* json = "{\"menu\":\"1\",\"dato1\":\"1\",\"dato2\":\"1\"}";        //Para testear la decodificación de las variables
+  // 02
+    if (datosString == "fallo") {
       
-      deserializeJson(doc, datos);
-
-      int menu = doc["menu"];
-      int dato1 = doc["dato1"];
-      int dato2 = doc["dato2"];
+      #ifdef debug
+          Serial.println("El servidor no responde");
+      #endif
       
+      }else {
 
-      //Serial.println(dato);
+        const char * datos = datosString.c_str();
+      
+        const size_t capacity = JSON_OBJECT_SIZE(3) + 30;
+        DynamicJsonDocument doc(capacity);
 
-      if (menu != 0){
-
-        String datos_Enviar = "IDplaca=";
-        datos_Enviar.concat(IDplaca);
-        datos_Enviar.concat("&reset=1");
-        peticion("json.php",datos_Enviar);
-          #ifdef debug
-            Serial.println(menu);
-            Serial.println(dato1);
-            Serial.println(dato2);
-          #endif
+        //const char* json = "{\"menu\":\"1\",\"dato1\":\"1\",\"dato2\":\"1\"}";        //Para testear la decodificación de las variables
         
-        menuPruebas(menu,dato1,dato2);
+        deserializeJson(doc, datos);
 
-        break;
+        int menu = doc["menu"];
+        int dato1 = doc["dato1"];
+        int dato2 = doc["dato2"];
+        
+
+        //Serial.println(dato);
+
+        if (menu != 0){
+
+          String datos_Enviar = "IDplaca=";
+          datos_Enviar.concat(IDplaca);
+          datos_Enviar.concat("&reset=1");
+          peticion("json.php",datos_Enviar);
+            #ifdef debug
+              Serial.println(menu);
+              Serial.println(dato1);
+              Serial.println(dato2);
+            #endif
+          
+          menuPruebas(menu,dato1,dato2);
+
+          break;
+        }
+
       }
-
+          
     }
-        
+
   }
-
-}
-
 
 }
 
