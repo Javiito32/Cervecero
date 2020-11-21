@@ -1,7 +1,9 @@
 void reconnect() {
   // Loop until we're reconnected
   while (!mqttClient.connected()) {
+
     Serial.println("Attempting MQTT connection...");
+
     // Attempt to connect
     if (mqttClient.connect("2")) {
       #ifdef pantallaLCD
@@ -15,7 +17,7 @@ void reconnect() {
         Serial.println("------------------------------");
       #endif
       // Once connected, publish an announcement...
-      mqttClient.publish("2/state","online");
+      mqttClient.publish("2/state", "online");
       // ... and resubscribe
       mqttClient.subscribe("2/menu");
     } else {
@@ -37,7 +39,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   
   String datos;
   
-  for (int i=0;i<length;i++) {
+  for (int i = 0; i < length; i++) {
     
     datos += (char)payload[i];
     

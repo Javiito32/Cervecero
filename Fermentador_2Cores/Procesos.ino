@@ -318,7 +318,7 @@ void finishProcess() {
  * Calienta a la temperatura indicada +- "rangoTemp".
  * Si tenia un proceso pendiente debido a un fallo eléctrico, lo restaurará
  */
-void calentar( int temperaturaProceso, long tiempoProceso){
+void calentar(int temperaturaProceso, long tiempoProceso){
 
   //Tratamiento de la ventana de temperatura
   
@@ -354,13 +354,33 @@ void calentar( int temperaturaProceso, long tiempoProceso){
 
     int tmax = temperaturaProceso+rangoTemp;
     int tmin = temperaturaProceso-rangoTemp;
+
     do{
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-        Log();
+
+        // Pruabas
+        String datos_Enviar = "IDplaca=";
+        datos_Enviar.concat(IDplaca);
+        datos_Enviar.concat("&receta=");
+        datos_Enviar.concat(IDreceta);
+        datos_Enviar.concat("&proceso=");
+        datos_Enviar.concat(procesoActual);
+        datos_Enviar.concat("&pasoProceso=");
+        datos_Enviar.concat(faseProceso);
+        datos_Enviar.concat("&estado=");
+        datos_Enviar.concat(estado);
+        datos_Enviar.concat("&tiempoRestante=");
+        datos_Enviar.concat(tiempoRestante);
+        datos_Enviar.concat("&porcentaje="); 
+        datos_Enviar.concat(porcentaje);
+        xQueueSend(queue, &datos_Enviar, portMAX_DELAY);
+        //Log();
         if (falloProceso){
+
           break;
+
         }
       }
       gettime();
