@@ -96,7 +96,7 @@ QueueHandle_t queue;
   
 void setup(){
 
-  mqttClient.setServer("192.168.1.150", 1883);
+  mqttClient.setServer(ipServer.c_str(), 1883);
   mqttClient.setCallback(callback);
 
   xTaskCreatePinnedToCore(
