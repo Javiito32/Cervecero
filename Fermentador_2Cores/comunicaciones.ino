@@ -41,32 +41,6 @@ void Log() {
   }
 }
 
-void uploadToLOG(void * parameter){
-  if (WiFi.status() == WL_CONNECTED) {
-    String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(IDplaca);
-    datos_Enviar.concat("&receta=");
-    datos_Enviar.concat(IDreceta);
-    datos_Enviar.concat("&proceso=");
-    datos_Enviar.concat(procesoActual);
-    datos_Enviar.concat("&pasoProceso=");
-    datos_Enviar.concat(faseProceso);
-    datos_Enviar.concat("&estado=");
-    datos_Enviar.concat(estado);
-    datos_Enviar.concat("&tiempoRestante=");
-    datos_Enviar.concat(tiempoRestante);
-    datos_Enviar.concat("&porcentaje="); 
-    datos_Enviar.concat(porcentaje);
-    peticion("log.php",datos_Enviar);
-    #ifdef debug
-      Serial.println("Log");
-    #endif
-  }
-
-    // When you're done, call vTaskDelete. Don't forget this!
-    vTaskDelete(Task1);
-}
-
 void printLCD(byte linea1, byte posicion1, String datosL1, byte linea2, byte posicion2, String datosL2) {
 
   lcd.clear();
@@ -75,4 +49,24 @@ void printLCD(byte linea1, byte posicion1, String datosL1, byte linea2, byte pos
   lcd.setCursor(posicion2,linea2);
   lcd.print(datosL2);
   
+}
+
+
+void makeLog(void *parameter) {
+
+  for (;;){
+
+    String datos_Enviar;
+    xQueueReceive(queue, &datos_Enviar, portMAX_DELAY);
+
+    if (WiFi.status() == WL_CONNECTED) {
+
+      peticion("log.php", datos_Enviar);
+      #ifdef debug
+        Serial.println("Log");
+      #endif
+    }
+  
+  }
+
 }

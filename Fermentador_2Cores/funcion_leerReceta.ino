@@ -9,10 +9,13 @@
 
 void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
+
     String datos_Enviar = "IDreceta=";
     datos_Enviar.concat(IDreceta);
     String datos = peticion("pedirdatosPost.php",datos_Enviar);
+
     if (datos != "fallo") {
+
       #ifdef debug
       Serial.println(datos_Enviar);
       Serial.println("------------------------------");
@@ -20,14 +23,25 @@ void leerReceta(){
       Serial.println(datos);
       Serial.println("------------------------------");
       #endif
+
       int longitud = datos.length();
 
     //Procesar datos nombre Receta
       int pnombre = datos.indexOf("nombre=");
       String nombre = "";
+
       for (int i = pnombre + 7; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else nombre += datos[i];
+
+        if (datos[i] == ';'){
+
+          i = longitud;
+
+        }else{
+          
+          nombre += datos[i];
+
+        }
+        
       }
       
 
@@ -154,9 +168,15 @@ void leerReceta(){
  * Ejemplo String 'pera:manzana:limon' el output de la función es 3
  */
 int count(String str){
-  int a = 1;
+  
+  int cont = 1;
+  
   for (int i = 0; i < str.length(); i ++){
-      if (str[i] == ':') {a = a + 1;}
+  
+      if (str[i] == ':') {cont++;}
+  
   }
-  return a;
+
+  return cont;
+
 }

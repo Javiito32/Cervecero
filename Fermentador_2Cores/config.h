@@ -1,11 +1,20 @@
+ 
+  static String currentVersion = "1.0.8";                      // Versión del Firmware
+  static String host = "http://192.168.1.150/php/arduino/";    // Servidor de PHP donde manda y recibe información
+  static String ipServer = "192.168.1.150";               // Servidor de actualizaciones
+
 /*
  * Configuraciones del programa
  */
 
+// Configuracion DobleResetDetector (no tocar)
+  #define DOUBLERESETDETECTOR_DEBUG       false
+  #define ESP_DRD_USE_EEPROM      true
+
 // Activar menu nuevo o antiguo 
-  #define new_menu
-  
+  //#define new_menu
   //#define old_menu
+  #define json_mqtt_menu
   
  
 // Activar todos los mensajes por serial

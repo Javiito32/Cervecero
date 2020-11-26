@@ -10,6 +10,7 @@
 
   
 void maceracion (){
+  
   if(checkLoadRecipe()){return;};
   
   #ifdef debug
@@ -22,10 +23,12 @@ void maceracion (){
     Log();             // Mandamos la informacion a la BDD a la tabla info
   }
   #ifdef pantallaLCD
+    String lcd0 = "Maceracion: ";
+    lcd0.concat(faseProceso);
     String lcd1 = "Porcentaje: ";
     lcd1.concat(porcentaje);
     lcd1.concat("%");
-    printLCD(0, 0, "Maceracion: " + faseProceso, 1, 0, lcd1);
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 //}
 //LECTURA DE VARIABLES
@@ -36,11 +39,11 @@ void maceracion (){
 //CICLO DE CALENTAMIENTO
   calentar(temperaturaMaceracion,tiempoMaceracion);
 //APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
+  digitalWrite(resis,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(peltier,HIGH);
   finishProcess();
   
 }
@@ -74,10 +77,12 @@ void coccion (){
     Log();
   }
   #ifdef pantallaLCD
+    String lcd0 = "Coccion: ";
+    lcd0.concat(faseProceso);
     String lcd1 = "Porcentaje: ";
     lcd1.concat(porcentaje);
     lcd1.concat("%");
-    printLCD(0, 0, "Coccion: " + faseProceso, 1, 0, lcd1);
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 //} 
 //LECTURA DE VARIABLES
@@ -89,11 +94,11 @@ void coccion (){
 //CICLO DE CALENTAMIENTO
   calentar(temperaturaMaceracion,tiempoMaceracion);
 //APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,LOW);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(bombaFrio,LOW);
-  digitalWrite(peltier,LOW);
+  digitalWrite(resis,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(peltier,HIGH);
   finishProcess();
 }
 
@@ -123,10 +128,12 @@ void fermentacion(){
     Log();
   }
   #ifdef pantallaLCD
+    String lcd0 = "Fermentacion: ";
+    lcd0.concat(faseProceso);
     String lcd1 = "Porcentaje: ";
     lcd1.concat(porcentaje);
     lcd1.concat("%");
-    printLCD(0, 0, "Fermentacion: + faseProceso", 1, 0, lcd1);
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
   //}
   
@@ -229,11 +236,11 @@ void trasvase(){
     #endif
    
 //Trasvase ON
-  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(bombaFrio,LOW);
   delay(retrasoBombas);
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaRecirculacion,HIGH);
+  digitalWrite(bombaTrasvase,LOW);
+  digitalWrite(peltier,LOW);
 
 //Control de tiempo y sensor de liquido
     #ifdef debug
@@ -261,9 +268,9 @@ void trasvase(){
     delay(1000);
   }while(true);
 //Trasvase OFF  
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaFrio,HIGH);
   finishProcess();
 }
 
@@ -311,7 +318,7 @@ void finishProcess() {
  * Calienta a la temperatura indicada +- "rangoTemp".
  * Si tenia un proceso pendiente debido a un fallo eléctrico, lo restaurará
  */
-void calentar( int temperaturaProceso, long tiempoProceso){
+void calentar(int temperaturaProceso, long tiempoProceso){
 
   //Tratamiento de la ventana de temperatura
   
@@ -347,13 +354,33 @@ void calentar( int temperaturaProceso, long tiempoProceso){
 
     int tmax = temperaturaProceso+rangoTemp;
     int tmin = temperaturaProceso-rangoTemp;
+
     do{
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-        Log();
+
+        // Pruabas
+        String datos_Enviar = "IDplaca=";
+        datos_Enviar.concat(IDplaca);
+        datos_Enviar.concat("&receta=");
+        datos_Enviar.concat(IDreceta);
+        datos_Enviar.concat("&proceso=");
+        datos_Enviar.concat(procesoActual);
+        datos_Enviar.concat("&pasoProceso=");
+        datos_Enviar.concat(faseProceso);
+        datos_Enviar.concat("&estado=");
+        datos_Enviar.concat(estado);
+        datos_Enviar.concat("&tiempoRestante=");
+        datos_Enviar.concat(tiempoRestante);
+        datos_Enviar.concat("&porcentaje="); 
+        datos_Enviar.concat(porcentaje);
+        xQueueSend(queue, &datos_Enviar, portMAX_DELAY);
+        //Log();
         if (falloProceso){
+
           break;
+
         }
       }
       gettime();
@@ -381,12 +408,12 @@ void calentar( int temperaturaProceso, long tiempoProceso){
       }
       
   //Tratamiento de la temperatura
-    int sensorTemperatura = analogRead(pinSonda);
+    int sensorTemperatura = 25;// analogRead(pinSonda);
     float milivoltios = (sensorTemperatura / 1023.0) * 3300;
     float celsius = milivoltios / 10;
   //Mantenimiento de la ventana de temperatura
-    if(celsius > tmax){digitalWrite(resis,LOW);}
-    if(celsius < tmin){digitalWrite(resis,HIGH);}
+    if(celsius > tmax){digitalWrite(resis,HIGH);}
+    if(celsius < tmin){digitalWrite(resis,LOW);}
     delay(1000);
   }while(true);
   
@@ -407,36 +434,49 @@ void calentar( int temperaturaProceso, long tiempoProceso){
  * No devuelve nada
  */
 void recircular(){
-  digitalWrite(bombaRecirculacion,HIGH);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
-  digitalWrite(bombaFrio,LOW);
+  digitalWrite(bombaRecirculacion,LOW);
+  digitalWrite(bombaTrasvase,HIGH);
+  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaFrio,HIGH);
 }
 
 void comprobarCancelar() {
+
   if (WiFi.status() == WL_CONNECTED){
+
     String datos_Enviar = "IDplaca=";
     datos_Enviar.concat(IDplaca);
     String datos = peticion("checkCancel.php",datos_Enviar);
+
       if (datos != "fallo") {
+
         int cancelar = datos.toInt();
+
         if (cancelar == 1){
+
           falloProceso = 1;
+
         }
+
     }else{
+
       #ifdef debug
       Serial.println("No se pudo comprobar la cancelación del proceso");
       #endif
+
     }
+
    }
 }
 
 #ifdef pantallaLCD
 void lcd_Porcentaje(){
+
   lcd.setCursor(12,1);
   String lcd1 = ""; 
   lcd1.concat(porcentaje);
   lcd1.concat("%");
   lcd.print(lcd1);
+
 }
 #endif
