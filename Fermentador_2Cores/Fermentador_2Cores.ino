@@ -11,7 +11,7 @@
 
  
 #include "config.h"                                   // Archivo de configuración
-#include "Recipe.h"
+#include "./classes/Recipe.h"
 
 
 /*
