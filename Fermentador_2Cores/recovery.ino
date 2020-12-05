@@ -6,9 +6,9 @@ void checkrecovery(){
   Serial.println("Comprobando Recovery");
   #endif
   while (true){
-    String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(IDplaca);
-    String datos = peticion("recovery.php",datos_Enviar);
+    String data_To_Send = "IDplaca=";
+    data_To_Send.concat(id_Board);
+    String datos = peticion("recovery.php",data_To_Send);
       if (datos != "fallo") {
         //Serial.println(datos);
         
@@ -37,7 +37,7 @@ void checkrecovery(){
           if (datos[i] == ';') i = longitud;
           else sreceta += datos[i];
           }
-          IDreceta = sreceta.toInt();
+          Recipe.setRecipe(sreceta.toInt());
           
 
           int ptiempoRestante = datos.indexOf("tiempoRestante=");
@@ -70,7 +70,7 @@ void checkrecovery(){
           
         #ifdef debug
         Serial.print("Receta a recuperar: ");
-        Serial.println(IDreceta);
+        Serial.println(Recipe.getRecipe());
         Serial.print("Tiempo que le falta: ");
         Serial.println(recoveryTiempoRestante);
         Serial.print("Proceso que estaba: ");

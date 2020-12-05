@@ -20,7 +20,7 @@ void maceracion (){
   estado = 1;
   if(!recovery){
     porcentaje = 0;
-    Log();             // Mandamos la informacion a la BDD a la tabla info
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);             // Mandamos la informacion a la BDD a la tabla info
   }
   #ifdef pantallaLCD
     String lcd0 = "Maceracion: ";
@@ -32,8 +32,8 @@ void maceracion (){
   #endif
 //}
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[faseProceso].toFloat();
-  int tiempoMaceracion = tiempoMacer[faseProceso].toInt();
+  float temperaturaMaceracion = Recipe.getTempMacer(faseProceso);
+  int tiempoMaceracion = Recipe.getTimeMacer(faseProceso);
 //MODO RECIRCULACION
   recircular();
 //CICLO DE CALENTAMIENTO
@@ -74,7 +74,7 @@ void coccion (){
   estado = 1;
   if(!recovery){
     porcentaje = 0;
-    Log();
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
   }
   #ifdef pantallaLCD
     String lcd0 = "Coccion: ";
@@ -86,8 +86,8 @@ void coccion (){
   #endif
 //} 
 //LECTURA DE VARIABLES
-  float temperaturaMaceracion = tempMacer[faseProceso].toFloat();
-  int tiempoMaceracion = tiempoMacer[faseProceso].toInt();
+  float temperaturaMaceracion = Recipe.getTempCoc(faseProceso);
+  int tiempoMaceracion = Recipe.getTimeCoc(faseProceso);
 //MODO RECIRCULACION
   recircular();
   
@@ -125,7 +125,7 @@ void fermentacion(){
   estado = 1;
   if(!recovery){
     porcentaje = 0;
-    Log();
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
   }
   #ifdef pantallaLCD
     String lcd0 = "Fermentacion: ";
@@ -138,8 +138,8 @@ void fermentacion(){
   //}
   
 //LECTURA DE VARIABLES
-  float temperaturaFermentacion = tempFermen[faseProceso].toFloat();
-  int tiempoFermentacion = tiempoFermen[faseProceso].toInt();
+  float temperaturaFermentacion = Recipe.getTempFermen(faseProceso);
+  int tiempoFermentacion = Recipe.getTimeFermen(faseProceso);
   if (recovery == 1){
     #ifdef debug
     Serial.println("------------------------");
@@ -181,7 +181,7 @@ void fermentacion(){
     if (tiempoActual >= tiempoCancelacion){               // Comprueba si han pasado 5 seg, y ejecuta
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
-      Log();
+      Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
       if (falloProceso){
         break;
       }
@@ -229,7 +229,7 @@ void trasvase(){
     tiempoRestante = 0;
     if(!recovery){
       porcentaje = 0;
-      Log();
+      Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
     }
     #ifdef pantallaLCD
       printLCD(0, 0, "Trasvasando... ", 1, 0, "Por favor espere");
@@ -275,7 +275,7 @@ void trasvase(){
 }
 
 bool checkLoadRecipe() {
-  if(IDreceta == 0){                             // Comprueba si hay una receta cargada
+  if(Recipe.getRecipe() == 0){                             // Comprueba si hay una receta cargada
     #ifdef pantallaLCD
       printLCD(0, 0, "No hay receta", 1, 0, "");
     #endif
@@ -298,9 +298,9 @@ void finishProcess() {
   
     if (falloProceso){
       if (WiFi.status() == WL_CONNECTED) {
-        String datos_Enviar = "IDplaca=";
-        datos_Enviar.concat(IDplaca);
-        peticion("resetCancelar.php",datos_Enviar);
+        String data_To_Send = "IDplaca=";
+        data_To_Send.concat(id_Board);
+        peticion("resetCancelar.php", data_To_Send);
         falloProceso = 0;
         }
     }
@@ -310,7 +310,7 @@ void finishProcess() {
     lcd_Porcentaje();
   #endif
   recovery = 0;
-  Log();
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
 }
 
 /*
@@ -349,7 +349,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
     tiempoProcesoSeg = tiempof - tiempoi;
   }
     
-    long tiempoCancelacion = tiempoActual + 5;
+    int tiempoCancelacion = tiempoActual + 5;
     int tiempoPorcentaje = tiempoActual + 2;
 
     int tmax = temperaturaProceso+rangoTemp;
@@ -359,24 +359,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-
-        // Pruabas
-        String datos_Enviar = "IDplaca=";
-        datos_Enviar.concat(IDplaca);
-        datos_Enviar.concat("&receta=");
-        datos_Enviar.concat(IDreceta);
-        datos_Enviar.concat("&proceso=");
-        datos_Enviar.concat(procesoActual);
-        datos_Enviar.concat("&pasoProceso=");
-        datos_Enviar.concat(faseProceso);
-        datos_Enviar.concat("&estado=");
-        datos_Enviar.concat(estado);
-        datos_Enviar.concat("&tiempoRestante=");
-        datos_Enviar.concat(tiempoRestante);
-        datos_Enviar.concat("&porcentaje="); 
-        datos_Enviar.concat(porcentaje);
-        xQueueSend(queue, &datos_Enviar, portMAX_DELAY);
-        //Log();
+        Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
         if (falloProceso){
 
           break;
@@ -445,7 +428,7 @@ void comprobarCancelar() {
   if (WiFi.status() == WL_CONNECTED){
 
     String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(IDplaca);
+    datos_Enviar.concat(id_Board);
     String datos = peticion("checkCancel.php",datos_Enviar);
 
       if (datos != "fallo") {

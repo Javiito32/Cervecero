@@ -1,9 +1,9 @@
 bool checkforUpdates(){
   while(true){
-    String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(IDplaca);
-    datos_Enviar.concat("&currentVersion=" + currentVersion);
-    String datos = peticion("checkforUpdates.php",datos_Enviar);
+    String data_To_Send = "IDplaca=";
+    data_To_Send.concat(id_Board);
+    data_To_Send.concat("&currentVersion=" + currentVersion);
+    String datos = peticion("checkforUpdates.php", data_To_Send);
     //Serial.println(datos_Enviar);
       if (datos == "fallo") {
 

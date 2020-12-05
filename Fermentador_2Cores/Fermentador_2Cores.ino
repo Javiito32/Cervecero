@@ -11,6 +11,7 @@
 
  
 #include "config.h"                                   // Archivo de configuración
+#include "Recipe.h"
 
 
 /*
@@ -33,42 +34,26 @@
   #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
 #endif
 
-
-//LAYOUT Pines
-#define LED_BUILTIN       25
-#define pinSonda 13                                   // Sonda de la temperatura
-#define resis 12                                      // Resistencia para calentar               
-#define bombaRecirculacion 14                         // Bomba de recirculacion 230V
-#define bombaTrasvase 27                              // Bomba trasvase 230V
-#define bombaFrio 33                                  // Bomba refrigeracion 230V
-#define peltier 32                                    // Celulas Peltier
-#define sensorLiquido 35                              // Sensor de liquido en tubo
-#define zumbador 34                                   // Zumbador para reproducir canciones
-
-
-#define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
-#define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use
-
 //Variables globales
 int dato;                                             // Dato leido para entrar el menu
 unsigned long tiempoi;                                // Tiempo inicial para los procesos en seg
 unsigned long tiempof;                                // Tiempo final para los procesos en seg
 unsigned long tiempoActual;                           // Tiempo actual del proceso en seg
 long tiempoRestante;                                  // Tiempo que falta para el final de los procesos en seg
-String tempMacer[10];                                 // Temperatura de maceración de la receta seleccionada
-String tiempoMacer[10];                               // Tiempo maceración de la recta selecionada
-String tempCoc[10];                                   // Temperatura de cocción de la receta seleccionada
-String tiempoCoc[10];                                 // Tiempo cocción de la recta selecionada
+//int IDreceta = 0;                                     // El ID de la receta de la BDD
+// String tempMacer[10];                                 // Temperatura de maceración de la receta seleccionada
+// String tiempoMacer[10];                               // Tiempo maceración de la recta selecionada
+// String tempCoc[10];                                   // Temperatura de cocción de la receta seleccionada
+// String tiempoCoc[10];                                 // Tiempo cocción de la recta selecionada
+// String tempFermen[10];                                // Temperatura de fermentación de la receta seleccionada
+// String tiempoFermen[10];                              // Tiempo fermentación de la recta selecionada
 unsigned long tiempoTrans;                            // Tiempo transvase de la recta selecionada
-String tempFermen[10];                                // Temperatura de fermentación de la receta seleccionada
-String tiempoFermen[10];                              // Tiempo fermentación de la recta selecionada
 bool falloProceso = 0;                                // Guarda si falla el tiempo
 byte procesoActual;                                    // El proceso que se esta ejecutando
 byte faseProceso;                                      // El paso del proceso que se esta ejecutando
 byte estado;                                           // 1 - Iniciado, 2 - Finalizado, 3 - Cancelado
 String mac;                                           // La direccion MAC de el WiFi
-int IDplaca;                                          // Identificador unico de la placa, es un número
-int IDreceta = 0;                                     // El ID de la receta de la BDD
+int id_Board;                                          // Identificador unico de la placa, es un número
 byte porcentaje;                                      // Porcentaje completado del proceso
 bool recovery;                                        // 0 - Nada que recuperar, 1 - Recupera el proceso que estubiera haciendo
 int recoveryTiempoRestante;                           // Variable de recovery
@@ -87,6 +72,7 @@ PubSubClient mqttClient(wifiClient);
 #ifdef pantallaLCD
   LiquidCrystal_I2C lcd(0x27,16,2);
 #endif
+Recipe Recipe;
 
 /*
   Tareas
@@ -99,19 +85,19 @@ void setup(){
   mqttClient.setServer(ipServer.c_str(), 1883);
   mqttClient.setCallback(callback);
 
-  xTaskCreatePinnedToCore(
+  /*xTaskCreatePinnedToCore(
     makeLog,      // Function that should be called
     "LOG",            // Name of the task (for debugging)
-    1000,               // Stack size (bytes)
+    10000,               // Stack size (bytes)
     NULL,               // Parameter to pass
     0,                  // Task priority
     &makeLogTask,               // Task handle
-    1);          // Core you want to run the task on (0 or 1)
+    1);          // Core you want to run the task on (0 or 1)*/
   
 //Inicializamos las cosas
   Serial.begin(115200);
   WiFi.begin();
-  Wire.begin(15, 4);
+  Wire.begin(SDA_I2C, SCL_I2C);
   #ifdef pantallaLCD
     lcd.begin();
   #endif
@@ -181,11 +167,11 @@ checkReset();
   while (true){
     String datos = peticion("get_id.php","mac=" + mac);
       if (datos != "fallo") {
-        IDplaca = datos.toInt();
+        id_Board = datos.toInt();
         #ifdef debug
           Serial.println("------------------------------");
           Serial.print("El ID de la placa es el: ");
-          Serial.println(IDplaca);
+          Serial.println(id_Board);
           Serial.println("------------------------------");
         #endif
         break;

@@ -23,6 +23,23 @@
 //Activar la pantalla 16x2 LiquidCrystal
   #define pantallaLCD
 
+//LAYOUT Pines
+#define LED_BUILTIN 25
+#define pinSonda 13                                   // Sonda de la temperatura
+#define resis 12                                      // Resistencia para calentar               
+#define bombaRecirculacion 14                         // Bomba de recirculacion 230V
+#define bombaTrasvase 27                              // Bomba trasvase 230V
+#define bombaFrio 33                                  // Bomba refrigeracion 230V
+#define peltier 32                                    // Celulas Peltier
+#define sensorLiquido 35                              // Sensor de liquido en tubo
+#define zumbador 34                                   // Zumbador para reproducir canciones
+
+#define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
+#define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use
+
+#define SDA_I2C 15
+#define SCL_I2C 4
+
 // Rango para la temperatura
   const float rangoTemp = 1;
 

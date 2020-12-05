@@ -18,23 +18,23 @@ String peticion(String php, String datos_Enviar){
  * Hace el log en la BBDD con los datos del proceso
  */
 
-void Log() {
+void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int state, int timeLeft, byte percentage) {
   if (WiFi.status() == WL_CONNECTED) {
-    String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(IDplaca);
-    datos_Enviar.concat("&receta=");
-    datos_Enviar.concat(IDreceta);
-    datos_Enviar.concat("&proceso=");
-    datos_Enviar.concat(procesoActual);
-    datos_Enviar.concat("&pasoProceso=");
-    datos_Enviar.concat(faseProceso);
-    datos_Enviar.concat("&estado=");
-    datos_Enviar.concat(estado);
-    datos_Enviar.concat("&tiempoRestante=");
-    datos_Enviar.concat(tiempoRestante);
-    datos_Enviar.concat("&porcentaje="); 
-    datos_Enviar.concat(porcentaje);
-    peticion("log.php",datos_Enviar);
+    String data_To_Send = "IDplaca=";
+    data_To_Send.concat(id_Board);
+    data_To_Send.concat("&receta=");
+    data_To_Send.concat(id_Recipe);
+    data_To_Send.concat("&proceso=");
+    data_To_Send.concat(actualProcess);
+    data_To_Send.concat("&pasoProceso=");
+    data_To_Send.concat(stageProcess);
+    data_To_Send.concat("&estado=");
+    data_To_Send.concat(state);
+    data_To_Send.concat("&tiempoRestante=");
+    data_To_Send.concat(timeLeft);
+    data_To_Send.concat("&porcentaje="); 
+    data_To_Send.concat(percentage);
+    peticion("log.php", data_To_Send);
     #ifdef debug
       Serial.println("Log");
     #endif

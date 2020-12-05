@@ -10,14 +10,14 @@
 void leerReceta(){
   if (WiFi.status() == WL_CONNECTED) {
 
-    String datos_Enviar = "IDreceta=";
-    datos_Enviar.concat(IDreceta);
-    String datos = peticion("pedirdatosPost.php",datos_Enviar);
+    String data_To_Send = "IDreceta=";
+    data_To_Send.concat(Recipe.getRecipe());
+    String datos = peticion("getReceta.php", data_To_Send);
 
     if (datos != "fallo") {
 
       #ifdef debug
-      Serial.println(datos_Enviar);
+      Serial.println(data_To_Send);
       Serial.println("------------------------------");
       Serial.print("String recibida: ");
       Serial.println(datos);
@@ -30,7 +30,7 @@ void leerReceta(){
       int pnombre = datos.indexOf("nombre=");
       String nombre = "";
 
-      for (int i = pnombre + 7; i < longitud; i ++){
+      for (int i = pnombre + 7; i < longitud; i++){
 
         if (datos[i] == ';'){
 
@@ -48,14 +48,14 @@ void leerReceta(){
     //Procesar datos de la Temperatura de Maceración
       int ptempMacer = datos.indexOf("tempMacer=");               //Posicion de temp
       String stempMacer = "";
-      for (int i = ptempMacer + 10; i < longitud; i ++){
+      for (int i = ptempMacer + 10; i < longitud; i++){
         if (datos[i] == ';') i = longitud;
         else stempMacer += datos[i];
       }
       //tempMacer = stempMacer.toFloat();
-      int numParametros = count(stempMacer);
-      for (int i = 0;i < numParametros;i ++){
-        tempMacer[++i] = s.separa(stempMacer, ':', --i);
+      for (int i = 0;i < count(stempMacer); i++){
+        //tempMacer[++i] = s.separa(stempMacer, ':', --i);
+        Recipe.setTempMacer(i, s.separa(stempMacer, ':', i).toInt());
       }
       
       
@@ -63,42 +63,42 @@ void leerReceta(){
     //Procesar datos tiempo la Maceración
       int ptiempoMacer = datos.indexOf("tiempoMacer=");
       String stiempoMacer = "";
-      for (int i = ptiempoMacer + 12; i < longitud; i ++){
+      for (int i = ptiempoMacer + 12; i < longitud; i++){
         if (datos[i] == ';') i = longitud;
         else stiempoMacer += datos[i];
       }
       //tiempoMacer = stiempoMacer.toInt();
-      numParametros = count(stiempoMacer);
-      for (int i = 0;i < numParametros;i ++){
-        tiempoMacer[++i] = s.separa(stiempoMacer, ':', --i);
+      for (int i = 0;i < count(stiempoMacer); i++){
+        //tiempoMacer[++i] = s.separa(stiempoMacer, ':', --i);
+        Recipe.setTimesMacer(i, s.separa(stiempoMacer, ':', i).toInt());
       }
       
 
     //Procesar datos de la Temperatura de Cocción
       int ptempCoc = datos.indexOf("tempCoc=");
       String stempCoc = "";
-      for (int i = ptempCoc + 8; i < longitud; i ++){
+      for (int i = ptempCoc + 8; i < longitud; i++){
         if (datos[i] == ';') i = longitud;
         else stempCoc += datos[i];
       }
       //tempCoc = stempCoc.toFloat();
-      numParametros = count(stempCoc);
-      for (int i = 0;i < numParametros;i ++){
-        tempCoc[++i] = s.separa(stempCoc, ':', --i);
+      for (int i = 0;i < count(stempCoc);i ++){
+        //tempCoc[++i] = s.separa(stempCoc, ':', --i);
+        Recipe.setTempCoc(i, s.separa(stempCoc, ':', i).toInt());
       }
       
 
     //Procesar datos tiempo de Cocción
       int ptiempoCoc = datos.indexOf("tiempoCoc=");
       String stiempoCoc = "";
-      for (int i = ptiempoCoc + 10; i < longitud; i ++){
+      for (int i = ptiempoCoc + 10; i < longitud; i++){
         if (datos[i] == ';') i = longitud;
         else stiempoCoc += datos[i];
       }
       //tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
-      numParametros = count(stiempoCoc);
-      for (int i = 0;i < numParametros;i ++){
-        tiempoCoc[++i] = s.separa(stiempoCoc, ':', --i);
+      for (int i = 0;i < count(stiempoCoc); i++){
+        //tiempoCoc[++i] = s.separa(stiempoCoc, ':', --i);
+        Recipe.setTimesCoc(i, s.separa(stiempoCoc, ':', i).toInt());
       }
       
 
@@ -110,26 +110,26 @@ void leerReceta(){
         else stempFermen += datos[i];
       }
       //tempFermen = stempFermen.toFloat();
-      numParametros = count(stempFermen);
-      for (int i = 0;i < numParametros;i ++){
-        tempFermen[++i] = s.separa(stempFermen, ':', --i);
+      for (int i = 0;i < count(stempFermen); i++){
+        //tempFermen[++i] = s.separa(stempFermen, ':', --i);
+        Recipe.setTempFermen(i, s.separa(stempFermen, ':', i).toInt());
       }
       
 
     //Procesar datos de la Temperatura de Fermentación
       int ptiempoFermen = datos.indexOf("tiempoFermen=");
       String stiempoFermen = "";
-      for (int i = ptiempoFermen + 13; i < longitud; i ++){
+      for (int i = ptiempoFermen + 13; i < longitud; i++){
         if (datos[i] == ';') i = longitud;
         else stiempoFermen += datos[i];
       }
       //tiempoFermen = stiempoFermen.toInt();
-      numParametros = count(stiempoFermen);
-      for (int i = 0;i < numParametros;i ++){
-        tiempoFermen[++i] = s.separa(stiempoFermen, ':', --i);
+      for (int i = 0;i < count(stiempoFermen); i++){
+        //tiempoFermen[++i] = s.separa(stiempoFermen, ':', --i);
+        Recipe.setTimesFermen(i, s.separa(stiempoFermen, ':', i).toInt());
       }
       
-#ifdef debug
+/*#ifdef debug
     //Mostrar información de la receta por Serial
   if (tempMacer[0] == 0){
       //Nombre de la cerveza
@@ -154,7 +154,9 @@ void leerReceta(){
     }else{
       Serial.println("La receta no existe");
     }
-    #endif
+    #endif*/
+
+    Recipe.printRecipe();
     }else{
       #ifdef debug
         Serial.println("El servidor no responde");

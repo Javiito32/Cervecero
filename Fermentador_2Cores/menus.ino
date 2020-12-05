@@ -16,8 +16,8 @@ void json_menu(){
         lcd.print(" Ready   Online");
       #endif
       String datos_Enviar = "IDplaca=";
-      datos_Enviar.concat(IDplaca);
-      String datosString = peticion("json.php",datos_Enviar);
+      datos_Enviar.concat(id_Board);
+      String datosString = peticion("json.php", datos_Enviar);
 
   // 02
     if (datosString == "fallo") {
@@ -46,10 +46,10 @@ void json_menu(){
 
         if (menu != 0){
 
-          String datos_Enviar = "IDplaca=";
-          datos_Enviar.concat(IDplaca);
-          datos_Enviar.concat("&reset=1");
-          peticion("json.php",datos_Enviar);
+          String data_To_Send = "IDplaca=";
+          data_To_Send.concat(id_Board);
+          data_To_Send.concat("&reset=1");
+          peticion("json.php", data_To_Send);
             #ifdef debug
               Serial.println(menu);
               Serial.println(dato1);
@@ -107,7 +107,7 @@ void menuPruebas(int menu, int dato1, int dato2){
   #endif
   switch (menu) {
     case 1:
-      IDreceta = dato1; 
+      Recipe.setRecipe(dato1);
       leerReceta();
     break;
 
@@ -119,7 +119,7 @@ void menuPruebas(int menu, int dato1, int dato2){
     case 3:
       switch (dato1) {
         case 1:
-          time_set ();
+          time_set();
         break;
 
         case 2:
