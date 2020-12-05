@@ -38,6 +38,8 @@ void leerReceta(){
       Serial.println("------------------------------");
       #endif
 
+      Recipe.clear();
+
       for (int i = 0; i < count(stempMacer); i++){
         Recipe.setTempMacer(i, s.separa(stempMacer, ':', i).toInt());
       }

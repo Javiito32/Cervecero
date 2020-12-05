@@ -1,13 +1,14 @@
 class Recipe
 {
   private:
+    #define ARRAYS_LENGHT 10
     int id_Receta;
-    int tempMacer[10];
-    int timesMacer[10];
-    int tempCoc[10];
-    int timesCoc[10];
-    int tempFermen[10];
-    int timesFermen[10];
+    int tempMacer[ARRAYS_LENGHT];
+    int timesMacer[ARRAYS_LENGHT];
+    int tempCoc[ARRAYS_LENGHT];
+    int timesCoc[ARRAYS_LENGHT];
+    int tempFermen[ARRAYS_LENGHT];
+    int timesFermen[ARRAYS_LENGHT];
   public:
 
     Recipe() {id_Receta = 0;}
@@ -29,8 +30,24 @@ class Recipe
     int getTimeFermen(int index) {return (timesFermen[index]);}
 
     void printRecipe();
+    void clear();
 
 };
+
+void Recipe::clear() {
+
+  for (int i = 0; i < ARRAYS_LENGHT; i++){
+    
+    tempMacer[i] = 0;
+    timesMacer[i] = 0;
+    tempCoc[i] = 0;
+    timesCoc[i] = 0;
+    tempFermen[i] = 0;
+    timesFermen[i] = 0;
+  }
+  
+
+}
 
 void Recipe::printRecipe() {
       //Temperaturas
