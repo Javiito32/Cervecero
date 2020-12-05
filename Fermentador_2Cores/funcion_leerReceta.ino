@@ -14,152 +14,64 @@ void leerReceta(){
     data_To_Send.concat(Recipe.getRecipe());
     String datos = peticion("getReceta.php", data_To_Send);
 
-    if (datos != "fallo") {
+    if (datos != "") {
+      const size_t capacity = JSON_OBJECT_SIZE(7) + 150;
+      DynamicJsonDocument recipe(capacity);
+
+      const char* recipeChar = datos.c_str();
+      deserializeJson(recipe, recipeChar);
+
+      String nombre = recipe["nombre"];
+      String stempMacer = recipe["tempMacer"];
+      String stiempoMacer = recipe["tiempoMacer"];
+      String stempCoc = recipe["tempCoc"];
+      String stiempoCoc = recipe["tiempoCoc"];
+      String stempFermen = recipe["tempFermen"];
+      String stiempoFermen = recipe["tiempoFermen"];
 
       #ifdef debug
+      Serial.print("Receta a carga: ");
       Serial.println(data_To_Send);
       Serial.println("------------------------------");
-      Serial.print("String recibida: ");
+      Serial.print("Json recibido: ");
       Serial.println(datos);
       Serial.println("------------------------------");
       #endif
 
-      int longitud = datos.length();
-
-    //Procesar datos nombre Receta
-      int pnombre = datos.indexOf("nombre=");
-      String nombre = "";
-
-      for (int i = pnombre + 7; i < longitud; i++){
-
-        if (datos[i] == ';'){
-
-          i = longitud;
-
-        }else{
-          
-          nombre += datos[i];
-
-        }
-        
-      }
-      
-
-    //Procesar datos de la Temperatura de Maceración
-      int ptempMacer = datos.indexOf("tempMacer=");               //Posicion de temp
-      String stempMacer = "";
-      for (int i = ptempMacer + 10; i < longitud; i++){
-        if (datos[i] == ';') i = longitud;
-        else stempMacer += datos[i];
-      }
-      //tempMacer = stempMacer.toFloat();
-      for (int i = 0;i < count(stempMacer); i++){
-        //tempMacer[++i] = s.separa(stempMacer, ':', --i);
+      for (int i = 0; i < count(stempMacer); i++){
         Recipe.setTempMacer(i, s.separa(stempMacer, ':', i).toInt());
       }
       
-      
 
-    //Procesar datos tiempo la Maceración
-      int ptiempoMacer = datos.indexOf("tiempoMacer=");
-      String stiempoMacer = "";
-      for (int i = ptiempoMacer + 12; i < longitud; i++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoMacer += datos[i];
-      }
-      //tiempoMacer = stiempoMacer.toInt();
-      for (int i = 0;i < count(stiempoMacer); i++){
-        //tiempoMacer[++i] = s.separa(stiempoMacer, ':', --i);
+      for (int i = 0; i < count(stiempoMacer); i++){
         Recipe.setTimesMacer(i, s.separa(stiempoMacer, ':', i).toInt());
       }
-      
+    
 
-    //Procesar datos de la Temperatura de Cocción
-      int ptempCoc = datos.indexOf("tempCoc=");
-      String stempCoc = "";
-      for (int i = ptempCoc + 8; i < longitud; i++){
-        if (datos[i] == ';') i = longitud;
-        else stempCoc += datos[i];
-      }
-      //tempCoc = stempCoc.toFloat();
-      for (int i = 0;i < count(stempCoc);i ++){
-        //tempCoc[++i] = s.separa(stempCoc, ':', --i);
+      for (int i = 0; i < count(stempCoc);i ++){
         Recipe.setTempCoc(i, s.separa(stempCoc, ':', i).toInt());
       }
       
 
-    //Procesar datos tiempo de Cocción
-      int ptiempoCoc = datos.indexOf("tiempoCoc=");
-      String stiempoCoc = "";
-      for (int i = ptiempoCoc + 10; i < longitud; i++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoCoc += datos[i];
-      }
-      //tiempoCoc = (long) strtol(stiempoCoc.c_str(),NULL,0);
-      for (int i = 0;i < count(stiempoCoc); i++){
-        //tiempoCoc[++i] = s.separa(stiempoCoc, ':', --i);
+      for (int i = 0; i < count(stiempoCoc); i++){
         Recipe.setTimesCoc(i, s.separa(stiempoCoc, ':', i).toInt());
       }
       
 
-    //Procesar datos tiempo del Fermentación
-      int ptempFermen = datos.indexOf("tempFermen=");
-      String stempFermen = "";
-      for (int i = ptempFermen + 11; i < longitud; i ++){
-        if (datos[i] == ';') i = longitud;
-        else stempFermen += datos[i];
-      }
-      //tempFermen = stempFermen.toFloat();
-      for (int i = 0;i < count(stempFermen); i++){
-        //tempFermen[++i] = s.separa(stempFermen, ':', --i);
+      for (int i = 0; i < count(stempFermen); i++){
         Recipe.setTempFermen(i, s.separa(stempFermen, ':', i).toInt());
       }
       
 
-    //Procesar datos de la Temperatura de Fermentación
-      int ptiempoFermen = datos.indexOf("tiempoFermen=");
-      String stiempoFermen = "";
-      for (int i = ptiempoFermen + 13; i < longitud; i++){
-        if (datos[i] == ';') i = longitud;
-        else stiempoFermen += datos[i];
-      }
-      //tiempoFermen = stiempoFermen.toInt();
-      for (int i = 0;i < count(stiempoFermen); i++){
-        //tiempoFermen[++i] = s.separa(stiempoFermen, ':', --i);
+      for (int i = 0; i < count(stiempoFermen); i++){
         Recipe.setTimesFermen(i, s.separa(stiempoFermen, ':', i).toInt());
       }
-      
-/*#ifdef debug
-    //Mostrar información de la receta por Serial
-  if (tempMacer[0] == 0){
-      //Nombre de la cerveza
-        Serial.print("Nombre de la cerveza= ");
-        Serial.println(nombre);
-      //Temperaturas
-        Serial.print("Temperatura del proceso Maceración= ");
-        //Serial.println(tempMacer);
-        Serial.println(stempMacer);
-        Serial.print("Temperatura del proceso Cocción= ");
-        Serial.println(stempCoc);
-        Serial.print("Temperatura del proceso de Fermentación= ");
-        Serial.println(stempFermen);
-      //Tiempos en segundos
-        Serial.print("Tiempo en Minutos del proceso Maceración= ");
-        Serial.println(stiempoMacer);
-        Serial.print("Tiempo en Minutos del proceso Cocción= ");
-        Serial.println(stiempoCoc);
-        Serial.print("Tiempo en Meses del proceso Fermentación= ");
-        Serial.println(stiempoFermen);
-       
-    }else{
-      Serial.println("La receta no existe");
-    }
-    #endif*/
 
     Recipe.printRecipe();
+
     }else{
       #ifdef debug
-        Serial.println("El servidor no responde");
+        Serial.println("Error al obtener la receta");
       #endif
     }
 

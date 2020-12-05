@@ -18,10 +18,12 @@ void maceracion (){
   #endif
   procesoActual = 1;
   estado = 1;
+
   if(!recovery){
     porcentaje = 0;
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);             // Mandamos la informacion a la BDD a la tabla info
   }
+
   #ifdef pantallaLCD
     String lcd0 = "Maceracion: ";
     lcd0.concat(faseProceso);
@@ -30,23 +32,15 @@ void maceracion (){
     lcd1.concat("%");
     printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
-//}
-//LECTURA DE VARIABLES
-  float temperaturaMaceracion = Recipe.getTempMacer(faseProceso);
-  int tiempoMaceracion = Recipe.getTimeMacer(faseProceso);
-//MODO RECIRCULACION
-  recircular();
-//CICLO DE CALENTAMIENTO
-  calentar(temperaturaMaceracion,tiempoMaceracion);
-//APAGADO DE BOMBAS Y RELES
-  digitalWrite(resis,HIGH);
-  digitalWrite(bombaRecirculacion,HIGH);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(bombaFrio,HIGH);
-  digitalWrite(peltier,HIGH);
+
+  digitalWrite(bombaRecirculacion, LOW);
+  calentar(Recipe.getTempMacer(faseProceso), Recipe.getTimeMacer(faseProceso));
+  digitalWrite(resis, HIGH);
+  digitalWrite(bombaRecirculacion, HIGH);
   finishProcess();
   
 }
+
 
 
 
@@ -72,10 +66,12 @@ void coccion (){
   #endif
   procesoActual = 2;
   estado = 1;
+
   if(!recovery){
     porcentaje = 0;
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
   }
+
   #ifdef pantallaLCD
     String lcd0 = "Coccion: ";
     lcd0.concat(faseProceso);
@@ -84,21 +80,12 @@ void coccion (){
     lcd1.concat("%");
     printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
-//} 
-//LECTURA DE VARIABLES
-  float temperaturaMaceracion = Recipe.getTempCoc(faseProceso);
-  int tiempoMaceracion = Recipe.getTimeCoc(faseProceso);
-//MODO RECIRCULACION
-  recircular();
-  
-//CICLO DE CALENTAMIENTO
-  calentar(temperaturaMaceracion,tiempoMaceracion);
-//APAGADO DE BOMBAS Y RELES
+
+
+  digitalWrite(bombaRecirculacion, LOW);
+  calentar(Recipe.getTempCoc(faseProceso), Recipe.getTimeCoc(faseProceso));
   digitalWrite(resis,HIGH);
-  digitalWrite(bombaRecirculacion,HIGH);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(bombaFrio,HIGH);
-  digitalWrite(peltier,HIGH);
+  digitalWrite(bombaRecirculacion, HIGH);
   finishProcess();
 }
 
@@ -123,10 +110,12 @@ void fermentacion(){
   #endif
   procesoActual = 4;
   estado = 1;
-  if(!recovery){
+
+  if(!recovery) {
     porcentaje = 0;
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
   }
+
   #ifdef pantallaLCD
     String lcd0 = "Fermentacion: ";
     lcd0.concat(faseProceso);
@@ -140,6 +129,7 @@ void fermentacion(){
 //LECTURA DE VARIABLES
   float temperaturaFermentacion = Recipe.getTempFermen(faseProceso);
   int tiempoFermentacion = Recipe.getTimeFermen(faseProceso);
+
   if (recovery == 1){
     #ifdef debug
     Serial.println("------------------------");
@@ -151,12 +141,14 @@ void fermentacion(){
     Serial.println(hour(recoveryTiempoRestante));
     Serial.println("------------------------");
     #endif
+
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoFermentacion * 2629750);
     tiempoProcesoSeg = tiempof - tiempoi;
     tiempof = tiempoi + recoveryTiempoRestante;
-  }else{
+  }else {
+
     #ifdef debug
     Serial.println("------------------------");
     Serial.print("El proceso dura: ");
@@ -167,6 +159,7 @@ void fermentacion(){
     Serial.print(hour(tiempoFermentacion));
     Serial.println("------------------------");
     #endif
+
     gettime();
     tiempoi = tiempoActual;
     tiempof = tiempoi + (tiempoFermentacion * 2629750);
@@ -175,34 +168,38 @@ void fermentacion(){
 
   long tiempoCancelacion = tiempoActual + 5;
   int tiempoPorcentaje = tiempoActual + 2;
+
   do{
+
     gettime();                                            // Obtiene el tiempo para usarlo en la función
     tiempoRestante = tiempof - tiempoActual;
+
     if (tiempoActual >= tiempoCancelacion){               // Comprueba si han pasado 5 seg, y ejecuta
       tiempoCancelacion = tiempoActual + 5;
       comprobarCancelar();
       Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
-      if (falloProceso){
-        break;
-      }
+
+      if (processCandeled) break;
+
     }
-    if (tiempoRestante <= 0) {break;}   // Comprueba si el tiempo del proceso es 0, es decir, ha acabado
-      if (tiempoActual >= tiempoPorcentaje){              // Comprueba si han pasado 2 seg, y ejecuta
-        tiempoPorcentaje = tiempoActual + 2;
-        int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
-        porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;
-        #ifdef debug
-          Serial.print("Leeva el ");
-          Serial.print(porcentaje);
-          Serial.print("%");
-          Serial.println(" completado");
-        #endif
-        #ifdef pantallaLCD
-          lcd_Porcentaje();
-        #endif
-      }
-      delay(1000);
-  }while(true);
+
+    if (tiempoRestante <= 0) break;   // Comprueba si el tiempo del proceso es 0, es decir, ha acabado
+    if (tiempoActual >= tiempoPorcentaje){              // Comprueba si han pasado 2 seg, y ejecuta
+      tiempoPorcentaje = tiempoActual + 2;
+      int timepoIncremental = tiempoProcesoSeg - tiempoRestante;
+      porcentaje = (timepoIncremental * 100) / tiempoProcesoSeg;
+      #ifdef debug
+        Serial.print("Leeva el ");
+        Serial.print(porcentaje);
+        Serial.print("%");
+        Serial.println(" completado");
+      #endif
+      #ifdef pantallaLCD
+        lcd_Porcentaje();
+      #endif
+    }
+    delay(1000);
+  } while (true);
   
   finishProcess();
 
@@ -234,11 +231,10 @@ void trasvase(){
     #ifdef pantallaLCD
       printLCD(0, 0, "Trasvasando... ", 1, 0, "Por favor espere");
     #endif
-   
+
 //Trasvase ON
   digitalWrite(bombaFrio,LOW);
   delay(retrasoBombas);
-  digitalWrite(bombaRecirculacion,HIGH);
   digitalWrite(bombaTrasvase,LOW);
   digitalWrite(peltier,LOW);
 
@@ -257,38 +253,43 @@ void trasvase(){
     do{
       gettime();
       tiempoRestante = tiempof - tiempoActual;
+
       if (tiempoActual >= tiempoCancelacion){
+
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
-        if (falloProceso){
-          break;
-        }
+
+        if (processCandeled) break;
       }
       if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
     delay(1000);
   }while(true);
 //Trasvase OFF  
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(peltier,HIGH);
-  digitalWrite(bombaFrio,HIGH);
+  digitalWrite(bombaTrasvase, HIGH);
+  digitalWrite(peltier, HIGH);
+  digitalWrite(bombaFrio, HIGH);
   finishProcess();
 }
 
 bool checkLoadRecipe() {
-  if(Recipe.getRecipe() == 0){                             // Comprueba si hay una receta cargada
+
+  if(Recipe.getRecipe() == 0){ 
+                                // Comprueba si hay una receta cargada
     #ifdef pantallaLCD
       printLCD(0, 0, "No hay receta", 1, 0, "");
     #endif
     delay(2000);
     return true;
   } else {
+
     return false;
   }
 }
 
 void finishProcess() {
   //Envio mensaje de fin de proceso.
-  if (falloProceso) {
+  if (processCandeled) {
+
     estado = 3;
     porcentaje = 100;
     String mensaje = "Proceso ";
@@ -296,16 +297,16 @@ void finishProcess() {
     mensaje.concat(" Fallo 1");
     Serial.println(mensaje);
   
-    if (falloProceso){
+    if (processCandeled){
       if (WiFi.status() == WL_CONNECTED) {
         String data_To_Send = "IDplaca=";
         data_To_Send.concat(id_Board);
         peticion("resetCancelar.php", data_To_Send);
-        falloProceso = 0;
         }
     }
   }
   else {estado = 2; porcentaje = 100;};
+
   #ifdef pantallaLCD
     lcd_Porcentaje();
   #endif
@@ -352,19 +353,17 @@ void calentar(int temperaturaProceso, long tiempoProceso){
     int tiempoCancelacion = tiempoActual + 5;
     int tiempoPorcentaje = tiempoActual + 2;
 
-    int tmax = temperaturaProceso+rangoTemp;
-    int tmin = temperaturaProceso-rangoTemp;
+    int tmax = temperaturaProceso + rangoTemp;
+    int tmin = temperaturaProceso - rangoTemp;
 
     do{
       if (tiempoActual >= tiempoCancelacion){
         tiempoCancelacion = tiempoActual + 5;
         comprobarCancelar();
         Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje);
-        if (falloProceso){
 
-          break;
-
-        }
+        if (processCandeled) break;
+        
       }
       gettime();
       tiempoRestante = tiempof - tiempoActual;
@@ -408,48 +407,35 @@ void calentar(int temperaturaProceso, long tiempoProceso){
   tiempoActual = 0;
 }
 
-
-/*
- * Metodo para recircular. 
- * Sirve poner los reles y bombas en la posicion de recirculacion.
- * 
- * No tiene parametros
- * No devuelve nada
- */
-void recircular(){
-  digitalWrite(bombaRecirculacion,LOW);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(peltier,HIGH);
-  digitalWrite(bombaFrio,HIGH);
-}
-
 void comprobarCancelar() {
 
   if (WiFi.status() == WL_CONNECTED){
 
-    String datos_Enviar = "IDplaca=";
-    datos_Enviar.concat(id_Board);
-    String datos = peticion("checkCancel.php",datos_Enviar);
+    mqttClient.loop();
 
-      if (datos != "fallo") {
+    // String datos_Enviar = "IDplaca=";
+    // datos_Enviar.concat(id_Board);
+    // String datos = peticion("checkCancel.php",datos_Enviar);
 
-        int cancelar = datos.toInt();
+    //   if (datos != "fallo") {
 
-        if (cancelar == 1){
+    //     int cancelar = datos.toInt();
 
-          falloProceso = 1;
+    //     if (cancelar == 1){
 
-        }
+    //       processCandeled = true;
 
-    }else{
+    //     }
 
-      #ifdef debug
-      Serial.println("No se pudo comprobar la cancelación del proceso");
-      #endif
+    // }else{
 
-    }
+    //   #ifdef debug
+    //   Serial.println("No se pudo comprobar la cancelación del proceso");
+    //   #endif
 
-   }
+    // }
+
+  }
 }
 
 #ifdef pantallaLCD

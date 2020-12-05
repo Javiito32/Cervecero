@@ -6,16 +6,6 @@ void reconnect() {
 
     // Attempt to connect
     if (mqttClient.connect("2")) {
-      #ifdef pantallaLCD
-      printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
-      lcd.setCursor(0,1);
-      lcd.print(" Ready   Online");
-      #endif
-      #ifdef debug
-        Serial.println("------------------------------");
-        Serial.println("Ready");
-        Serial.println("------------------------------");
-      #endif
       // Once connected, publish an announcement...
       mqttClient.publish("2/state", "online");
       // ... and resubscribe

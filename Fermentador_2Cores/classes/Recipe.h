@@ -42,27 +42,19 @@ void Recipe::printRecipe() {
         }
         Serial.println("\n");
 
-        Serial.println("Temperatura del proceso Cocción");
-        for (int i = 0; i < 10; i++)
-        {
-            Serial.print(tempCoc[i]); 
-            Serial.print(" "); 
-        }
-        Serial.println("\n");
-
-        Serial.println("Temperatura del proceso de Fermentación");
-        for (int i = 0; i < 10; i++)
-        {
-            Serial.print(tempFermen[i]); 
-            Serial.print(" "); 
-        }
-        Serial.println("\n");
-
-      //Tiempos en segundos
         Serial.println("Tiempo en Minutos del proceso Maceración");
         for (int i = 0; i < 10; i++)
         {
             Serial.print(timesMacer[i]); 
+            Serial.print(" "); 
+        }
+        Serial.println("\n");
+
+
+        Serial.println("Temperatura del proceso Cocción");
+        for (int i = 0; i < 10; i++)
+        {
+            Serial.print(tempCoc[i]); 
             Serial.print(" "); 
         }
         Serial.println("\n");
@@ -75,11 +67,18 @@ void Recipe::printRecipe() {
         }
         Serial.println("\n");
 
+
+        Serial.println("Temperatura del proceso de Fermentación");
+        for (int i = 0; i < 10; i++) {
+          Serial.print(tempFermen[i]); 
+          Serial.print(" "); 
+        }
+        Serial.println("\n");
+
         Serial.println("Tiempo en Meses del proceso Fermentación");
-        for (int i = 0; i < 10; i++)
-        {
-            Serial.print(timesFermen[i]); 
-            Serial.print(" "); 
+        for (int i = 0; i < 10; i++) {
+          Serial.print(timesFermen[i]);
+          Serial.print(" ");
         }
         Serial.println("\n");
 

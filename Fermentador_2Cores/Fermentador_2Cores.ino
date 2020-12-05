@@ -48,7 +48,7 @@ long tiempoRestante;                                  // Tiempo que falta para e
 // String tempFermen[10];                                // Temperatura de fermentación de la receta seleccionada
 // String tiempoFermen[10];                              // Tiempo fermentación de la recta selecionada
 unsigned long tiempoTrans;                            // Tiempo transvase de la recta selecionada
-bool falloProceso = 0;                                // Guarda si falla el tiempo
+bool processCandeled = false;                                // Guarda si falla el tiempo
 byte procesoActual;                                    // El proceso que se esta ejecutando
 byte faseProceso;                                      // El paso del proceso que se esta ejecutando
 byte estado;                                           // 1 - Iniciado, 2 - Finalizado, 3 - Cancelado
@@ -105,20 +105,20 @@ void setup(){
   
 //Configuracion de pines
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(resis,OUTPUT);
-  pinMode(bombaRecirculacion,OUTPUT);
-  pinMode(bombaTrasvase,OUTPUT);
-  pinMode(bombaFrio,OUTPUT);
-  pinMode(peltier,OUTPUT);
-  pinMode(sensorLiquido,INPUT);
-  pinMode(zumbador,OUTPUT);
+  pinMode(resis, OUTPUT);
+  pinMode(bombaRecirculacion, OUTPUT);
+  pinMode(bombaTrasvase, OUTPUT);
+  pinMode(bombaFrio, OUTPUT);
+  pinMode(peltier, OUTPUT);
+  pinMode(sensorLiquido, INPUT);
+  pinMode(zumbador, OUTPUT);
 
 //Seteamos pines a HIGH
-  digitalWrite(resis,HIGH);
-  digitalWrite(bombaRecirculacion,HIGH);
-  digitalWrite(bombaTrasvase,HIGH);
-  digitalWrite(bombaFrio,HIGH);
-  digitalWrite(peltier,HIGH);
+  digitalWrite(resis, HIGH);
+  digitalWrite(bombaRecirculacion, HIGH);
+  digitalWrite(bombaTrasvase, HIGH);
+  digitalWrite(bombaFrio, HIGH);
+  digitalWrite(peltier, HIGH);
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 
@@ -192,6 +192,8 @@ checkReset();
   if (!recovery){
     
     checkforUpdates();
+    mqttClient.loop();
+    homeMessage();
     
   } else{
     
@@ -229,12 +231,9 @@ void loop(){
   #endif
 
   #ifdef json_mqtt_menu
-    if (!mqttClient.connected()) {
+    if (!mqttClient.loop()) {
       
       reconnect();
     
     }
-    
-    mqttClient.loop();
-  #endif
 }

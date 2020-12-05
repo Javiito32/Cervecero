@@ -113,24 +113,30 @@ void menuPruebas(int menu, int dato1, int dato2){
 
     case 2:
       Serial.println("Lanzar Proceso");
+      processCandeled = false;
       lanzar_Procesos(dato1,dato2);
+      homeMessage();
     break;
 
     case 3:
       switch (dato1) {
         case 1:
           time_set();
-        break;
+          break;
 
         case 2:
           printTime();
-        break;
+          break;
+
+        case 3:
+          processCandeled = true;
+          break;
 
         default:
           #ifdef debug
             Serial.println("La accion no existe-> ajustes menupruebas");
           #endif
-        break;
+          break;
       }
     break;
 
@@ -170,4 +176,20 @@ void lanzar_Procesos(int proceso, int paso){
       #endif
     break;
   }
+}
+
+void homeMessage() {
+
+  #ifdef pantallaLCD
+    printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
+    lcd.setCursor(0,1);
+    lcd.print(" Ready   Online");
+    #endif
+    #ifdef debug
+      Serial.println("------------------------------");
+      Serial.println("Ready");
+      Serial.println("------------------------------");
+    #endif
+  #endif
+
 }
