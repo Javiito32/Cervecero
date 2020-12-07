@@ -18,7 +18,7 @@
   
  
 // Activar todos los mensajes por serial
-  #define debug
+  #define ENABLE_SERIAL
 
 //Activar la pantalla 16x2 LiquidCrystal
   #define pantallaLCD

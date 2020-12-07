@@ -35,31 +35,14 @@
 #endif
 
 //Variables globales
-int dato;                                             // Dato leido para entrar el menu
-unsigned long tiempoi;                                // Tiempo inicial para los procesos en seg
-unsigned long tiempof;                                // Tiempo final para los procesos en seg
-unsigned long tiempoActual;                           // Tiempo actual del proceso en seg
-long tiempoRestante;                                  // Tiempo que falta para el final de los procesos en seg
-//int IDreceta = 0;                                     // El ID de la receta de la BDD
-// String tempMacer[10];                                 // Temperatura de maceración de la receta seleccionada
-// String tiempoMacer[10];                               // Tiempo maceración de la recta selecionada
-// String tempCoc[10];                                   // Temperatura de cocción de la receta seleccionada
-// String tiempoCoc[10];                                 // Tiempo cocción de la recta selecionada
-// String tempFermen[10];                                // Temperatura de fermentación de la receta seleccionada
-// String tiempoFermen[10];                              // Tiempo fermentación de la recta selecionada
-unsigned long tiempoTrans;                            // Tiempo transvase de la recta selecionada
-bool processCandeled = false;                                // Guarda si falla el tiempo
-byte procesoActual;                                    // El proceso que se esta ejecutando
-byte faseProceso;                                      // El paso del proceso que se esta ejecutando
-byte estado;                                           // 1 - Iniciado, 2 - Finalizado, 3 - Cancelado
 String mac;                                           // La direccion MAC de el WiFi
 int id_Board;                                          // Identificador unico de la placa, es un número
-byte porcentaje;                                      // Porcentaje completado del proceso
 bool recovery;                                        // 0 - Nada que recuperar, 1 - Recupera el proceso que estubiera haciendo
 int recoveryTiempoRestante;                           // Variable de recovery
 byte recoveryProceso;                                  // Variable de recovery
 byte recoveryPasoProceso;                              // Variable de recovery
-int tiempoProcesoSeg;                                 // El tiempo del proceso en segundos
+byte faseProceso;                                     // El paso del proceso que se esta ejecutando
+
   
 //Objetos
 HTTPClient http;
@@ -95,7 +78,10 @@ void setup(){
     1);          // Core you want to run the task on (0 or 1)*/
   
 //Inicializamos las cosas
-  Serial.begin(115200);
+  #ifdef ENABLE_SERIAL
+    Serial.begin(115200);
+  #endif
+
   WiFi.begin();
   Wire.begin(SDA_I2C, SCL_I2C);
   #ifdef pantallaLCD
@@ -126,10 +112,8 @@ initResetDetector();
 checkReset();
   
 // Conectar con la red WiFi
-  #ifdef debug
-    Serial.println("");
-    Serial.print("Connecting");
-  #endif
+  Serial.println("");
+  Serial.print("Connecting");
 
   #ifdef pantallaLCD
     printLCD(0, 0, "Conectando WiFi", 1, 0, "");                          
@@ -138,25 +122,21 @@ checkReset();
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
     delay(500);
-    #ifdef debug
-      Serial.print(".");
-    #endif
+    Serial.print(".");
   }
   mac = WiFi.macAddress();
-  #ifdef debug
-    Serial.println("");
-    Serial.println("WiFi connected");
+  Serial.println("");
+  Serial.println("WiFi connected");
 
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
-    Serial.print("MAC: ");
-    Serial.println(WiFi.macAddress());
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
 
-    Serial.println("++++++++++++++++++++++++++++++++");
-    Serial.println(         "Cervecero 2.0");
-    Serial.println(         "Version: " + currentVersion);
-    Serial.println("++++++++++++++++++++++++++++++++");
-  #endif
+  Serial.println("++++++++++++++++++++++++++++++++");
+  Serial.println(         "Cervecero 2.0");
+  Serial.println(         "Version: " + currentVersion);
+  Serial.println("++++++++++++++++++++++++++++++++");
   #ifdef pantallaLCD
     printLCD(0, 0, "Iniciando...", 1, 0, "");
   #endif
@@ -168,19 +148,15 @@ checkReset();
     String datos = peticion("get_id.php","mac=" + mac);
       if (datos != "fallo") {
         id_Board = datos.toInt();
-        #ifdef debug
-          Serial.println("------------------------------");
-          Serial.print("El ID de la placa es el: ");
-          Serial.println(id_Board);
-          Serial.println("------------------------------");
-        #endif
+        Serial.println("------------------------------");
+        Serial.print("El ID de la placa es el: ");
+        Serial.println(id_Board);
+        Serial.println("------------------------------");
         break;
       }else{
-        #ifdef debug
         Serial.println("------------------------------");
         Serial.println("No se pudo obtener el ID de placa o no está registrada");
         Serial.println("------------------------------");
-        #endif
         #ifdef pantallaLCD
           printLCD(0, 0, "Error al obtener", 1, 0, "el ID de placa");
         #endif
@@ -188,16 +164,16 @@ checkReset();
       }
   }
 
-  checkrecovery();
-  if (!recovery){
+  reconnect();
+  checkRecovery();
+  if (!recovery) {
     
     checkforUpdates();
-    mqttClient.loop();
     homeMessage();
     
-  } else{
+  }else {
     
-    leerReceta();
+    leerReceta(Recipe.getRecipe());
     faseProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);
     
@@ -214,13 +190,11 @@ void loop(){
     #ifdef pantallaLCD
       printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
     #endif
-    #ifdef debug
-      Serial.println("------------------------------");
-      Serial.println("Ready");
-      Serial.println("------------------------------");
-  #endif
+
+    Serial.println("------------------------------");
+    Serial.println("Ready");
+    Serial.println("------------------------------");
     json_menu();
-    
   #endif
  /*
   * Menu de consultas PHP con MySQL
@@ -236,4 +210,5 @@ void loop(){
       reconnect();
     
     }
+  #endif
 }

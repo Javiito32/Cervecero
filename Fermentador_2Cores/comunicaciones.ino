@@ -2,14 +2,19 @@
  * Hace las peticiones de datos al servidor con una consulta por el metodo POST
  */
 String peticion(String php, String datos_Enviar){
+  
   http.begin(host+php);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+
   int httpCode = http.POST(datos_Enviar);
+
   if (httpCode == 200 || httpCode == 201) {
+
     String datos = http.getString();
     http.end();
     return datos;
   }else{
+
     http.end();
     return "fallo";
   }
@@ -19,7 +24,9 @@ String peticion(String php, String datos_Enviar){
  */
 
 void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int state, int timeLeft, byte percentage) {
+
   if (WiFi.status() == WL_CONNECTED) {
+
     String data_To_Send = "IDplaca=";
     data_To_Send.concat(id_Board);
     data_To_Send.concat("&receta=");
@@ -35,9 +42,8 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
     data_To_Send.concat("&porcentaje="); 
     data_To_Send.concat(percentage);
     peticion("log.php", data_To_Send);
-    #ifdef debug
-      Serial.println("Log");
-    #endif
+
+    Serial.println("Log");
   }
 }
 

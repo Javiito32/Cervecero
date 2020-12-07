@@ -7,38 +7,39 @@
  * Asigna los valores oportunos a las variables de cotrol (tmperatura y tiempo de cada proceso).
  */
 
-void leerReceta(){
+void leerReceta(byte recipe){
   if (WiFi.status() == WL_CONNECTED) {
 
     String data_To_Send = "IDreceta=";
-    data_To_Send.concat(Recipe.getRecipe());
+    data_To_Send.concat(recipe);
     String datos = peticion("getReceta.php", data_To_Send);
 
-    if (datos != "") {
+    if (datos != "fallo") {
+
       const size_t capacity = JSON_OBJECT_SIZE(7) + 150;
-      DynamicJsonDocument recipe(capacity);
+      DynamicJsonDocument doc(capacity);
 
-      const char* recipeChar = datos.c_str();
-      deserializeJson(recipe, recipeChar);
+      const char* json = datos.c_str();
+      deserializeJson(doc, json);
 
-      String nombre = recipe["nombre"];
-      String stempMacer = recipe["tempMacer"];
-      String stiempoMacer = recipe["tiempoMacer"];
-      String stempCoc = recipe["tempCoc"];
-      String stiempoCoc = recipe["tiempoCoc"];
-      String stempFermen = recipe["tempFermen"];
-      String stiempoFermen = recipe["tiempoFermen"];
+      String nombre = doc["nombre"];
+      String stempMacer = doc["tempMacer"];
+      String stiempoMacer = doc["tiempoMacer"];
+      String stempCoc = doc["tempCoc"];
+      String stiempoCoc = doc["tiempoCoc"];
+      String stempFermen = doc["tempFermen"];
+      String stiempoFermen = doc["tiempoFermen"];
 
-      #ifdef debug
       Serial.print("Receta a carga: ");
       Serial.println(data_To_Send);
       Serial.println("------------------------------");
       Serial.print("Json recibido: ");
       Serial.println(datos);
       Serial.println("------------------------------");
-      #endif
 
       Recipe.clear();
+
+      Recipe.setRecipe(recipe);
 
       for (int i = 0; i < count(stempMacer); i++){
         Recipe.setTempMacer(i, s.separa(stempMacer, ':', i).toInt());
@@ -72,9 +73,7 @@ void leerReceta(){
     Recipe.printRecipe();
 
     }else{
-      #ifdef debug
-        Serial.println("Error al obtener la receta");
-      #endif
+      Serial.println("Error al obtener la receta");
     }
 
   }

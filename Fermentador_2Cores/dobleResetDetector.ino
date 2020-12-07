@@ -7,6 +7,7 @@ void initResetDetector(){
 bool checkReset() {
 
   if (drd->detectDoubleReset()) {
+    
   digitalWrite(LED_BUILTIN, HIGH);
   #ifdef pantallaLCD
     printLCD(0, 0, "----  Modo  ----", 1, 0, " Configuracion");
@@ -15,11 +16,12 @@ bool checkReset() {
   wifiManager.startConfigPortal("Cervecero_2.0");
   digitalWrite(LED_BUILTIN, LOW);
   } else {
+
     digitalWrite(LED_BUILTIN, LOW);
-    #ifdef debug
-      Serial.println("No Double Reset Detected");
-    #endif
+
+    Serial.println("No Double Reset Detected");
   }
+
   delay(5000);
   drd->stop();
   
