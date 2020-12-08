@@ -19,10 +19,18 @@ bool checkReset() {
 
     digitalWrite(LED_BUILTIN, LOW);
 
+    printLCD(0, 0, "Start in", 1, 0, ""); 
+
+    for (int i = SECONDSTOENTER; i > 0; i--) {
+      
+      lcd.setCursor(9, 0);
+      lcd.print(i);
+      delay(1000);
+
+    }
+
     Serial.println("No Double Reset Detected");
   }
 
-  delay(5000);
   drd->stop();
-  
 }

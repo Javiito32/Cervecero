@@ -34,46 +34,52 @@ void menuPruebas(int menu, int dato1, int dato2){
 
   Serial.println("menuPruebas");
 
-  switch (menu) {
-    case 1:
-      leerReceta(dato1);
-    break;
+  if (estado != 1) {
 
-    case 2:
-      Serial.println("Lanzar Proceso");
-      processCandeled = false;
-      lanzar_Procesos(dato1, dato2);
-      recovery = 0;
-      homeMessage();
-    break;
+    switch (menu) {
+    
+      case 1:
+        leerReceta(dato1);
+      break;
 
-    case 3:
-      switch (dato1) {
-        case 1:
-          time_set();
-          break;
+      case 2:
+        Serial.println("Lanzar Proceso");
+        processCandeled = false;
+        lanzar_Procesos(dato1, dato2);
+        recovery = 0;
+        homeMessage();
+      break;
 
-        case 2:
-          printTime();
-          break;
+      case 3:
+        switch (dato1) {
+          case 1:
+            time_set();
+            break;
 
-        case 3:
-          processCandeled = true;
-          break;
+          case 2:
+            printTime();
+            break;
 
-        default:
-          Serial.println("La accion no existe-> ajustes menupruebas");
-          break;
-      }
-    break;
+          default:
+            Serial.println("La accion no existe-> ajustes menupruebas");
+            break;
+        }
+        break;
 
-    default:
-      Serial.println("La accion deseada no existe-> menuPruebas");
-    break;
+      default:
+        Serial.println("La accion deseada no existe-> menuPruebas");
+      break;
+    }
+
+  }else {
+
+    if(menu == 4) processCandeled = true;
+    
   }
 }
 
 void lanzar_Procesos(int proceso, int paso){
+
   switch (proceso) {
     case 1:
       faseProceso = paso;

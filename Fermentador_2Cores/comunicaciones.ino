@@ -50,9 +50,9 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
 void printLCD(byte linea1, byte posicion1, String datosL1, byte linea2, byte posicion2, String datosL2) {
 
   lcd.clear();
-  lcd.setCursor(posicion1,linea1);
+  lcd.setCursor(posicion1, linea1);
   lcd.print(datosL1);
-  lcd.setCursor(posicion2,linea2);
+  lcd.setCursor(posicion2, linea2);
   lcd.print(datosL2);
   
 }

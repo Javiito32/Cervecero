@@ -4,7 +4,7 @@ bool checkforUpdates(){
   data_To_Send.concat(id_Board);
   data_To_Send.concat("&currentVersion=" + currentVersion);
   String datos = peticion("checkforUpdates.php", data_To_Send);
-  //Serial.println(datos_Enviar);
+
     if (datos == "fallo") {
 
       #ifdef pantallaLCD
@@ -18,15 +18,18 @@ bool checkforUpdates(){
 
     }else{
 
-      int n = s.separa(datos, ':', 0).toInt();
-      int u = s.separa(datos, ':', 1).toInt();
+      const size_t capacity = JSON_OBJECT_SIZE(2) + 40;
+      DynamicJsonDocument doc(capacity);
 
-      Serial.println("---------------------");
+      const char* json = datos.c_str();
       Serial.println(datos);
-      Serial.println(n);
-      Serial.println(u);
 
-      if (n == 1){
+      deserializeJson(doc, json);
+
+      int updateAvailable = doc["updateAvailable"];
+      int updateNow = doc["updateNow"];
+
+      if (updateAvailable){
 
         #ifdef pantallaLCD
           printLCD(0, 0, " Actualizacion", 1, 0, "---Disponible---");
@@ -35,7 +38,7 @@ bool checkforUpdates(){
         Serial.println("Actualización disponible");
         delay(5000);
 
-        if (u == 1){
+        if (updateNow){
           
           #ifdef pantallaLCD
             printLCD(0, 0, " Actualizando", 1, 0, "---No apagar---");

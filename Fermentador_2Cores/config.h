@@ -1,5 +1,5 @@
- 
-  static String currentVersion = "1.0.8";                      // Versión del Firmware
+
+  static String currentVersion = "0.0.5";                      // Versión del Firmware
   static String host = "http://192.168.1.150/php/arduino/";    // Servidor de PHP donde manda y recibe información
   static String ipServer = "192.168.1.150";               // Servidor de actualizaciones
 
@@ -10,13 +10,8 @@
 // Configuracion DobleResetDetector (no tocar)
   #define DOUBLERESETDETECTOR_DEBUG       false
   #define ESP_DRD_USE_EEPROM      true
-
-// Activar menu nuevo o antiguo 
-  //#define new_menu
-  //#define old_menu
-  #define json_mqtt_menu
+  #define SECONDSTOENTER  3
   
- 
 // Activar todos los mensajes por serial
   #define ENABLE_SERIAL
 
@@ -25,14 +20,13 @@
 
 //LAYOUT Pines
 #define LED_BUILTIN 25
-#define pinSonda 13                                   // Sonda de la temperatura
-#define resis 12                                      // Resistencia para calentar               
-#define bombaRecirculacion 14                         // Bomba de recirculacion 230V
-#define bombaTrasvase 27                              // Bomba trasvase 230V
-#define bombaFrio 33                                  // Bomba refrigeracion 230V
-#define peltier 32                                    // Celulas Peltier
-#define sensorLiquido 35                              // Sensor de liquido en tubo
-#define zumbador 34                                   // Zumbador para reproducir canciones
+#define SONDA 13                                   // Sonda de la temperatura
+#define HEATER 14                                      // Resistencia para calentar               
+#define bombaRecirculacion 27                         // Bomba de recirculacion 230V
+#define bombaTrasvase 33                              // Bomba trasvase 230V
+#define bombaFrio 32                                  // Bomba refrigeracion 230V
+#define TUBESENSOR 34                              // Sensor de liquido en tubo
+#define peltier 35
 
 #define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
 #define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use

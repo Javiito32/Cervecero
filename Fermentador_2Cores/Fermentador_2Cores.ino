@@ -1,6 +1,6 @@
 
 /*
- *  Notas de la version 1.0.7:
+ *  Notas de la version 1.0.0:
  *  - Actualizacion de pines para el NodeMCU.
  *  - Sustitución de las funciones que controlaban el tiempo de los procesos por 
  *    el tiempo con un modulo a tiempo real RTC.
@@ -91,16 +91,15 @@ void setup(){
   
 //Configuracion de pines
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(resis, OUTPUT);
+  pinMode(HEATER, OUTPUT);
   pinMode(bombaRecirculacion, OUTPUT);
   pinMode(bombaTrasvase, OUTPUT);
   pinMode(bombaFrio, OUTPUT);
   pinMode(peltier, OUTPUT);
-  pinMode(sensorLiquido, INPUT);
-  pinMode(zumbador, OUTPUT);
+  pinMode(TUBESENSOR, INPUT);
 
 //Seteamos pines a HIGH
-  digitalWrite(resis, HIGH);
+  digitalWrite(HEATER, HIGH);
   digitalWrite(bombaRecirculacion, HIGH);
   digitalWrite(bombaTrasvase, HIGH);
   digitalWrite(bombaFrio, HIGH);
@@ -140,6 +139,8 @@ checkReset();
   #ifdef pantallaLCD
     printLCD(0, 0, "Iniciando...", 1, 0, "");
   #endif
+
+  delay(1000);
   
   /*                          
    * Obtenemos el ID de placa asociado a la MAC
@@ -147,6 +148,7 @@ checkReset();
   while (true){
     String datos = peticion("get_id.php","mac=" + mac);
       if (datos != "fallo") {
+
         id_Board = datos.toInt();
         Serial.println("------------------------------");
         Serial.print("El ID de la placa es el: ");
@@ -154,6 +156,7 @@ checkReset();
         Serial.println("------------------------------");
         break;
       }else{
+        
         Serial.println("------------------------------");
         Serial.println("No se pudo obtener el ID de placa o no está registrada");
         Serial.println("------------------------------");
@@ -182,33 +185,10 @@ checkReset();
 }
 
 void loop(){
-  
- /* 
-  * Menu de consultas con PHP MySQL en formato JSON 
-  */
-  #ifdef new_menu
-    #ifdef pantallaLCD
-      printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
-    #endif
 
-    Serial.println("------------------------------");
-    Serial.println("Ready");
-    Serial.println("------------------------------");
-    json_menu();
-  #endif
- /*
-  * Menu de consultas PHP con MySQL
-  */
-  #ifdef old_menu
-    SQL_menu();
-    menuinicio(dato);
-  #endif
-
-  #ifdef json_mqtt_menu
     if (!mqttClient.loop()) {
       
       reconnect();
     
     }
-  #endif
 }

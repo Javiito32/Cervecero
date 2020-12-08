@@ -45,7 +45,7 @@ void maceracion() {
 
   digitalWrite(bombaRecirculacion, LOW);
   calentar(Recipe.getTempMacer(faseProceso), Recipe.getTimeMacer(faseProceso));
-  digitalWrite(resis, HIGH);
+  digitalWrite(HEATER, HIGH);
   digitalWrite(bombaRecirculacion, HIGH);
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
   
@@ -93,7 +93,7 @@ void coccion (){
 
   digitalWrite(bombaRecirculacion, LOW);
   calentar(Recipe.getTempCoc(faseProceso), Recipe.getTimeCoc(faseProceso));
-  digitalWrite(resis,HIGH);
+  digitalWrite(HEATER,HIGH);
   digitalWrite(bombaRecirculacion, HIGH);
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
 }
@@ -135,7 +135,7 @@ void fermentacion(){
   #endif
   
 //LECTURA DE VARIABLES
-  float temperaturaFermentacion = Recipe.getTempFermen(faseProceso);
+  int temperaturaFermentacion = Recipe.getTempFermen(faseProceso);
   int tiempoFermentacion = Recipe.getTimeFermen(faseProceso);
 
   if (recovery){
@@ -143,10 +143,11 @@ void fermentacion(){
     Serial.println("------------------------");
     Serial.print("El proceso dura: ");
     Serial.print(month(recoveryTiempoRestante));
-    Serial.print(":");
+    Serial.print(" mes/s, ");
     Serial.print(day(recoveryTiempoRestante));
-    Serial.print(":");
-    Serial.println(hour(recoveryTiempoRestante));
+    Serial.print(" dia/s, ");
+    Serial.print(hour(recoveryTiempoRestante));
+    Serial.print(" hora/s");
     Serial.println("------------------------");
 
     gettime();
@@ -256,12 +257,12 @@ void trasvase(){
     tiempof = tiempoi + (4 * 60);
 
     do{
-
-      gettime();
-      tiempoRestante = tiempof - tiempoActual;
-      comprobarCancelar();
-      if (processCandeled) break;
-      if (tiempoRestante <= 0 || sensorLiquido == HIGH) break;
+      
+    gettime();
+    tiempoRestante = tiempof - tiempoActual;
+    comprobarCancelar();
+    if (processCandeled) break;
+    if (tiempoRestante <= 0 || digitalRead(TUBESENSOR) == LOW) break;
     delay(500);
 
   }while(true);
@@ -365,12 +366,12 @@ void calentar(int temperaturaProceso, long tiempoProceso){
       }
       
   //Tratamiento de la temperatura
-    int sensorTemperatura = 25;// analogRead(pinSonda);
+    int sensorTemperatura = 25;// analogRead(SONDA);
     float milivoltios = (sensorTemperatura / 1023.0) * 3300;
     float celsius = milivoltios / 10;
   //Mantenimiento de la ventana de temperatura
-    if(celsius > tmax){digitalWrite(resis,HIGH);}
-    if(celsius < tmin){digitalWrite(resis,LOW);}
+    if(celsius > tmax){digitalWrite(HEATER,HIGH);}
+    if(celsius < tmin){digitalWrite(HEATER,LOW);}
     delay(500);
 
   }while(true);
