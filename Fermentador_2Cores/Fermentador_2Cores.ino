@@ -56,26 +56,11 @@ PubSubClient mqttClient(wifiClient);
   LiquidCrystal_I2C lcd(0x27,16,2);
 #endif
 Recipe Recipe;
-
-/*
-  Tareas
-*/
-TaskHandle_t makeLogTask;
-QueueHandle_t queue; 
   
 void setup(){
 
   mqttClient.setServer(ipServer.c_str(), 1883);
   mqttClient.setCallback(callback);
-
-  /*xTaskCreatePinnedToCore(
-    makeLog,      // Function that should be called
-    "LOG",            // Name of the task (for debugging)
-    10000,               // Stack size (bytes)
-    NULL,               // Parameter to pass
-    0,                  // Task priority
-    &makeLogTask,               // Task handle
-    1);          // Core you want to run the task on (0 or 1)*/
   
 //Inicializamos las cosas
   #ifdef ENABLE_SERIAL
@@ -139,8 +124,6 @@ checkReset();
   #ifdef pantallaLCD
     printLCD(0, 0, "Iniciando...", 1, 0, "");
   #endif
-
-  delay(1000);
   
   /*                          
    * Obtenemos el ID de placa asociado a la MAC
@@ -167,11 +150,11 @@ checkReset();
       }
   }
 
+  checkforUpdates();
   reconnect();
   checkRecovery();
   if (!recovery) {
     
-    checkforUpdates();
     homeMessage();
     
   }else {

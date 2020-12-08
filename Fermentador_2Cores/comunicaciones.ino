@@ -56,23 +56,3 @@ void printLCD(byte linea1, byte posicion1, String datosL1, byte linea2, byte pos
   lcd.print(datosL2);
   
 }
-
-
-void makeLog(void *parameter) {
-
-  for (;;){
-
-    String datos_Enviar;
-    xQueueReceive(queue, &datos_Enviar, portMAX_DELAY);
-
-    if (WiFi.status() == WL_CONNECTED) {
-
-      peticion("log.php", datos_Enviar);
-      #ifdef debug
-        Serial.println("Log");
-      #endif
-    }
-  
-  }
-
-}
