@@ -22,11 +22,11 @@
 #define LED_BUILTIN 25
 #define SONDA 13                                   // Sonda de la temperatura
 #define HEATER 14                                      // Resistencia para calentar               
-#define bombaRecirculacion 27                         // Bomba de recirculacion 230V
-#define bombaTrasvase 33                              // Bomba trasvase 230V
-#define bombaFrio 32                                  // Bomba refrigeracion 230V
 #define TUBESENSOR 34                              // Sensor de liquido en tubo
-#define peltier 35
+#define bombaPrincipal 27                         // Bomba de recirculacion 230V
+#define bombaFrio 32                                  // Bomba refrigeracion 230V
+#define electroRecirculacion 35
+#define electroTrasvase 33                              // Bomba trasvase 230V
 
 #define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
 #define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use

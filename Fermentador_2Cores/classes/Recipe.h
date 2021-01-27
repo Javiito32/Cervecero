@@ -1,6 +1,7 @@
 class Recipe
 {
   private:
+  
     #define ARRAYS_LENGHT 10
     byte id_Receta;
     int tempMacer[ARRAYS_LENGHT];
@@ -9,6 +10,7 @@ class Recipe
     int timesCoc[ARRAYS_LENGHT];
     int tempFermen[ARRAYS_LENGHT];
     int timesFermen[ARRAYS_LENGHT];
+    
   public:
 
     Recipe() {id_Receta = 0;}
