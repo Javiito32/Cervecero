@@ -75,6 +75,7 @@ void menuPruebas(int menu, int dato1, int dato2){
 
     if(menu == 4) processCandeled = true;
     
+    
   }
 }
 
@@ -94,7 +95,7 @@ void lanzar_Procesos(int proceso, int paso){
 
     case 3:
       faseProceso = paso;
-      fermentacion();
+      //fermentacion();
     break;
 
     case 4:

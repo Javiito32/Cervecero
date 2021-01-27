@@ -83,7 +83,7 @@ void recoveryProcesos(int proceso){
 
   case 4:
 
-    fermentacion();
+    //fermentacion();
     break;
   
   default:

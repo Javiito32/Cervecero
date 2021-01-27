@@ -6,7 +6,11 @@
                 "/home/kerjox/.arduino15/packages/Heltec-esp32/tools/**",
                 "/home/kerjox/Arduino/libraries/**",
                 "/home/kerjox/programas/arduino-1.8.13/libraries/**",
-                "/home/kerjox/.arduino15/packages/Heltec-esp32/hardware/esp32/0.0.5/**"
+                "/home/kerjox/.arduino15/packages/Heltec-esp32/hardware/esp32/0.0.5/**",
+                "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\hardware\\esp32\\0.0.5\\**",
+                "C:\\Program Files (x86)\\Arduino\\libraries\\**",
+                "D:\\danie\\Documents\\Arduino\\libraries\\**",
+                "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\tools\\**"
             ],
             "forcedInclude": [],
             "defines": [

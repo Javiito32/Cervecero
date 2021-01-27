@@ -49,7 +49,8 @@ void maceracion() {
   digitalWrite(HEATER, HIGH);
   digitalWrite(bombaPrincipal, HIGH);
   digitalWrite(electroRecirculacion, HIGH);
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
+  estado = 2;
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100);
   
 }
 
@@ -98,7 +99,8 @@ void coccion (){
   digitalWrite(HEATER, HIGH);
   digitalWrite(bombaPrincipal, HIGH);
   digitalWrite(electroRecirculacion, HIGH);
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
+  estado = 2;
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100);
 }
 
 
@@ -113,6 +115,7 @@ void coccion (){
  *  Parametros: No lleva parametros
  *  No devuelve nada
  */
+/*
 void fermentacion(){
   
   if(checkLoadRecipe()){return;};
@@ -212,10 +215,11 @@ void fermentacion(){
 
   } while (true);
   
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
+  estado = 2;
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100);
 
 }
-
+*/
 
 /*
  *  Funcion para realizar TRASVASE.
@@ -276,7 +280,8 @@ void trasvase(){
   digitalWrite(bombaFrio, HIGH);
   digitalWrite(electroTrasvase, HIGH);
 
-  Log(id_Board, Recipe.getRecipe(), procesoActual, 0, 2, tiempoRestante, 100);
+  estado = 2;
+  Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, 100);
 }
 
 /* Comprueba si hay una receta cargada*/
@@ -375,8 +380,8 @@ void calentar(int temperaturaProceso, long tiempoProceso){
     float milivoltios = (sensorTemperatura / 1023.0) * 3300;
     float celsius = milivoltios / 10;
   //Mantenimiento de la ventana de temperatura
-    if(celsius > tmax){digitalWrite(HEATER,HIGH);}
-    if(celsius < tmin){digitalWrite(HEATER,LOW);}
+    if(celsius > tmax) {digitalWrite(HEATER,HIGH);}
+    if(celsius < tmin) {digitalWrite(HEATER,LOW);}
     delay(500);
 
   }while(true);
