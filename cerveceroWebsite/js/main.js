@@ -4,10 +4,10 @@ $('#myModal').on('shown.bs.modal', function () {
 
 
   $("#sendReceta").click(function(){
-   idPlaca = document.getElementById('idPlacaReceta').value;
+   IDplaca = document.getElementById('idPlacaReceta').value;
    receta = document.getElementById('receta').value;
    const data = new URLSearchParams();
-   data.append('idPlaca', idPlaca);
+   data.append('IDplaca', IDplaca);
    data.append('receta', receta);
    fetch('./php/sendReceta.php', {
       method: 'POST',
@@ -61,11 +61,11 @@ $('#myModal').on('shown.bs.modal', function () {
  });
 
  $("#sendProceso").click(function(){
-   idPlaca = document.getElementById('idPlacaProceso').value;
+   IDplaca = document.getElementById('idPlacaProceso').value;
    proceso = document.getElementById('proceso').value;
    paso = document.getElementById('paso').value;
    const data = new URLSearchParams();
-   data.append('idPlaca', idPlaca);
+   data.append('IDplaca', IDplaca);
    data.append('proceso', proceso);
    data.append('paso', paso);
    fetch('./php/sendProceso.php', {
@@ -96,10 +96,10 @@ $('#myModal').on('shown.bs.modal', function () {
  });
 
  $("#sendSettings").click(function(){
-   idPlaca = document.getElementById('idPlacaAjustes').value;
+   IDplaca = document.getElementById('idPlacaAjustes').value;
    setting = document.getElementById('settings').value;
    const data = new URLSearchParams();
-   data.append('idPlaca', idPlaca);
+   data.append('IDplaca', IDplaca);
    data.append('setting', setting);
    fetch('./php/sendSettings.php', {
       method: 'POST',
