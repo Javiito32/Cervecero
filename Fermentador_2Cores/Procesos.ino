@@ -43,10 +43,12 @@ void maceracion() {
     printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 
-  digitalWrite(bombaRecirculacion, LOW);
+  digitalWrite(electroRecirculacion, LOW);
+  digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempMacer(faseProceso), Recipe.getTimeMacer(faseProceso));
   digitalWrite(HEATER, HIGH);
-  digitalWrite(bombaRecirculacion, HIGH);
+  digitalWrite(bombaPrincipal, HIGH);
+  digitalWrite(electroRecirculacion, HIGH);
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
   
 }
@@ -90,11 +92,12 @@ void coccion (){
     printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 
-
-  digitalWrite(bombaRecirculacion, LOW);
+  digitalWrite(electroRecirculacion, LOW);
+  digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempCoc(faseProceso), Recipe.getTimeCoc(faseProceso));
-  digitalWrite(HEATER,HIGH);
-  digitalWrite(bombaRecirculacion, HIGH);
+  digitalWrite(HEATER, HIGH);
+  digitalWrite(bombaPrincipal, HIGH);
+  digitalWrite(electroRecirculacion, HIGH);
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, 2, tiempoRestante, 100);
 }
 
@@ -240,10 +243,12 @@ void trasvase(){
     #endif
 
 //Trasvase ON
-  digitalWrite(bombaFrio,LOW);
-  delay(retrasoBombas);
-  digitalWrite(bombaTrasvase,LOW);
-  digitalWrite(peltier,LOW);
+  digitalWrite(electroTrasvase, LOW);
+  digitalWrite(bombaPrincipal, LOW);
+  delay(1000);
+  digitalWrite(bombaFrio, LOW);
+  
+
 
 //Control de tiempo y sensor de liquido
     Serial.println("------------------------");
@@ -267,9 +272,9 @@ void trasvase(){
 
   }while(true);
 //Trasvase OFF  
-  digitalWrite(bombaTrasvase, HIGH);
-  digitalWrite(peltier, HIGH);
+  digitalWrite(bombaPrincipal, HIGH);
   digitalWrite(bombaFrio, HIGH);
+  digitalWrite(electroTrasvase, HIGH);
 
   Log(id_Board, Recipe.getRecipe(), procesoActual, 0, 2, tiempoRestante, 100);
 }

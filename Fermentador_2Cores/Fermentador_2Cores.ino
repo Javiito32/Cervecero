@@ -83,23 +83,23 @@ void setup(){
 //Configuracion de pines
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(HEATER, OUTPUT);
-  pinMode(bombaRecirculacion, OUTPUT);
-  pinMode(bombaTrasvase, OUTPUT);
+  pinMode(bombaPrincipal, OUTPUT);
   pinMode(bombaFrio, OUTPUT);
-  pinMode(peltier, OUTPUT);
+  pinMode(electroRecirculacion, OUTPUT);
+  pinMode(electroTrasvase, OUTPUT);
   pinMode(TUBESENSOR, INPUT);
 
 //Seteamos pines a HIGH
   digitalWrite(HEATER, HIGH);
-  digitalWrite(bombaRecirculacion, HIGH);
-  digitalWrite(bombaTrasvase, HIGH);
+  digitalWrite(bombaPrincipal, HIGH);
   digitalWrite(bombaFrio, HIGH);
-  digitalWrite(peltier, HIGH);
+  digitalWrite(electroRecirculacion, HIGH);
+  digitalWrite(electroTrasvase, HIGH);
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 
-initResetDetector();
-checkReset();
+  initResetDetector();
+  checkReset();
   
 // Conectar con la red WiFi
   Serial.println("");
