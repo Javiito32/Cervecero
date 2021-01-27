@@ -62,7 +62,7 @@ Recipe Recipe;
 void setup(){
 
   Heltec.begin(true /*DisplayEnable Enable*/);
-  Heltec.display->clear();
+
   Heltec.display->setFont(ArialMT_Plain_10);
 
   mqttClient.setServer(ipServer.c_str(), 1883);
@@ -108,8 +108,6 @@ checkReset();
   #ifdef pantallaLCD
     printLCD(0, 0, "Conectando WiFi", 1, 0, "");                          
   #endif
-
-  
   
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
