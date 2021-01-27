@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"arduino.path": "/home/kerjox/programas/arduino-1.8.13",
+		"arduino.logLevel": "info",
+		"arduino.enableUSBDetection": true,
+		"arduino.disableTestingOpen": false,
+		"arduino.skipHeaderProvider": false,
+		"arduino.additionalUrls": [
+			"https://resource.heltec.cn/download/package_heltec_esp32_index.json",
+			"http://arduino.esp8266.com/stable/package_esp8266com_index.json",
+			"https://raw.githubusercontent.com/Lauszus/Sanguino/master/package_lauszus_sanguino_index.json"
+		],
+		"arduino.defaultBaudRate": 115200
+	}
+}

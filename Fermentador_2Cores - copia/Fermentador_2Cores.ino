@@ -62,7 +62,7 @@ Recipe Recipe;
 void setup(){
 
   Heltec.begin(true /*DisplayEnable Enable*/);
-  Heltec.display->clear();
+
   Heltec.display->setFont(ArialMT_Plain_10);
 
   mqttClient.setServer(ipServer.c_str(), 1883);
@@ -83,23 +83,23 @@ void setup(){
 //Configuracion de pines
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(HEATER, OUTPUT);
-  pinMode(bombaPrincipal, OUTPUT);
+  pinMode(bombaRecirculacion, OUTPUT);
+  pinMode(bombaTrasvase, OUTPUT);
   pinMode(bombaFrio, OUTPUT);
-  pinMode(electroRecirculacion, OUTPUT);
-  pinMode(electroTrasvase, OUTPUT);
+  pinMode(peltier, OUTPUT);
   pinMode(TUBESENSOR, INPUT);
 
 //Seteamos pines a HIGH
   digitalWrite(HEATER, HIGH);
-  digitalWrite(bombaPrincipal, HIGH);
+  digitalWrite(bombaRecirculacion, HIGH);
+  digitalWrite(bombaTrasvase, HIGH);
   digitalWrite(bombaFrio, HIGH);
-  digitalWrite(electroRecirculacion, HIGH);
-  digitalWrite(electroTrasvase, HIGH);
+  digitalWrite(peltier, HIGH);
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 
-  initResetDetector();
-  checkReset();
+initResetDetector();
+checkReset();
   
 // Conectar con la red WiFi
   Serial.println("");
@@ -108,8 +108,6 @@ void setup(){
   #ifdef pantallaLCD
     printLCD(0, 0, "Conectando WiFi", 1, 0, "");                          
   #endif
-
-  
   
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
