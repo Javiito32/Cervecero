@@ -20,7 +20,7 @@
 
 //LAYOUT Pines
 #define LED_BUILTIN 25
-#define SONDA 13                                   // Sonda de la temperatura
+#define SONDA 39                                   // Sonda de la temperatura
 #define HEATER 14                                      // Resistencia para calentar               
 #define TUBESENSOR 34                              // Sensor de liquido en tubo
 #define bombaPrincipal 27                         // Bomba de recirculacion 230V
@@ -35,7 +35,7 @@
 #define SCL_I2C 4
 
 // Rango para la temperatura
-  const float rangoTemp = 1;
+  const float rangoTemp = 2;
 
 // Tiempo maximo de seguridad que dura el trasvase (Se pone 4 minutos)
   const int tiempoTrasvase = 210000;

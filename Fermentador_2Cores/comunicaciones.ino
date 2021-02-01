@@ -23,7 +23,7 @@ String peticion(String php, String datos_Enviar){
  * Hace el log en la BBDD con los datos del proceso
  */
 
-void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int state, int timeLeft, byte percentage) {
+void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int state, int timeLeft, byte percentage, float temp) {
 
   if (WiFi.status() == WL_CONNECTED) {
 
@@ -54,6 +54,7 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
     doc["estado"] = state;
     doc["tiempoRestante"] = timeLeft;
     doc["porcentaje"] = percentage;
+    doc["temp"] = temp;
 
     String payload;
     serializeJson(doc, payload);
