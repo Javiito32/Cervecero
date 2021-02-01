@@ -27,6 +27,7 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
 
   if (WiFi.status() == WL_CONNECTED) {
 
+/*
     String data_To_Send = "IDplaca=";
     data_To_Send.concat(id_Board);
     data_To_Send.concat("&receta=");
@@ -42,7 +43,7 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
     data_To_Send.concat("&porcentaje="); 
     data_To_Send.concat(percentage);
     peticion("log.php", data_To_Send);
-
+*/
     const size_t capacity = JSON_OBJECT_SIZE(15);
     DynamicJsonDocument doc(capacity);
 
