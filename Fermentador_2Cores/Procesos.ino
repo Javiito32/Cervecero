@@ -260,7 +260,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
       }
     
       float temp = samples.getAverage();
-      Serial.println(temp);
+      //Serial.println(temp);
       samples.clear();
       // Mandar LOG
       if (tiempoActual >= tiempoLog){

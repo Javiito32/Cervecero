@@ -61,8 +61,14 @@ RunningMedian samples = RunningMedian(10);
   LiquidCrystal_I2C lcd(0x27,16,2);
 #endif
 Recipe Recipe;
+
+IPAddress local_IP(192, 168, 1, 184);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress gateway(192, 168, 1, 1);
   
 void setup(){
+
+  WiFi.config(local_IP, gateway, subnet);
 
   Heltec.begin(true /*DisplayEnable Enable*/);
   Heltec.display->clear();
