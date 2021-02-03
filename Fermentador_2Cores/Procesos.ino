@@ -43,14 +43,12 @@ void maceracion() {
     printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 
-  expander.digitalWrite(P0, LOW);
-  digitalWrite(electroRecirculacion, LOW);
-  digitalWrite(bombaPrincipal, LOW);
+  expander.digitalWrite(electroRecirculacion, LOW);
+  expander.digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempMacer(faseProceso), Recipe.getTimeMacer(faseProceso));
   digitalWrite(HEATER, HIGH);
-  digitalWrite(bombaPrincipal, HIGH);
-  digitalWrite(electroRecirculacion, HIGH);
-  expander.digitalWrite(P0, HIGH);
+  expander.digitalWrite(bombaPrincipal, HIGH);
+  expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
   
@@ -95,12 +93,12 @@ void coccion (){
     printLCD(0, 0, lcd0, 1, 0, lcd1);
   #endif
 
-  digitalWrite(electroRecirculacion, LOW);
-  digitalWrite(bombaPrincipal, LOW);
+  expander.digitalWrite(electroRecirculacion, LOW);
+  expander.digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempCoc(faseProceso), Recipe.getTimeCoc(faseProceso));
   digitalWrite(HEATER, HIGH);
-  digitalWrite(bombaPrincipal, HIGH);
-  digitalWrite(electroRecirculacion, HIGH);
+  expander.digitalWrite(bombaPrincipal, HIGH);
+  expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
 }
@@ -131,10 +129,10 @@ void trasvase(){
     #endif
 
 //Trasvase ON
-  digitalWrite(electroTrasvase, LOW);
-  digitalWrite(bombaPrincipal, LOW);
+  expander.digitalWrite(electroTrasvase, LOW);
   delay(1000);
-  digitalWrite(bombaFrio, LOW);
+  expander.digitalWrite(bombaPrincipal, LOW);
+  expander.digitalWrite(bombaFrio, LOW);
   
 
 
@@ -160,9 +158,9 @@ void trasvase(){
 
   }while(true);
 //Trasvase OFF  
-  digitalWrite(bombaPrincipal, HIGH);
-  digitalWrite(bombaFrio, HIGH);
-  digitalWrite(electroTrasvase, HIGH);
+  expander.digitalWrite(bombaPrincipal, HIGH);
+  expander.digitalWrite(bombaFrio, HIGH);
+  expander.digitalWrite(electroTrasvase, HIGH);
 
   estado = 2;
   Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, 100, 0);
