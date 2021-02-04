@@ -2,7 +2,8 @@
 #define lucecita 5
 #define ceroPulse 34
 volatile byte ticks = 0;
-byte contarMS = 5;
+byte disparoEnPulso = 1;
+bool SolounPulsito;
 
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -36,23 +37,33 @@ void loop() {
 void IRAM_ATTR interrupt() {
   
   noInterrupts();
+  
   delayMicroseconds(1000);
   ticks = 0;
-  Serial.println("Alcachofa");
+  SolounPulsito = true;
+  //Serial.println("Interruption");
+  
   interrupts();
 }
 
 void IRAM_ATTR contar() {
 
   ticks++;
-  
-  if(ticks >= contarMS) {
-      
-    digitalWrite(lucecita, HIGH);
-    delayMicroseconds(15); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
-    digitalWrite(lucecita, LOW);
-   } 
-   //timer1_write(5000);
+  //Serial.println(ticks);
+
+  if(ticks >= disparoEnPulso)
+      {
+        if (SolounPulsito)
+        {
+        digitalWrite(lucecita, HIGH);
+        delayMicroseconds(15); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
+        digitalWrite(lucecita, LOW);
+        Serial.println("Disparo");
+        SolounPulsito = false;
+        }
+      } 
+      else 
+      {digitalWrite(lucecita, LOW);};
 }
 
 //detachInterrupt(button1.PIN);
