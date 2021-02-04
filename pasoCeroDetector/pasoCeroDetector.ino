@@ -1,6 +1,6 @@
-
 #define lucecita 5
 #define ceroPulse 34
+
 volatile byte ticks = 0;
 byte disparoEnPulso = 1;
 bool SolounPulsito;
@@ -47,23 +47,21 @@ void IRAM_ATTR interrupt() {
 }
 
 void IRAM_ATTR contar() {
-
+  
+  portENTER_CRITICAL(&timerMux);
   ticks++;
   //Serial.println(ticks);
 
-  if(ticks >= disparoEnPulso)
-      {
-        if (SolounPulsito)
-        {
-        digitalWrite(lucecita, HIGH);
-        delayMicroseconds(15); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
-        digitalWrite(lucecita, LOW);
-        Serial.println("Disparo");
-        SolounPulsito = false;
-        }
-      } 
-      else 
-      {digitalWrite(lucecita, LOW);};
+  if(ticks >= disparoEnPulso && SolounPulsito) {
+        
+    digitalWrite(lucecita, HIGH);
+    delayMicroseconds(15); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
+    digitalWrite(lucecita, LOW);
+    Serial.println("Disparo");
+    SolounPulsito = false;
+        
+  } else {digitalWrite(lucecita, LOW);};
+  portEXIT_CRITICAL_ISR(&timerMux);
 }
 
 //detachInterrupt(button1.PIN);
