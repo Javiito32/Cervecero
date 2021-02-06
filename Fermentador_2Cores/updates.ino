@@ -14,9 +14,10 @@ bool checkforUpdates(){
       #endif
       #ifdef pantallaLCD
         printLCD(0, 0, " Error checking", 1, 0, "   updates");
+        delay(1000);
       #endif
 
-    }else{
+    } else{
 
       const size_t capacity = JSON_OBJECT_SIZE(2) + 40;
       DynamicJsonDocument doc(capacity);
@@ -26,8 +27,8 @@ bool checkforUpdates(){
 
       deserializeJson(doc, json);
 
-      int updateAvailable = doc["updateAvailable"];
-      int updateNow = doc["updateNow"];
+      bool updateAvailable = doc["updateAvailable"];
+      bool updateNow = doc["updateNow"];
 
       if (updateAvailable){
 

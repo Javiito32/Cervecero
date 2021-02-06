@@ -31,6 +31,7 @@ void maceracion() {
 
   if(!recovery){
     porcentaje = 0;
+    tiempoRestante = Recipe.getTimeMacer(faseProceso);
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0);             // Mandamos la informacion a la BDD a la tabla info
   }
 
@@ -81,6 +82,7 @@ void coccion (){
 
   if(!recovery){
     porcentaje = 0;
+    tiempoRestante = Recipe.getTimeCoc(faseProceso);
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0);
   }
 

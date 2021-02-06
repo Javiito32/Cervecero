@@ -1,8 +1,8 @@
 #define lucecita 5
 #define ceroPulse 34
 
-volatile byte ticks = 0;
-byte disparoEnPulso = 1;
+byte ticks = 0;
+byte disparoEnPulso = 2;
 bool SolounPulsito;
 
 hw_timer_t * timer = NULL;
@@ -19,7 +19,7 @@ void setup() {
   attachInterrupt(ceroPulse, interrupt, CHANGE);
   Serial.println("Online");
 
-  timer = timerBegin(0, 240, true);
+  timer = timerBegin(1, 80, true);
   timerAttachInterrupt(timer, &contar, true);
   timerAlarmWrite(timer, 1000, true);
   timerAlarmEnable(timer);
@@ -32,18 +32,18 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  delay(500);
+  disparoEnPulso++;
+  if (disparoEnPulso>=10){disparoEnPulso=0;}
 }
 
 void IRAM_ATTR interrupt() {
-  
-  noInterrupts();
   
   delayMicroseconds(1000);
   ticks = 0;
   SolounPulsito = true;
   //Serial.println("Interruption");
   
-  interrupts();
 }
 
 void IRAM_ATTR contar() {
