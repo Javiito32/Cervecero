@@ -21,6 +21,7 @@
 #include <ArduinoJson.h>                              // Para los datos JSON
 #include <HTTPClient.h>
 #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
+#include "PCF8574.h"
 #include <RTClib.h>                                   // Para el manejo del modulo RTC
 #include <TimeLib.h>                                  // Libreria para gestionar las conversiones de tiempo
 #include <Separador.h>                                // Como su propio nombre indica separa cadenas de datos
@@ -49,17 +50,25 @@ byte faseProceso;                                     // El paso del proceso que
 //Objetos
 HTTPClient http;
 DoubleResetDetector* drd;
+PCF8574 expander(0x20);
 RTC_DS3231 rtc;
 Separador s;
 WiFiManager wifiManager;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
+RunningMedian samples = RunningMedian(10);
 #ifdef pantallaLCD
   LiquidCrystal_I2C lcd(0x27,16,2);
 #endif
 Recipe Recipe;
+
+IPAddress local_IP(192, 168, 1, 184);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress gateway(192, 168, 1, 1);
   
 void setup(){
+
+  WiFi.config(local_IP, gateway, subnet);
 
   Heltec.begin(true /*DisplayEnable Enable*/);
   Heltec.display->clear();
@@ -81,20 +90,22 @@ void setup(){
   delay(10);
   
 //Configuracion de pines
+  pinMode(SONDA, INPUT);
+  pinMode(TUBESENSOR, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(HEATER, OUTPUT);
-  pinMode(bombaPrincipal, OUTPUT);
-  pinMode(bombaFrio, OUTPUT);
-  pinMode(electroRecirculacion, OUTPUT);
-  pinMode(electroTrasvase, OUTPUT);
-  pinMode(TUBESENSOR, INPUT);
+  expander.pinMode(bombaPrincipal, OUTPUT);
+  expander.pinMode(bombaFrio, OUTPUT);
+  expander.pinMode(electroRecirculacion, OUTPUT);
+  expander.pinMode(electroTrasvase, OUTPUT);
 
 //Seteamos pines a HIGH
   digitalWrite(HEATER, HIGH);
-  digitalWrite(bombaPrincipal, HIGH);
-  digitalWrite(bombaFrio, HIGH);
-  digitalWrite(electroRecirculacion, HIGH);
-  digitalWrite(electroTrasvase, HIGH);
+  expander.digitalWrite(bombaPrincipal, HIGH);
+  expander.digitalWrite(bombaFrio, HIGH);
+  expander.digitalWrite(electroRecirculacion, HIGH);
+  expander.digitalWrite(electroTrasvase, HIGH);
+
 
 //Detectamos si se ha pulsado el reset mientras el inicio para entrar en la configuracion del WiFi
 

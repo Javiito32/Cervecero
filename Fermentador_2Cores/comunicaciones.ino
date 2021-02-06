@@ -23,10 +23,11 @@ String peticion(String php, String datos_Enviar){
  * Hace el log en la BBDD con los datos del proceso
  */
 
-void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int state, int timeLeft, byte percentage) {
+void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int state, int timeLeft, byte percentage, float temp) {
 
   if (WiFi.status() == WL_CONNECTED) {
 
+/*
     String data_To_Send = "IDplaca=";
     data_To_Send.concat(id_Board);
     data_To_Send.concat("&receta=");
@@ -42,7 +43,23 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
     data_To_Send.concat("&porcentaje="); 
     data_To_Send.concat(percentage);
     peticion("log.php", data_To_Send);
+*/
+    const size_t capacity = JSON_OBJECT_SIZE(15);
+    DynamicJsonDocument doc(capacity);
 
+    doc["IDplaca"] = id_Board;
+    doc["receta"] = id_Recipe;
+    doc["proceso"] = actualProcess;
+    doc["pasoProceso"] = stageProcess;
+    doc["estado"] = state;
+    doc["tiempoRestante"] = timeLeft;
+    doc["porcentaje"] = percentage;
+    doc["temp"] = temp;
+
+    String payload;
+    serializeJson(doc, payload);
+    mqttClient.publish("cervecero/2/log", payload.c_str());
+    Serial.println(payload);
     Serial.println("Log");
   }
 }
