@@ -1,67 +1,73 @@
-#define lucecita 5
-#define ceroPulse 34
+#define LUCECITA              5
+#define disparoEnPulso        4
+#define ceroPulse             34
+#define TIMER1_INTERVAL_MS    1
 
-volatile byte ticks = 0;
-byte disparoEnPulso = 1;
-bool SolounPulsito;
+#include "ESP32TimerInterrupt.h"
 
-hw_timer_t * timer = NULL;
-portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
+byte ticks = 0;
+bool SoloUnPulsito;
 
-void IRAM_ATTR interrupt();
-void IRAM_ATTR contar();
+void IRAM_ATTR TimerHandler1(){
+  
+  //Serial.print("ITimer1: millis() = "); Serial.println(millis());
+
+  static bool started = false;
+
+  if (!started) {
+    started = true;
+    pinMode(LUCECITA, OUTPUT);
+  }
+  
+  ticks++;
+  //Serial.println(ticks);
+
+  if(ticks >= disparoEnPulso && SoloUnPulsito) {
+        
+    digitalWrite(LUCECITA, HIGH);
+    delayMicroseconds(5000); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
+    digitalWrite(LUCECITA, LOW);
+    //Serial.println("Disparo");
+    SoloUnPulsito = false;
+        
+  } else {digitalWrite(LUCECITA, LOW);};
+  
+}
+
+ESP32Timer ITimer1(1);
+
+
+void IRAM_ATTR interrupt() {
+
+  while(digitalRead(ceroPulse) != LOW){
+    
+  }
+  //delayMicroseconds(1000);
+  ticks = 0;
+  SoloUnPulsito = true;
+  //Serial.println("Interruption");
+  ITimer1.restartTimer();
+}
+
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   pinMode(ceroPulse, INPUT);
-  pinMode(lucecita, OUTPUT);
   attachInterrupt(ceroPulse, interrupt, CHANGE);
-  Serial.println("Online");
 
-  timer = timerBegin(0, 240, true);
-  timerAttachInterrupt(timer, &contar, true);
-  timerAlarmWrite(timer, 1000, true);
-  timerAlarmEnable(timer);
-/*
-  timer1_attachInterrupt(contar);
-  timer1_enable(TIM_DIV16, TIM_EDGE, TIM_SINGLE);  
-  timer1_write(5000); // Lanzamos el siguiente evento de tiempo para que dispare en 1ms
-*/
+
+  // Interval in microsecs
+  if (ITimer1.attachInterruptInterval(TIMER1_INTERVAL_MS * 1000, TimerHandler1))
+  {
+    Serial.print(F("Starting  ITimer1 OK, millis() = ")); Serial.println(millis());
+  }
+  else
+    Serial.println(F("Can't set ITimer1. Select another freq. or timer"));
+
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+
 }
-
-void IRAM_ATTR interrupt() {
-  
-  noInterrupts();
-  
-  delayMicroseconds(1000);
-  ticks = 0;
-  SolounPulsito = true;
-  //Serial.println("Interruption");
-  
-  interrupts();
-}
-
-void IRAM_ATTR contar() {
-  
-  portENTER_CRITICAL(&timerMux);
-  ticks++;
-  //Serial.println(ticks);
-
-  if(ticks >= disparoEnPulso && SolounPulsito) {
-        
-    digitalWrite(lucecita, HIGH);
-    delayMicroseconds(15); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
-    digitalWrite(lucecita, LOW);
-    Serial.println("Disparo");
-    SolounPulsito = false;
-        
-  } else {digitalWrite(lucecita, LOW);};
-  portEXIT_CRITICAL_ISR(&timerMux);
-}
-
-//detachInterrupt(button1.PIN);
