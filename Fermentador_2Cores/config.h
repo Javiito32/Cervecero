@@ -1,7 +1,7 @@
 
   static String currentVersion = "0.0.6";                      // Versión del Firmware
   static String host = "http://192.168.1.150/php/arduino/";    // Servidor de PHP donde manda y recibe información
-  static String ipServer = "192.168.1.150";               // Servidor de actualizaciones
+  static String ipServer = "88.4.103.41";               // Servidor de actualizaciones
 
 /*
  * Configuraciones del programa
