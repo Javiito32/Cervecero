@@ -68,12 +68,12 @@ IPAddress gateway(192, 168, 1, 1);
   
 void setup(){
 
-  WiFi.config(local_IP, gateway, subnet);
-
-  Heltec.begin(true /*DisplayEnable Enable*/);
+  //WiFi.config(local_IP, gateway, subnet);
+/*
+  Heltec.begin(true ); //DisplayEnable Enable
   Heltec.display->clear();
   Heltec.display->setFont(ArialMT_Plain_10);
-
+*/
   mqttClient.setServer(ipServer.c_str(), 1883);
   mqttClient.setCallback(callback);
   
@@ -120,12 +120,15 @@ void setup(){
     printLCD(0, 0, "Conectando WiFi", 1, 0, "");                          
   #endif
 
-  
-  
+  uint8_t cont = 0;
 
   while (WiFi.status() != WL_CONNECTED) {               // Mostrar ... mientras se conacta al WiFi
     delay(500);
     Serial.print(".");
+    if (cont == 5){
+      printLCD(0, 6, "Error WiFi", 1, 0, "");  
+    }else cont++;
+    
   }
   mac = WiFi.macAddress();
   Serial.println("");
@@ -170,7 +173,7 @@ void setup(){
       }
   }
 
-  checkforUpdates();
+  //checkforUpdates();
   reconnect();
   checkRecovery();
   if (!recovery) {

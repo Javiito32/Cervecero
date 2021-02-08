@@ -2,5 +2,5 @@
     "board": "Heltec-esp32:esp32:wifi_kit_32",
     "configuration": "PSRAM=disabled,CPUFreq=240,UploadSpeed=921600,DebugLevel=none",
     "sketch": "Fermentador_2Cores.ino",
-    "port": "/dev/ttyUSB0"
+    "port": "COM13"
 }
