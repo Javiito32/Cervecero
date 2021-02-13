@@ -68,12 +68,6 @@ IPAddress gateway(192, 168, 1, 1);
   
 void setup(){
 
-  //WiFi.config(local_IP, gateway, subnet);
-/*
-  Heltec.begin(true ); //DisplayEnable Enable
-  Heltec.display->clear();
-  Heltec.display->setFont(ArialMT_Plain_10);
-*/
   mqttClient.setServer(ipServer.c_str(), 1883);
   mqttClient.setCallback(callback);
   
@@ -193,8 +187,7 @@ void setup(){
 void loop(){
 
     if (!mqttClient.loop()) {
-      
+
       reconnect();
-    
     }
 }

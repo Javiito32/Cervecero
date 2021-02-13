@@ -40,6 +40,8 @@ void leerReceta(byte recipe){
       Recipe.clear();
 
       Recipe.setRecipe(recipe);
+      Recipe.setName(nombre);
+      
 
       for (int i = 0; i < count(stempMacer); i++){
         Recipe.setTempMacer(i, s.separa(stempMacer, ':', i).toInt());
@@ -70,7 +72,12 @@ void leerReceta(byte recipe){
         Recipe.setTimesFermen(i, s.separa(stiempoFermen, ':', i).toInt());
       }
 
-    Recipe.printRecipe();
+      String d1 = "Cerveza: ";
+      d1 = d1 + Recipe.getName();
+      printLCD(0, 0, d1, 1, 5, "Cargada");
+      delay(2000);
+      homeMessage();
+      Recipe.printRecipe();
 
     }else{
       Serial.println("Error al obtener la receta");
@@ -86,7 +93,7 @@ int count(String str){
   
   int cont = 1;
   
-  for (int i = 0; i < str.length(); i ++){
+  for (int i = 0; i < str.length(); i++){
   
       if (str[i] == ':') {cont++;}
   

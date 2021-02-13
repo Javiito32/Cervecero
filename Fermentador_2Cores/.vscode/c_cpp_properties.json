@@ -20,6 +20,19 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++14"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\tools\\**",
+                "D:\\Kerjox\\Documents\\Arduino\\libraries\\**",
+                "C:\\Program Files (x86)\\Arduino\\libraries\\**",
+                "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\hardware\\esp32\\0.0.5\\**"
+            ],
+            "forcedInclude": [],
+            "defines": [
+                "USBCON"
+            ]
         }
     ],
     "version": 4

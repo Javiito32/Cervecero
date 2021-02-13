@@ -51,7 +51,6 @@ void maceracion() {
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
   
 }
 
@@ -102,7 +101,6 @@ void coccion (){
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
 }
 
 /*
@@ -165,7 +163,6 @@ void trasvase(){
   expander.digitalWrite(electroTrasvase, HIGH);
 
   estado = 2;
-  Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, 100, 0);
 }
 
 /* Comprueba si hay una receta cargada*/

@@ -7,10 +7,14 @@ void reconnect() {
     // Attempt to connect
     if (mqttClient.connect("2")) {
       // Once connected, publish an announcement...
-      mqttClient.publish("2/state", "online");
+      //mqttClient.publish("2/state", "online");
       // ... and resubscribe
+      lcd.setCursor(13, 1);
+      lcd.print("   ");
       mqttClient.subscribe("2/menu");
     } else {
+      lcd.setCursor(13, 1);
+      lcd.print("Off");
       Serial.print("failed, rc=");
       Serial.print(mqttClient.state());
       Serial.println(" try again in 5 seconds");

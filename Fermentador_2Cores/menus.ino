@@ -94,11 +94,6 @@ void lanzar_Procesos(int proceso, int paso){
     break;
 
     case 3:
-      faseProceso = paso;
-      //fermentacion();
-    break;
-
-    case 4:
       trasvase();
     break;
 
@@ -106,14 +101,14 @@ void lanzar_Procesos(int proceso, int paso){
       Serial.println("La accion deseada no existe-> lanzar_Procesos");
     break;
   }
+
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
 }
 
 void homeMessage() {
 
   #ifdef pantallaLCD
-    printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, " Ready");
-    lcd.setCursor(0,1);
-    lcd.print(" Ready   Online");
+    printLCD(0, 0, "Cervecero v" + currentVersion, 1, 0, Recipe.getName());
   #endif
     Serial.println("------------------------------");
     Serial.println("Ready");

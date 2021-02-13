@@ -3,7 +3,8 @@ class Recipe
   private:
   
     #define ARRAYS_LENGHT 10
-    byte id_Receta;
+    int id_Receta;
+    String name;
     int tempMacer[ARRAYS_LENGHT];
     int timesMacer[ARRAYS_LENGHT];
     int tempCoc[ARRAYS_LENGHT];
@@ -13,9 +14,12 @@ class Recipe
     
   public:
 
-    Recipe() {id_Receta = 0;}
+    Recipe() {
+      id_Receta = 0;
+      name = "No receta";}
 
     void setRecipe(int number) {id_Receta = number;}
+    void setName(String nombre) {name = nombre;}
     void setTempMacer(int index, int data){tempMacer[index] = data;}
     void setTimesMacer(int index, int data){timesMacer[index] = data;}
     void setTempCoc(int index, int data){tempCoc[index] = data;}
@@ -24,6 +28,7 @@ class Recipe
     void setTimesFermen(int index, int data){timesFermen[index] = data;}
 
     int getRecipe() {return (id_Receta);}
+    String getName() {return name;}
     int getTempMacer(int index) {return (tempMacer[index]);}
     int getTimeMacer(int index) {return (timesMacer[index]);}
     int getTempCoc(int index) {return (tempCoc[index]);}
@@ -57,6 +62,9 @@ void Recipe::printRecipe() {
 
   Serial.println("Id de la receta cargada");
   Serial.println(id_Receta);
+
+  Serial.println("Nombre de la receta");
+  Serial.println(name);
 
   Serial.println("Temperatura del proceso Maceración");
   for (int i = 0; i < 10; i++)
