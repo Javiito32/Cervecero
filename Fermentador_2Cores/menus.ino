@@ -101,8 +101,6 @@ void lanzar_Procesos(int proceso, int paso){
       Serial.println("La accion deseada no existe-> lanzar_Procesos");
     break;
   }
-
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
 }
 
 void homeMessage() {

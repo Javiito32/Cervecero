@@ -52,6 +52,7 @@ void maceracion() {
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
   
+  endProcess();
 }
 
 
@@ -101,6 +102,8 @@ void coccion (){
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
+
+  endProcess();
 }
 
 /*
@@ -163,6 +166,8 @@ void trasvase(){
   expander.digitalWrite(electroTrasvase, HIGH);
 
   estado = 2;
+
+  endProcess();
 }
 
 /* Comprueba si hay una receta cargada*/
@@ -283,6 +288,11 @@ void comprobarCancelar() {
     
 
   }
+}
+
+void endProcess() {
+
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
 }
 
 #ifdef pantallaLCD

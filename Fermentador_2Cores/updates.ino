@@ -1,6 +1,6 @@
 bool checkforUpdates(){
 
-  String data_To_Send = "IDplaca=";
+  String data_To_Send = "id_Placa=";
   data_To_Send.concat(id_Board);
   data_To_Send.concat("&currentVersion=" + currentVersion);
   String datos = peticion("checkforUpdates.php", data_To_Send);
@@ -27,8 +27,11 @@ bool checkforUpdates(){
 
       deserializeJson(doc, json);
 
-      bool updateAvailable = doc["updateAvailable"];
-      bool updateNow = doc["updateNow"];
+      int updateAvailable = doc["updateAvailable"];
+      int updateNow = doc["updateNow"];
+
+      Serial.println(updateAvailable);
+      Serial.println(updateNow);
 
       if (updateAvailable){
 

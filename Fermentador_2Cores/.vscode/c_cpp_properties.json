@@ -10,7 +10,8 @@
                 "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\hardware\\esp32\\0.0.5\\**",
                 "C:\\Program Files (x86)\\Arduino\\libraries\\**",
                 "D:\\danie\\Documents\\Arduino\\libraries\\**",
-                "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\tools\\**"
+                "C:\\Users\\Kerjox\\AppData\\Local\\Arduino15\\packages\\Heltec-esp32\\tools\\**",
+                "D:\\Kerjox\\Documents\\Arduino\\libraries\\**"
             ],
             "forcedInclude": [],
             "defines": [

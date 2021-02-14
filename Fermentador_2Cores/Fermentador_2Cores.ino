@@ -147,27 +147,30 @@ void setup(){
    */
   while (true){
     String datos = peticion("get_id.php","mac=" + mac);
-      if (datos != "fallo") {
+    id_Board = datos.toInt();
+      if (id_Board != 0) {
 
-        id_Board = datos.toInt();
         Serial.println("------------------------------");
         Serial.print("El ID de la placa es el: ");
         Serial.println(id_Board);
         Serial.println("------------------------------");
         break;
       }else{
+
+        String mac2 = WiFi.macAddress();
+        mac2.replace(":", "");
         
         Serial.println("------------------------------");
         Serial.println("No se pudo obtener el ID de placa o no está registrada");
         Serial.println("------------------------------");
         #ifdef pantallaLCD
-          printLCD(0, 0, "Error al obtener", 1, 0, "el ID de placa");
+          printLCD(0, 0, "Registrer placa", 1, 0, mac2);
         #endif
         delay(10000);
       }
   }
 
-  //checkforUpdates();
+  checkforUpdates();
   reconnect();
   checkRecovery();
   if (!recovery) {
