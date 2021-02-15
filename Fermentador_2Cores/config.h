@@ -34,6 +34,9 @@
 #define SDA_I2C 15
 #define SCL_I2C 4
 
+// Cantidad de variables de la EEPROM
+#define EEPROM_SIZE 1
+
 // Rango para la temperatura
   const float rangoTemp = 2;
 

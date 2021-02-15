@@ -19,6 +19,7 @@
 */   
               
 #include <ArduinoJson.h>                              // Para los datos JSON
+#include <EEPROM.h>
 #include <HTTPClient.h>
 #include <Wire.h>                                     // Para interfaz I2C para, comunicaciones de dispositivos por direcciones
 #include "PCF8574.h"
@@ -75,6 +76,8 @@ void setup(){
   #ifdef ENABLE_SERIAL
     Serial.begin(115200);
   #endif
+// Inicializamos la EEPROM
+  EEPROM.begin(EEPROM_SIZE);
 
   WiFi.begin();
   Wire.begin(SDA_I2C, SCL_I2C);
@@ -164,13 +167,14 @@ void setup(){
         Serial.println("No se pudo obtener el ID de placa o no está registrada");
         Serial.println("------------------------------");
         #ifdef pantallaLCD
-          printLCD(0, 0, "Registrer placa", 1, 0, mac2);
+          printLCD(0, 0, "Registrar placa", 1, 0, mac2);
         #endif
         delay(10000);
       }
   }
 
   checkforUpdates();
+  getLastRecipeLoad();
   reconnect();
   checkRecovery();
   if (!recovery) {

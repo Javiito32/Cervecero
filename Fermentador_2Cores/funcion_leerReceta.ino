@@ -40,6 +40,8 @@ void leerReceta(byte recipe){
       Recipe.clear();
 
       Recipe.setRecipe(recipe);
+      EEPROM.write(0, recipe);
+      EEPROM.commit();
       Recipe.setName(nombre);
       
 
@@ -101,4 +103,14 @@ int count(String str){
 
   return cont;
 
+}
+
+void getLastRecipeLoad() {
+
+  byte eepromRead = EEPROM.read(0);
+  if (eepromRead != 0) {
+
+    leerReceta(eepromRead);
+  }
+  
 }
