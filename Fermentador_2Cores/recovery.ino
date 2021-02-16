@@ -6,13 +6,13 @@ void checkRecovery(){
   Serial.println("Comprobando Recovery");
 
   while (true){
-    String data_To_Send = "IDplaca=";
+    String data_To_Send = "id_Placa=";
     data_To_Send.concat(id_Board);
     String datos = peticion("recovery.php", data_To_Send);
 
       if (datos != "fallo") {
 
-        const size_t capacity = JSON_OBJECT_SIZE(5) + 70;
+        const size_t capacity = JSON_OBJECT_SIZE(20);
         DynamicJsonDocument doc(capacity);
 
         const char* json = datos.c_str();
@@ -20,6 +20,10 @@ void checkRecovery(){
         deserializeJson(doc, json);
 
         byte estado = doc["estado"];
+
+        Serial.println(datos);
+
+        Serial.println(estado);
 
         if(estado == 1){
 

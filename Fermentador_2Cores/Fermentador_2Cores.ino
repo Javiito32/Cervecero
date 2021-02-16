@@ -177,13 +177,14 @@ void setup(){
   getLastRecipeLoad();
   reconnect();
   checkRecovery();
+
   if (!recovery) {
     
     homeMessage();
     
   }else {
     
-    leerReceta(Recipe.getRecipe());
+    //leerReceta(Recipe.getRecipe());
     faseProceso = recoveryPasoProceso;
     recoveryProcesos(recoveryProceso);
     

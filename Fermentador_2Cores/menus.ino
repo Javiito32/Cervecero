@@ -90,11 +90,18 @@ void lanzar_Procesos(int proceso, int paso){
 
     case 2:
       faseProceso = paso;
+      Serial.println("Coccion");
       coccion();
     break;
 
     case 3:
       trasvase();
+    break;
+
+    case 4:
+      faseProceso = paso;
+      Serial.println("Fermentacion");
+      fermentacion();
     break;
 
     default:

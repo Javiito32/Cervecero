@@ -11,7 +11,7 @@ void reconnect() {
       // ... and resubscribe
       lcd.setCursor(13, 1);
       lcd.print("   ");
-      mqttClient.subscribe("2/menu");
+      mqttClient.subscribe("cervecero/menu/2");
     } else {
       lcd.setCursor(13, 1);
       lcd.print("Off");

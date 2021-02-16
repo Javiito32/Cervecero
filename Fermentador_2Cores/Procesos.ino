@@ -32,7 +32,7 @@ void maceracion() {
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeMacer(faseProceso);
-    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0);             // Mandamos la informacion a la BDD a la tabla info
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0.0);             // Mandamos la informacion a la BDD a la tabla info
   }
 
   #ifdef pantallaLCD
@@ -83,7 +83,7 @@ void coccion (){
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeCoc(faseProceso);
-    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0);
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0.0);
   }
 
   #ifdef pantallaLCD
@@ -118,14 +118,14 @@ void coccion (){
  */
 void trasvase(){
   
-    Serial.println("O4");
+    Serial.println("O3");
 
     procesoActual = 3;
     estado = 1;
     tiempoRestante = 0;
     if(!recovery){
       porcentaje = 0;
-      Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, porcentaje, 0);
+      Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, porcentaje, 0.0);
     }
     #ifdef pantallaLCD
       printLCD(0, 0, "Trasvasando... ", 1, 0, "Por favor espere");
@@ -182,6 +182,41 @@ bool checkLoadRecipe() {
     return true;
   }else return false;
   
+}
+
+void fermentacion() {
+  
+  if(checkLoadRecipe()){return;};
+  
+  Serial.println("O4");
+
+  procesoActual = 4;
+  estado = 1;
+
+  if(!recovery){
+    porcentaje = 0;
+    tiempoRestante = Recipe.getTimeMacer(faseProceso);
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0.0);             // Mandamos la informacion a la BDD a la tabla info
+  }
+
+  #ifdef pantallaLCD
+    String lcd0 = "Fermentacion: ";
+    lcd0.concat(faseProceso);
+    String lcd1 = "Porcentaje: ";
+    lcd1.concat(porcentaje);
+    lcd1.concat("%");
+    printLCD(0, 0, lcd0, 1, 0, lcd1);
+  #endif
+
+  expander.digitalWrite(electroRecirculacion, LOW);
+  expander.digitalWrite(bombaPrincipal, LOW);
+  calentar(Recipe.getTempFermen(faseProceso), Recipe.getTimeFermen(faseProceso));
+  digitalWrite(HEATER, HIGH);
+  expander.digitalWrite(bombaPrincipal, HIGH);
+  expander.digitalWrite(electroRecirculacion, HIGH);
+  estado = 2;
+  
+  endProcess();
 }
 
 
@@ -292,7 +327,7 @@ void comprobarCancelar() {
 
 void endProcess() {
 
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0);
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0.0);
 }
 
 #ifdef pantallaLCD

@@ -28,6 +28,20 @@ REPLACE INTO `estados` (`id`, `estado`) VALUES
 	(4, 'No inciado');
 /*!40000 ALTER TABLE `estados` ENABLE KEYS */;
 
+-- Volcando estructura para tabla cervecero.intervenciones
+CREATE TABLE IF NOT EXISTS `intervenciones` (
+  `id_Paso_Receta` int(11) NOT NULL,
+  `id_Receta` int(11) NOT NULL,
+  `on_Time` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_Paso_Receta`,`id_Receta`) USING BTREE,
+  KEY `FK_intervenciones_recetas` (`id_Receta`),
+  CONSTRAINT `FK_intervenciones_recetas` FOREIGN KEY (`id_Receta`) REFERENCES `recetas` (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- Volcando datos para la tabla cervecero.intervenciones: ~0 rows (aproximadamente)
+/*!40000 ALTER TABLE `intervenciones` DISABLE KEYS */;
+/*!40000 ALTER TABLE `intervenciones` ENABLE KEYS */;
+
 -- Volcando estructura para tabla cervecero.log_Placas_Firmwares
 CREATE TABLE IF NOT EXISTS `log_Placas_Firmwares` (
   `id_Placa` int(11) NOT NULL,
@@ -71,19 +85,24 @@ CREATE TABLE IF NOT EXISTS `pasos_Recetas` (
   `id_Receta` int(11) NOT NULL,
   `id_Proceso` int(11) DEFAULT NULL,
   `id_Paso_Proceso` int(11) DEFAULT NULL,
-  `tiempo` time DEFAULT NULL,
-  `comentario` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `tiempo` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `instrucciones` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `intervencion` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id_Receta`,`id_Paso_Receta`) USING BTREE,
   KEY `FK_pasos_Recetas_procesos` (`id_Proceso`),
   CONSTRAINT `FK_pasos_Recetas_procesos` FOREIGN KEY (`id_Proceso`) REFERENCES `procesos` (`id`),
   CONSTRAINT `FK_pasos_Recetas_recetas` FOREIGN KEY (`id_Receta`) REFERENCES `recetas` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- Volcando datos para la tabla cervecero.pasos_Recetas: ~2 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.pasos_Recetas: ~6 rows (aproximadamente)
 /*!40000 ALTER TABLE `pasos_Recetas` DISABLE KEYS */;
-REPLACE INTO `pasos_Recetas` (`id_Paso_Receta`, `id_Receta`, `id_Proceso`, `id_Paso_Proceso`, `tiempo`, `comentario`) VALUES
-	(1, 1, 1, 0, '00:01:00', 'Primera maceracion'),
-	(2, 1, 2, 0, '00:05:00', 'Primera Coccion');
+REPLACE INTO `pasos_Recetas` (`id_Paso_Receta`, `id_Receta`, `id_Proceso`, `id_Paso_Proceso`, `tiempo`, `instrucciones`, `intervencion`) VALUES
+	(1, 1, 1, 0, '1 Minuto', 'Primera maceracion', 0),
+	(2, 1, 2, 0, '5 Minutos', 'Primera Coccion', 0),
+	(1, 3, 1, 0, '60 Minutos', 'Macerar las maltas durante 60 minutos a 65 ºC. Usar 12,5 litros de agua.', 0),
+	(2, 3, 2, 0, '70 Minutos', 'Lavar y recircular para obtener el mosto. Añadir agua hasta alcanzar los 27 litros. Hervir durante 70 minutos, añadiendo el lúpulo al inicio del hervido.', 0),
+	(3, 3, 4, 0, '1 Semana', 'Añadir la levadura Kveik y fermentar entre 30 y 40 ºC. Añadir la fruta a los 4 días de fermentación, retirarla tras una semana y dejar que termine de fermentar.', 0),
+	(4, 3, 5, 0, '2 Semanas', 'Madurar durante 2 semanas a 12 ºC.', 0);
 /*!40000 ALTER TABLE `pasos_Recetas` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.pasos_Recetas_Users
@@ -101,11 +120,13 @@ CREATE TABLE IF NOT EXISTS `pasos_Recetas_Users` (
   CONSTRAINT `FK_pasos_Recetas_Users_recetas` FOREIGN KEY (`id_receta`) REFERENCES `recetas` (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- Volcando datos para la tabla cervecero.pasos_Recetas_Users: ~2 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.pasos_Recetas_Users: ~4 rows (aproximadamente)
 /*!40000 ALTER TABLE `pasos_Recetas_Users` DISABLE KEYS */;
 REPLACE INTO `pasos_Recetas_Users` (`id_Paso_Receta`, `id_Receta`, `id_User`, `id_Estado`) VALUES
-	(1, 1, 1, 4),
-	(2, 1, 1, 4);
+	(1, 3, 1, 4),
+	(2, 3, 1, 4),
+	(3, 3, 1, 4),
+	(4, 3, 1, 4);
 /*!40000 ALTER TABLE `pasos_Recetas_Users` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.placas
@@ -147,24 +168,10 @@ CREATE TABLE IF NOT EXISTS `placas_data` (
   CONSTRAINT `FK_log_placas` FOREIGN KEY (`id_Placa`) REFERENCES `placas` (`id_Placa`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `FK_log_procesos` FOREIGN KEY (`proceso`) REFERENCES `procesos` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `FK_log_recetas` FOREIGN KEY (`receta`) REFERENCES `recetas` (`ID`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=963 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- Volcando datos para la tabla cervecero.placas_data: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.placas_data: ~0 rows (aproximadamente)
 /*!40000 ALTER TABLE `placas_data` DISABLE KEYS */;
-REPLACE INTO `placas_data` (`ID`, `id_Placa`, `receta`, `time`, `proceso`, `pasoProceso`, `estado`, `tiempoRestante`, `porcentaje`, `temp`) VALUES
-	(1, 2, 1, '2021-02-15 00:25:47', 1, 0, 1, 1, 0, 0),
-	(2, 2, 1, '2021-02-15 00:25:52', 1, 0, 1, 55, 6, 0),
-	(3, 2, 1, '2021-02-15 00:25:57', 1, 0, 1, 50, 16, 0.1),
-	(4, 2, 1, '2021-02-15 00:32:18', 1, 0, 1, 45, 23, 0),
-	(5, 2, 1, '2021-02-15 00:32:23', 1, 0, 1, 40, 33, 0),
-	(6, 2, 1, '2021-02-15 00:32:28', 1, 0, 1, 35, 40, 0),
-	(7, 2, 1, '2021-02-15 00:32:33', 1, 0, 1, 30, 50, 0),
-	(8, 2, 1, '2021-02-15 00:32:38', 1, 0, 1, 25, 56, 0),
-	(9, 2, 1, '2021-02-15 00:32:43', 1, 0, 1, 20, 66, 0),
-	(10, 2, 1, '2021-02-15 00:32:48', 1, 0, 1, 15, 73, 0),
-	(11, 2, 1, '2021-02-15 00:32:53', 1, 0, 1, 10, 83, 0.2),
-	(12, 2, 1, '2021-02-15 00:32:58', 1, 0, 1, 5, 90, 0),
-	(13, 2, 1, '2021-02-15 00:33:03', 1, 0, 2, 0, 100, 0);
 /*!40000 ALTER TABLE `placas_data` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.placas_firmwares
@@ -185,15 +192,16 @@ CREATE TABLE IF NOT EXISTS `procesos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `proceso` varchar(17) CHARACTER SET utf8mb4 DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- Volcando datos para la tabla cervecero.procesos: ~4 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.procesos: ~5 rows (aproximadamente)
 /*!40000 ALTER TABLE `procesos` DISABLE KEYS */;
 REPLACE INTO `procesos` (`id`, `proceso`) VALUES
 	(1, 'Maceracion'),
 	(2, 'Coccion'),
 	(3, 'Transvase'),
-	(4, 'Fermentacion');
+	(4, 'Fermentacion'),
+	(5, 'Reposo');
 /*!40000 ALTER TABLE `procesos` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.recetas
@@ -206,16 +214,21 @@ CREATE TABLE IF NOT EXISTS `recetas` (
   `tiempoCoc` varchar(50) CHARACTER SET utf8mb4 NOT NULL DEFAULT '0',
   `tempFermen` varchar(50) CHARACTER SET utf8mb4 NOT NULL DEFAULT '0',
   `tiempoFermen` varchar(50) CHARACTER SET utf8mb4 NOT NULL DEFAULT '0',
+  `tempReposo` int(11) DEFAULT NULL,
+  `tiempoReposo` int(11) DEFAULT NULL,
+  `gravedad_Inicial` int(11) DEFAULT NULL,
   `src` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
   `descripcion` varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `gravedad_Final` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
--- Volcando datos para la tabla cervecero.recetas: ~2 rows (aproximadamente)
+-- Volcando datos para la tabla cervecero.recetas: ~3 rows (aproximadamente)
 /*!40000 ALTER TABLE `recetas` DISABLE KEYS */;
-REPLACE INTO `recetas` (`ID`, `nombre`, `tempMacer`, `tiempoMacer`, `tempCoc`, `tiempoCoc`, `tempFermen`, `tiempoFermen`, `src`, `descripcion`) VALUES
-	(1, 'Pinta', '54:78:89:34', '1:5:7:3', '30', '1', '42', '3', 'img/beers/pinta.jpg', 'Es decir, algo más de medio litro. En Estados Unidos, en cambio, la medida es algo inferior, 473 ml. Por tanto, no llega al medio litro en el país americano.'),
-	(2, 'Alcahchofa', '78:45:56:12', '2:5:7:10', '74:41:10:45', '10:45:41:23', '15:45:78:98', '12:45:78:89', NULL, 'Receta de pruebas');
+REPLACE INTO `recetas` (`ID`, `nombre`, `tempMacer`, `tiempoMacer`, `tempCoc`, `tiempoCoc`, `tempFermen`, `tiempoFermen`, `tempReposo`, `tiempoReposo`, `gravedad_Inicial`, `src`, `descripcion`, `gravedad_Final`) VALUES
+	(1, 'Pinta', '54:78:89:34', '1:5:7:3', '30', '1', '42', '3', NULL, NULL, NULL, 'img/beers/pinta.jpg', 'Es decir, algo más de medio litro. En Estados Unidos, en cambio, la medida es algo inferior, 473 ml. Por tanto, no llega al medio litro en el país americano.', NULL),
+	(2, 'Alcahchofa', '78:45:56:12', '2:5:7:10', '74:41:10:45', '10:45:41:23', '15:45:78:98', '12:45:78:89', NULL, NULL, NULL, NULL, 'Receta de pruebas', NULL),
+	(3, 'Afrutada', '65', '60', '100', '70', '35', '10080', 12, 20160, 1045, 'img/beers/afrutada.jpg', 'Las cervezas con fruta se suelen preparar con malta de trigo y frutas que le dan a la cerveza una turbidez sustancial. Proceso de elaboración: 4 semanas Alcohol: 5,7% Amargor: 15 IBU', 1010);
 /*!40000 ALTER TABLE `recetas` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.sondas
@@ -248,7 +261,7 @@ CREATE TABLE IF NOT EXISTS `sondas_data` (
   PRIMARY KEY (`id`),
   KEY `id_Sonda` (`id_Sonda`),
   CONSTRAINT `FK_sonda_data_sodas` FOREIGN KEY (`id_Sonda`) REFERENCES `sondas` (`id_Sonda`)
-) ENGINE=InnoDB AUTO_INCREMENT=654 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=660 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Volcando datos para la tabla cervecero.sondas_data: ~182 rows (aproximadamente)
 /*!40000 ALTER TABLE `sondas_data` DISABLE KEYS */;
@@ -434,7 +447,13 @@ REPLACE INTO `sondas_data` (`id`, `id_Sonda`, `tilt`, `temp`, `temp_Unit`, `batt
 	(650, 2, 13.5524, 21, 'C', 3.85297, -6.56224, 5, -37, '2021-02-10 18:58:04'),
 	(651, 2, 50.4672, 21, 'C', 3.85819, 13.2667, 5, -42, '2021-02-10 18:58:12'),
 	(652, 2, 29.4114, 21, 'C', 3.85297, 2.06, 5, -36, '2021-02-10 18:58:18'),
-	(653, 2, 18.1605, 21, 'C', 3.80605, -4.04083, 5, -35, '2021-02-10 18:58:25');
+	(653, 2, 18.1605, 21, 'C', 3.80605, -4.04083, 5, -35, '2021-02-10 18:58:25'),
+	(654, 2, 80.6476, 23, 'C', 3.86861, 28.8505, 1, -49, '2021-02-15 20:48:24'),
+	(655, 2, 82.9415, 23, 'C', 3.86861, 30.0118, 5, -51, '2021-02-15 20:48:27'),
+	(656, 2, 64.6882, 23, 'C', 3.8634, 20.6801, 5, -58, '2021-02-15 20:48:33'),
+	(657, 2, 53.2143, 23, 'C', 3.86861, 14.7085, 5, -46, '2021-02-15 20:48:39'),
+	(658, 2, 58.4609, 23, 'C', 3.87904, 17.4492, 5, -53, '2021-02-15 20:48:46'),
+	(659, 2, 38.2659, 23, 'C', 3.87904, 6.80621, 5, -54, '2021-02-15 20:48:52');
 /*!40000 ALTER TABLE `sondas_data` ENABLE KEYS */;
 
 -- Volcando estructura para tabla cervecero.users
@@ -445,7 +464,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `pass` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id_User`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Volcando datos para la tabla cervecero.users: ~0 rows (aproximadamente)
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;

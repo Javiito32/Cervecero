@@ -56,9 +56,11 @@ void Log(int id_Board, int id_Recipe, int actualProcess, int stageProcess, int s
     doc["porcentaje"] = percentage;
     doc["temp"] = temp;
 
+    String topic = "cervecero/data/";
+    topic = topic + id_Board;
     String payload;
     serializeJson(doc, payload);
-    mqttClient.publish("cervecero/2/log", payload.c_str());
+    mqttClient.publish(topic.c_str(), payload.c_str());
     Serial.println(payload);
     Serial.println("Log");
   }
