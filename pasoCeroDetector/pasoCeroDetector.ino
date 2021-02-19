@@ -1,12 +1,13 @@
 #define LUCECITA              5
-#define disparoEnPulso        4
-#define ceroPulse             34
+#define ceroPulse             18
 #define TIMER1_INTERVAL_MS    1
 
 #include "ESP32TimerInterrupt.h"
 
 byte ticks = 0;
 bool SoloUnPulsito;
+byte disparoEnPulso = 0;
+bool direccion = false;
 
 void IRAM_ATTR TimerHandler1(){
   
@@ -69,5 +70,15 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  if (disparoEnPulso >= 10) {
+    direccion = false;
+  } else if (disparoEnPulso <= 0) {
+    direccion = true;
+  }
+    if(direccion) {
+      disparoEnPulso++; 
+    }else {
+      disparoEnPulso--; 
+    }
+   delay(200);
 }

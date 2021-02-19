@@ -21,7 +21,7 @@
 //LAYOUT Pines
 #define LED_BUILTIN 25
 #define SONDA 39                                   // Sonda de la temperatura
-#define HEATER 14                                      // Resistencia para calentar               
+#define HEATER 5                                      // Resistencia para calentar               
 #define TUBESENSOR 34                              // Sensor de liquido en tubo
 #define bombaPrincipal P0//27                         // Bomba de recirculacion 230V
 #define bombaFrio P1//32                                  // Bomba refrigeracion 230V

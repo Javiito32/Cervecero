@@ -50,8 +50,7 @@ void maceracion() {
   digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
-  estado = 2;
-  
+
   endProcess();
 }
 
@@ -101,7 +100,6 @@ void coccion (){
   digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
-  estado = 2;
 
   endProcess();
 }
@@ -214,7 +212,6 @@ void fermentacion() {
   digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
-  estado = 2;
   
   endProcess();
 }
@@ -293,7 +290,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
       //Tratamiento de la temperatura
       for (size_t i = 0; i < 10; i++) {
 
-        samples.add((analogRead(SONDA) * 3.3 * 100.0) / 1024.0);
+        samples.add(((analogRead(SONDA) * 5000) / 1023) / 10);
       }
     
       float temp = samples.getAverage();
@@ -327,6 +324,9 @@ void comprobarCancelar() {
 
 void endProcess() {
 
+  if (processCandeled) {estado = 3;}
+  else {estado = 2;}
+  
   Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0.0);
 }
 
@@ -338,6 +338,5 @@ void lcd_Porcentaje(){
   lcd1.concat(porcentaje);
   lcd1.concat("%");
   lcd.print(lcd1);
-
 }
 #endif
