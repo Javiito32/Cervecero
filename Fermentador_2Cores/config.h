@@ -29,13 +29,10 @@
 #define electroTrasvase P3//33                              // Bomba trasvase 230V
 
 #define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
-#define DRD_ADDRESS 0                                 // RTC Memory Address for the DoubleResetDetector to use
+#define DRD_ADDRESS 1                                 // RTC Memory Address for the DoubleResetDetector to use
 
 #define SDA_I2C 15
 #define SCL_I2C 4
-
-// Cantidad de variables de la EEPROM
-#define EEPROM_SIZE 1
 
 // Rango para la temperatura
   const float rangoTemp = 2;

@@ -25,7 +25,7 @@ void IRAM_ATTR TimerHandler1(){
   if(ticks >= disparoEnPulso && SoloUnPulsito) {
         
     digitalWrite(LUCECITA, HIGH);
-    delayMicroseconds(5000); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
+    delayMicroseconds(1000); //Para arduino uno un pulsito de 10us para el NodeMCU 15us
     digitalWrite(LUCECITA, LOW);
     //Serial.println("Disparo");
     SoloUnPulsito = false;

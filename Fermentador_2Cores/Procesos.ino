@@ -47,7 +47,7 @@ void maceracion() {
   expander.digitalWrite(electroRecirculacion, LOW);
   expander.digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempMacer(faseProceso), Recipe.getTimeMacer(faseProceso));
-  digitalWrite(HEATER, HIGH);
+  digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
@@ -98,7 +98,7 @@ void coccion (){
   expander.digitalWrite(electroRecirculacion, LOW);
   expander.digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempCoc(faseProceso), Recipe.getTimeCoc(faseProceso));
-  digitalWrite(HEATER, HIGH);
+  digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
@@ -211,7 +211,7 @@ void fermentacion() {
   expander.digitalWrite(electroRecirculacion, LOW);
   expander.digitalWrite(bombaPrincipal, LOW);
   calentar(Recipe.getTempFermen(faseProceso), Recipe.getTimeFermen(faseProceso));
-  digitalWrite(HEATER, HIGH);
+  digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
   estado = 2;
@@ -306,8 +306,8 @@ void calentar(int temperaturaProceso, long tiempoProceso){
         Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);
       }
     //Mantenimiento de la ventana de temperatura
-      if(temp > tmax) {digitalWrite(HEATER,HIGH);}
-      if(temp < tmin) {digitalWrite(HEATER,LOW);}
+      if(temp > tmax) {digitalWrite(HEATER,LOW);}
+      if(temp < tmin) {digitalWrite(HEATER,HIGH);}
       delay(500);
 
     }while(true);

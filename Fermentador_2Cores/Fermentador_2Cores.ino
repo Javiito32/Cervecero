@@ -97,7 +97,7 @@ void setup(){
   expander.pinMode(electroTrasvase, OUTPUT);
 
 //Seteamos pines a HIGH
-  digitalWrite(HEATER, HIGH);
+  digitalWrite(HEATER, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(bombaFrio, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);
