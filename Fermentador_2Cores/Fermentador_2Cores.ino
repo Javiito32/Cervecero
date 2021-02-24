@@ -35,8 +35,6 @@
 #ifdef pantallaLCD
   #include <LiquidCrystal_I2C.h>                        // Para el control de la pantalla LCD
 #endif
-#include "heltec.h"
-#include "images.cpp"
 
 //Variables globales
 String mac;                                           // La direccion MAC de el WiFi
@@ -59,7 +57,7 @@ WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 RunningMedian samples = RunningMedian(10);
 #ifdef pantallaLCD
-  LiquidCrystal_I2C lcd(0x27,16,2);
+  LiquidCrystal_I2C lcd(0x27, 16, 2);
 #endif
 Recipe Recipe;
 
@@ -80,7 +78,8 @@ void setup(){
   EEPROM.begin(EEPROM_SIZE);
 
   WiFi.begin();
-  Wire.begin(SDA_I2C, SCL_I2C);
+  Wire.begin();
+  //Wire.begin(SDA_I2C, SCL_I2C);
   #ifdef pantallaLCD
     lcd.begin();
   #endif
@@ -91,13 +90,15 @@ void setup(){
   pinMode(TUBESENSOR, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(HEATER, OUTPUT);
+  pinMode(LEDTRASVASE, OUTPUT);
   expander.pinMode(bombaPrincipal, OUTPUT);
   expander.pinMode(bombaFrio, OUTPUT);
   expander.pinMode(electroRecirculacion, OUTPUT);
   expander.pinMode(electroTrasvase, OUTPUT);
 
-//Seteamos pines a HIGH
+//Seteamos pines
   digitalWrite(HEATER, LOW);
+  digitalWrite(LEDTRASVASE, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(bombaFrio, HIGH);
   expander.digitalWrite(electroRecirculacion, HIGH);

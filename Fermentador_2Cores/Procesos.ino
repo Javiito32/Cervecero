@@ -130,6 +130,7 @@ void trasvase(){
     #endif
 
 //Trasvase ON
+  digitalWrite(LEDTRASVASE, HIGH);
   expander.digitalWrite(electroTrasvase, LOW);
   delay(1000);
   expander.digitalWrite(bombaPrincipal, LOW);
@@ -159,6 +160,7 @@ void trasvase(){
 
   }while(true);
 //Trasvase OFF  
+  digitalWrite(LEDTRASVASE, LOW);
   expander.digitalWrite(bombaPrincipal, HIGH);
   expander.digitalWrite(bombaFrio, HIGH);
   expander.digitalWrite(electroTrasvase, HIGH);

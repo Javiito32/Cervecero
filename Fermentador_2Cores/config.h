@@ -11,6 +11,8 @@
   #define DOUBLERESETDETECTOR_DEBUG       false
   #define ESP_DRD_USE_EEPROM      true
   #define SECONDSTOENTER  3
+  #define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
+  #define DRD_ADDRESS 1                                 // RTC Memory Address for the DoubleResetDetector to use
   
 // Activar todos los mensajes por serial
   #define ENABLE_SERIAL
@@ -27,9 +29,7 @@
 #define bombaFrio P1//32                                  // Bomba refrigeracion 230V
 #define electroRecirculacion P2//17
 #define electroTrasvase P3//33                              // Bomba trasvase 230V
-
-#define DRD_TIMEOUT 10                                // El tiempo en segundos que va a esperar para el doble reset
-#define DRD_ADDRESS 1                                 // RTC Memory Address for the DoubleResetDetector to use
+#define LEDTRASVASE 17
 
 #define SDA_I2C 15
 #define SCL_I2C 4
