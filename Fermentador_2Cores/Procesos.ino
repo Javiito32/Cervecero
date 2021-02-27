@@ -32,7 +32,8 @@ void maceracion() {
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeMacer(faseProceso);
-    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0.0);             // Mandamos la informacion a la BDD a la tabla info
+    float temp = getTemp();
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);             // Mandamos la informacion a la BDD a la tabla info
   }
 
   #ifdef pantallaLCD
@@ -82,7 +83,8 @@ void coccion (){
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeCoc(faseProceso);
-    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0.0);
+    float temp = getTemp();
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);
   }
 
   #ifdef pantallaLCD
@@ -123,7 +125,8 @@ void trasvase(){
     tiempoRestante = 0;
     if(!recovery){
       porcentaje = 0;
-      Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, porcentaje, 0.0);
+      float temp = getTemp();
+      Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, porcentaje, temp);
     }
     #ifdef pantallaLCD
       printLCD(0, 0, "Trasvasando... ", 1, 0, "Por favor espere");
@@ -196,7 +199,8 @@ void fermentacion() {
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeMacer(faseProceso);
-    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, 0.0);             // Mandamos la informacion a la BDD a la tabla info
+    float temp = getTemp();
+    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);             // Mandamos la informacion a la BDD a la tabla info
   }
 
   #ifdef pantallaLCD
@@ -259,6 +263,8 @@ void calentar(int temperaturaProceso, long tiempoProceso){
     int tmax = temperaturaProceso + rangoTemp;
     int tmin = temperaturaProceso - rangoTemp;
 
+    float temp = NULL;
+
     do{
       comprobarCancelar();
       if (processCandeled) break;
@@ -288,26 +294,20 @@ void calentar(int temperaturaProceso, long tiempoProceso){
           lcd_Porcentaje();
         #endif
       }
-      
-      //Tratamiento de la temperatura
-      for (size_t i = 0; i < 10; i++) {
-
-        samples.add(((analogRead(SONDA) * 5000) / 1023) / 10);
-      }
     
-      float temp = samples.getAverage();
-      //Serial.println(temp);
-      samples.clear();
-      // Mandar LOG
+      temp = getTemp();//samples.getAverage();
+      
+    //Mantenimiento de la ventana de temperatura
+      if(temp > tmax) {digitalWrite(HEATER,LOW);}
+      if(temp < tmin) {digitalWrite(HEATER,HIGH);}
+      delay(500);
+
+     // Mandar LOG
       if (tiempoActual >= tiempoLog){
 
         tiempoLog = tiempoActual + 5;
         Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);
       }
-    //Mantenimiento de la ventana de temperatura
-      if(temp > tmax) {digitalWrite(HEATER,LOW);}
-      if(temp < tmin) {digitalWrite(HEATER,HIGH);}
-      delay(500);
 
     }while(true);
 }
@@ -328,8 +328,8 @@ void endProcess() {
 
   if (processCandeled) {estado = 3;}
   else {estado = 2;}
-  
-  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, 0.0);
+  float temp = getTemp();
+  Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, 100, temp);
 }
 
 #ifdef pantallaLCD
@@ -342,3 +342,20 @@ void lcd_Porcentaje(){
   lcd.print(lcd1);
 }
 #endif
+
+float getTemp() {
+
+  char msg[6];
+  
+  Wire.requestFrom(9, 5); // request 11 bytes from slave device #8. 4 bytes because 5 digits for temp, 5 digits for hum, and 1 digit for a comma
+
+  //gathers data comming from slave
+  int i=0; //counter for each bite as it arrives
+    while (Wire.available()) {
+      msg[i] = Wire.read(); // every character that arrives it put in order in the empty array "t"
+      i++;
+    }
+  float temp = atof(msg);
+  Serial.println(temp);
+  return temp;
+}

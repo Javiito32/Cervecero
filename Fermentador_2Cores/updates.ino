@@ -51,7 +51,7 @@ bool checkforUpdates(){
           Serial.println("Comenzando proceso de actualización");
           Serial.println("-----------------------------------");
           
-          t_httpUpdate_return ret = httpUpdate.update(wifiClient, ipServer, 80, "/firmware/arduino.bin");
+          t_httpUpdate_return ret = httpUpdate.update(wifiClient, "192.168.1.150", 80, "/firmware/arduino.bin");
 
           switch (ret) {
             case HTTP_UPDATE_FAILED:

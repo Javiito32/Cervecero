@@ -26,7 +26,6 @@
 #include <RTClib.h>                                   // Para el manejo del modulo RTC
 #include <TimeLib.h>                                  // Libreria para gestionar las conversiones de tiempo
 #include <Separador.h>                                // Como su propio nombre indica separa cadenas de datos
-#include <RunningMedian.h>                            // Hace una lectura precisa de los sensores
 #include <DNSServer.h>                                // Va con la libreria de abajo
 #include <WiFiManager.h>                              // Interfaz para conectar el modulo a una red WiFi
 #include <ESP_DoubleResetDetector.h>                  // Detecta cuando se ha reiniciado el modulo 2 veces en un periodo de tiempo especificado
@@ -55,7 +54,6 @@ Separador s;
 WiFiManager wifiManager;
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
-RunningMedian samples = RunningMedian(10);
 #ifdef pantallaLCD
   LiquidCrystal_I2C lcd(0x27, 16, 2);
 #endif
