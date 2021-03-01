@@ -2,6 +2,7 @@
 
 #define DEVICEID 9
 #define MEASURES 5
+#define SONDA A0
 //#define DEBUG
 
 #include <Wire.h>
@@ -16,6 +17,8 @@ void setup() {
   #ifdef DEBUG
   Serial.begin(9200);
   #endif
+
+  pinMode(SONDA, INPUT);
   
   Wire.begin();
 
@@ -25,8 +28,8 @@ void setup() {
 }
 void loop() {
 
-  float stempC = 20.00;
-  //float stempC = ;
+  //float stempC = 20.00;
+  float stempC = (5.0 * analogRead(SONDA) * 100.0)/1024.0;
  
 //get the temp/humid into chars to format
   for (uint8_t i = 0; i < MEASURES; i++) {
