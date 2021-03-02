@@ -28,18 +28,19 @@ void maceracion() {
 
   procesoActual = 1;
   estado = 1;
+  float temp = getTemp();
 
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeMacer(faseProceso);
-    float temp = getTemp();
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);             // Mandamos la informacion a la BDD a la tabla info
   }
 
   #ifdef pantallaLCD
     String lcd0 = "Maceracion: ";
     lcd0.concat(faseProceso);
-    String lcd1 = "Porcentaje: ";
+    String lcd1 = String(temp);
+    lcd1.concat(" C   ");
     lcd1.concat(porcentaje);
     lcd1.concat("%");
     printLCD(0, 0, lcd0, 1, 0, lcd1);
@@ -79,18 +80,19 @@ void coccion (){
 
   procesoActual = 2;
   estado = 1;
+  float temp = getTemp();
 
   if(!recovery){
     porcentaje = 0;
     tiempoRestante = Recipe.getTimeCoc(faseProceso);
-    float temp = getTemp();
     Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);
   }
 
   #ifdef pantallaLCD
     String lcd0 = "Coccion: ";
     lcd0.concat(faseProceso);
-    String lcd1 = "Porcentaje: ";
+    String lcd1 = String(temp);
+    lcd1.concat(" C   ");
     lcd1.concat(porcentaje);
     lcd1.concat("%");
     printLCD(0, 0, lcd0, 1, 0, lcd1);
@@ -123,9 +125,9 @@ void trasvase(){
     procesoActual = 3;
     estado = 1;
     tiempoRestante = 0;
+    float temp = getTemp();
     if(!recovery){
       porcentaje = 0;
-      float temp = getTemp();
       Log(id_Board, Recipe.getRecipe(), procesoActual, 0, estado, tiempoRestante, porcentaje, temp);
     }
     #ifdef pantallaLCD
@@ -187,41 +189,6 @@ bool checkLoadRecipe() {
   
 }
 
-void fermentacion() {
-  
-  if(checkLoadRecipe()){return;};
-  
-  Serial.println("O4");
-
-  procesoActual = 4;
-  estado = 1;
-
-  if(!recovery){
-    porcentaje = 0;
-    tiempoRestante = Recipe.getTimeMacer(faseProceso);
-    float temp = getTemp();
-    Log(id_Board, Recipe.getRecipe(), procesoActual, faseProceso, estado, tiempoRestante, porcentaje, temp);             // Mandamos la informacion a la BDD a la tabla info
-  }
-
-  #ifdef pantallaLCD
-    String lcd0 = "Fermentacion: ";
-    lcd0.concat(faseProceso);
-    String lcd1 = "Porcentaje: ";
-    lcd1.concat(porcentaje);
-    lcd1.concat("%");
-    printLCD(0, 0, lcd0, 1, 0, lcd1);
-  #endif
-
-  expander.digitalWrite(electroRecirculacion, LOW);
-  expander.digitalWrite(bombaPrincipal, LOW);
-  calentar(Recipe.getTempFermen(faseProceso), Recipe.getTimeFermen(faseProceso));
-  digitalWrite(HEATER, LOW);
-  expander.digitalWrite(bombaPrincipal, HIGH);
-  expander.digitalWrite(electroRecirculacion, HIGH);
-  
-  endProcess();
-}
-
 
 /*
  * Metodo calentar. 
@@ -263,7 +230,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
     int tmax = temperaturaProceso + rangoTemp;
     int tmin = temperaturaProceso - rangoTemp;
 
-    float temp = NULL;
+    float temp = getTemp();
 
     do{
       comprobarCancelar();
@@ -275,7 +242,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
 
         porcentaje = 100;
         #ifdef pantallaLCD
-          lcd_Porcentaje();
+          update_LCD(temp);
         #endif
         break; 
       }
@@ -291,7 +258,7 @@ void calentar(int temperaturaProceso, long tiempoProceso){
         Serial.println(" completado");
 
         #ifdef pantallaLCD
-          lcd_Porcentaje();
+          update_LCD(temp);
         #endif
       }
     
@@ -333,10 +300,11 @@ void endProcess() {
 }
 
 #ifdef pantallaLCD
-void lcd_Porcentaje(){
+void update_LCD(float temp){
 
-  lcd.setCursor(12,1);
-  String lcd1 = ""; 
+  lcd.setCursor(0, 1);
+  String lcd1 = String(temp);
+  lcd1.concat(" C  "); 
   lcd1.concat(porcentaje);
   lcd1.concat("%");
   lcd.print(lcd1);

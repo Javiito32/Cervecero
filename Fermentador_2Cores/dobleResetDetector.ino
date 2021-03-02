@@ -13,7 +13,7 @@ bool checkReset() {
     printLCD(0, 0, "----  Modo  ----", 1, 0, " Configuracion");
   #endif
   wifiManager.setConfigPortalTimeout(180);
-  wifiManager.startConfigPortal("Cervecero_2.0");
+  wifiManager.startConfigPortal("Cervecero_Machine");
   digitalWrite(LED_BUILTIN, LOW);
   } else {
 

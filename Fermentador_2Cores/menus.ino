@@ -98,12 +98,6 @@ void lanzar_Procesos(int proceso, int paso){
       trasvase();
     break;
 
-    case 4:
-      faseProceso = paso;
-      Serial.println("Fermentacion");
-      fermentacion();
-    break;
-
     default:
       Serial.println("La accion deseada no existe-> lanzar_Procesos");
     break;
