@@ -40,7 +40,7 @@ void maceracion() {
     String lcd0 = "Maceracion: ";
     lcd0.concat(faseProceso);
     String lcd1 = String(temp);
-    lcd1.concat(" C   ");
+    lcd1.concat(" C  ");
     lcd1.concat(porcentaje);
     lcd1.concat("%");
     printLCD(0, 0, lcd0, 1, 0, lcd1);

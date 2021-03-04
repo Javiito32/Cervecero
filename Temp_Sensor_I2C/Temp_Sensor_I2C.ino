@@ -29,12 +29,11 @@ void setup() {
 void loop() {
 
   //float stempC = 20.00;
-  float stempC = (5.0 * analogRead(SONDA) * 100.0)/1024.0;
+  float stempC = (5.0 * analogRead(SONDA) * 100.0) / 1024.0;
  
 //get the temp/humid into chars to format
   for (uint8_t i = 0; i < MEASURES; i++) {
 
-    stempC += 1.50;
     samples.add(stempC);
   }
 
