@@ -1,45 +1,37 @@
 //SLAVE
-
 #define DEVICEID 9
-#define MEASURES 5
-#define SONDA A0
-//#define DEBUG
+#define SONDA 5
+#define DEBUG
 
 #include <Wire.h>
-#include <RunningMedian.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
-RunningMedian samples = RunningMedian(MEASURES);
+OneWire oneWireBus(SONDA);
+DallasTemperature sensor(&oneWireBus);
 
 char temp[6]; //2 int, 2 dec, 1 point, and \0
 char msg[5];
 
 void setup() {
+  
   #ifdef DEBUG
   Serial.begin(9200);
   #endif
-
-  pinMode(SONDA, INPUT);
-  
   Wire.begin();
+  sensor.begin(); 
 
   Wire.begin(DEVICEID);
   // Set the callback to call when data is requested.
   Wire.onRequest(requestCallback);
 }
 void loop() {
-
-  //float stempC = 20.00;
-  float stempC = (5.0 * analogRead(SONDA) * 100.0) / 1024.0;
- 
-//get the temp/humid into chars to format
-  for (uint8_t i = 0; i < MEASURES; i++) {
-
-    samples.add(stempC);
-  }
-
-  stempC = samples.getAverage();
+  
+  sensor.requestTemperatures();
+  
+  float stempC = sensor.getTempCByIndex(0);
+  
   dtostrf(stempC, 5, 2, temp);
-  Serial.println(temp);
   sprintf(msg,"%s",temp);
   #ifdef DEBUG
   Serial.println(msg);
